@@ -17,10 +17,10 @@
  */
 
 #include <iostream>
+#include <string.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <koolplot.h>
 using namespace std;
 using namespace cv;
 
@@ -64,11 +64,20 @@ void initializeMat(double RGBValues[3][256]){
   
 }
 
-void plotHist(double RGBValues[3][256]){
+void plotHist(double ColorValues[256], string canvasName, const int size_Y, const int size_X){
+
+  Mat canvas(256, 1000, CV_8UC3, cv::Scalar(0,0,0));
+  //White Background
+  const int Pos_X = 5; 
+  //Draw Y Axis (Size of Y == Max value in histograms)
+  imshow(canvasName,canvas);
+  
+  cout<<"Opened canvas"<<endl;
+  
     
 }
 
-void RGBHist(const Mat &Image,double RGBValues[3][256]){
+void GenerateRGBHist(const Mat &Image,double RGBValues[3][256]){
   initializeMat(RGBValues);
   for(int row=0; row < Image.rows; ++row){
     for(int col=0; col < Image.cols; ++col){
@@ -79,6 +88,13 @@ void RGBHist(const Mat &Image,double RGBValues[3][256]){
 			}
     }
   }
+  string canvasNames[3]={"Blue","Green","Red"};
+
+  for(int i=0; i<3; ++i){
+    cout<<"IMSHOW"<<endl;
+    plotHist(RGBValues[i],canvasNames[i],Image.rows,Image.cols);
+  }
+  waitKey(0);
 }
 
 void printValue(double ColorValues[256]){
@@ -89,8 +105,10 @@ void printValue(double ColorValues[256]){
 int main(int argc, char *argv[]) {
   /* First, open camera device */
     Mat currentImage = imread("PlaceholderImage.jpg", CV_LOAD_IMAGE_COLOR);
+    imshow("Window",currentImage);
+    waitKey(6);
     double RGBValues[3][256];
-    RGBHist(currentImage,RGBValues);
-    printValue(RGBValues[2]);
+    GenerateRGBHist(currentImage,RGBValues);
+    
     
   }
