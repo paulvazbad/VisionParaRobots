@@ -17,5 +17,7 @@ class ImageAnalysis{
         Mat histograms[3];
         string screenName;
         void initializeMat(double RGBValues[3][256]);
-        // void onMouse(int event, int x, int y, int, void*);
+        void getColor(int x, int y);
+        static void onMouse(int event, int x, int y, int, void* userdata);
+        void onMouse(int event, int x, int y);
 };

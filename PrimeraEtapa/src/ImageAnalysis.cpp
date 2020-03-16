@@ -7,23 +7,11 @@
 using namespace std;
 using namespace cv;
 
-void onMouse(int event, int x, int y, int, void*){
-  switch (event){
-    case CV_EVENT_LBUTTONDOWN:
-        cout << "  Mouse X, Y: " << x << ", " << y << endl;
-        break;
-    case CV_EVENT_MOUSEMOVE:
-        break;
-    case CV_EVENT_LBUTTONUP:
-        break;
-  }
-}
-
 ImageAnalysis::ImageAnalysis(Mat &image, string screenName){
   frame = &image;
   this -> screenName = screenName;
   namedWindow(screenName);
-  setMouseCallback(screenName, onMouse);
+  setMouseCallback(screenName, onMouse, this);
 }
 
 void ImageAnalysis::plotHist(double ColorValues[256], string histogramName){
@@ -36,7 +24,6 @@ void ImageAnalysis::plotHist(double ColorValues[256], string histogramName){
   
     
 }
-
 
 void ImageAnalysis::initializeMat(double RGBValues[3][256]){
   for(int color_value = 0; color_value<256; color_value++){
@@ -71,4 +58,35 @@ void ImageAnalysis::update(){
   // frame manipulation & updates
 
   imshow(screenName, *frame);
+}
+
+void ImageAnalysis::getColor(int x, int y){
+  // cout << "R = " << (*frame)[x][y][0] << endl;
+  // cout << "G = " << frame.at<Vec3b>(Point(x, y))[1] << endl;
+  // cout << "B = " << frame.at<Vec3b>(Point(x, y))[2] << endl;
+}
+
+void ImageAnalysis::onMouse(int event, int x, int y, int, void* userdata){
+
+  ImageAnalysis* imageAnalysis = reinterpret_cast<ImageAnalysis*>(userdata);
+  imageAnalysis->onMouse(event, x, y);
+
+}
+
+void ImageAnalysis::onMouse(int event, int x, int y){
+  Vec3b color;
+
+  switch (event){
+    case CV_EVENT_LBUTTONDOWN:
+        cout << "  Mouse X, Y: " << x << ", " << y << endl;
+        color = (*frame).at<Vec3b>(Point(x,y));
+        cout << "B = " << (int)color[0] << endl;
+        cout << "G = " << (int)color[1] << endl;
+        cout << "R = " << (int)color[2] << endl;
+        break;
+    case CV_EVENT_MOUSEMOVE:
+        break;
+    case CV_EVENT_LBUTTONUP:
+        break;
+  }
 }
