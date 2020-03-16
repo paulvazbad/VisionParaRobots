@@ -21,8 +21,26 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include "ImageAnalysis.h"
 using namespace std;
 using namespace cv;
+
+// Validates input. True if static media / False if not
+bool inputValidation(int &argc, char** &argv, Mat &image, VideoCapture &cap){
+  string path;
+  
+  if(argc > 1){
+    path = string(argv[1]);
+    if(int(path.find(".jpg")) > -1){
+      image = imread(path, CV_LOAD_IMAGE_COLOR);
+      return true;
+    }
+  }
+
+  argc > 1 && string(argv[1]).find(".mp4") ? cap.open(path) : cap.open(0);
+  cap >> image;
+  return false;
+}
 
 void showCamera(){
   VideoCapture camera = VideoCapture(0);
@@ -53,48 +71,7 @@ void showCamera(){
       break;
     }
     imshow("Imagen",currentImage);
-}
-}
-void initializeMat(double RGBValues[3][256]){
-  for(int color_value = 0; color_value<256; color_value++){
-    for(int color=0; color<3; color++){
-      RGBValues[color][color_value]=0;
-    }
   }
-  
-}
-
-void plotHist(double ColorValues[256], string canvasName, const int size_Y, const int size_X){
-
-  Mat canvas(256, 1000, CV_8UC3, cv::Scalar(0,0,0));
-  //White Background
-  const int Pos_X = 5; 
-  //Draw Y Axis (Size of Y == Max value in histograms)
-  imshow(canvasName,canvas);
-  
-  cout<<"Opened canvas"<<endl;
-  
-    
-}
-
-void GenerateRGBHist(const Mat &Image,double RGBValues[3][256]){
-  initializeMat(RGBValues);
-  for(int row=0; row < Image.rows; ++row){
-    for(int col=0; col < Image.cols; ++col){
-      for (int i = 0; i < Image.channels(); ++i)
-			{
-        int color_value = Image.at<Vec3b>(row, col)[i];
-				RGBValues[i][color_value]++;
-			}
-    }
-  }
-  string canvasNames[3]={"Blue","Green","Red"};
-
-  for(int i=0; i<3; ++i){
-    cout<<"IMSHOW"<<endl;
-    plotHist(RGBValues[i],canvasNames[i],Image.rows,Image.cols);
-  }
-  waitKey(0);
 }
 
 void printValue(double ColorValues[256]){
@@ -102,13 +79,35 @@ void printValue(double ColorValues[256]){
     cout<<ColorValues[i]<<endl;
   }
 }
-int main(int argc, char *argv[]) {
-  /* First, open camera device */
-    Mat currentImage = imread("PlaceholderImage.jpg", CV_LOAD_IMAGE_COLOR);
-    imshow("Window",currentImage);
-    waitKey(6);
-    double RGBValues[3][256];
-    GenerateRGBHist(currentImage,RGBValues);
-    
-    
+
+int main(int argc, char *argv[]){
+  Mat image;
+  VideoCapture cap;
+  
+  bool isStatic = inputValidation(argc, argv, image, cap);
+
+  if(!image.data){
+    cout <<  "Could not open or find the image/video\n";
+    return -1;
   }
+
+  ImageAnalysis imageAnalysis = ImageAnalysis(image, "Image");
+
+  while(true){
+    if(!isStatic)
+      cap >> image;
+    
+    if(image.empty()){
+        cout << "No image has been found\n";
+        break;
+    }
+
+    imageAnalysis.update();
+
+    if(waitKey(30) == 27)
+      break;
+
+  }
+  
+  return 0;
+}
