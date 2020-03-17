@@ -67,15 +67,14 @@ void ImageAnalysis::onMouse(int event, int x, int y, int, void* userdata){
 
 void ImageAnalysis::onMouse(int event, int x, int y){
   Vec3b BGR_color, HSV_color;
-  Mat fullImageHSV;
-  cvtColor(*frame, fullImageHSV, CV_BGR2HSV);
-  imshow("HSV", fullImageHSV);
+  cvtColor(*frame, hsvImage, CV_BGR2HSV);
+  imshow("HSV", hsvImage);
 
   switch (event){
     case CV_EVENT_LBUTTONDOWN:
         cout << "  Mouse X, Y: " << x << ", " << y << endl;
         BGR_color = (*frame).at<Vec3b>(Point(x,y));
-        HSV_color = (fullImageHSV).at<Vec3b>(Point(x,y));
+        HSV_color = (hsvImage).at<Vec3b>(Point(x,y));
         cout << "B = " << (int)BGR_color[0] << endl;
         cout << "G = " << (int)BGR_color[1] << endl;
         cout << "R = " << (int)BGR_color[2] << endl;
