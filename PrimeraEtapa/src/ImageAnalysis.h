@@ -8,18 +8,21 @@ using namespace cv;
 class ImageAnalysis{
     public:
         ImageAnalysis(Mat &image, string screenName);
-        void plotHist(double ColorValues[256], string canvasName);
-        void GenerateRGBHist(const Mat &Image,double RGBValues[3][256]);
+        void plotHist();
+        void GenerateRGBHist(const Mat &Image);
         void update();
         
     private:
         Mat *frame, hsvImage;
-        Mat histograms[3];
         string screenName;
         Vec3b BGR_color, HSV_color;
         int epsilon; 
-
-        void initializeMat(double RGBValues[3][256]);
+        Mat b_hist,g_hist,r_hist;
+        void initializeMat();
+        static const int HIST_HEIGHT = 400;
+        static const int HIST_WIDTH = 512;
+        static const int HIST_SIZE = 256;
+        Mat histImages[3];
         Mat hsvFilter();
         Mat bgrFilter();
         static void onMouse(int event, int x, int y, int, void* userdata);

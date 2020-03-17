@@ -11,50 +11,50 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName){
   frame = &image;
   this -> screenName = screenName;
   epsilon = 35;
-
+  histImages[0] = Mat( HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar( 0,0,0) );
+  histImages[1] = Mat( HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar( 0,0,0) );
+  histImages[2] = Mat( HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar( 0,0,0) );
+  GenerateRGBHist(*frame);
   namedWindow(screenName);
   setMouseCallback(screenName, onMouse, this);
   cvtColor(*frame, hsvImage, CV_BGR2HSV);
 }
 
-void ImageAnalysis::plotHist(double ColorValues[256], string histogramName){
-  Mat canvas(256, 1000, CV_8UC3, cv::Scalar(0,0,0));
-  //White Background
-  const int Pos_X = 5; 
-  //Draw Y Axis (Size of Y == Max value in histograms)
-  imshow(histogramName,canvas);
-  cout<<"Opened canvas"<<endl;
-  
-    
+void ImageAnalysis::plotHist(){
+    int bin_w = cvRound( (double) HIST_WIDTH/HIST_SIZE );
+    //Plots main lines of the histogram
+    for( int i = 1; i < HIST_SIZE; i++ )
+    {
+        line( histImages[0], Point( bin_w*(i-1), HIST_HEIGHT - cvRound(b_hist.at<float>(i-1)) ),
+              Point( bin_w*(i), HIST_HEIGHT - cvRound(b_hist.at<float>(i)) ),
+              Scalar( 255, 0, 0), 2, 8, 0  );
+        line( histImages[1], Point( bin_w*(i-1), HIST_HEIGHT - cvRound(g_hist.at<float>(i-1)) ),
+              Point( bin_w*(i), HIST_HEIGHT - cvRound(g_hist.at<float>(i)) ),
+              Scalar( 0, 255, 0), 2, 8, 0  );
+        line( histImages[2], Point( bin_w*(i-1), HIST_HEIGHT - cvRound(r_hist.at<float>(i-1)) ),
+              Point( bin_w*(i), HIST_HEIGHT - cvRound(r_hist.at<float>(i)) ),
+              Scalar( 0, 0, 255), 2, 8, 0  );
+    }
+    imshow("Blue Histogram", histImages[0] );
+    imshow("Green Histogram", histImages[1] );
+    imshow("Red Histogram", histImages[2] );
 }
 
-void ImageAnalysis::initializeMat(double RGBValues[3][256]){
-  for(int color_value = 0; color_value<256; color_value++){
-    for(int color=0; color<3; color++){
-      RGBValues[color][color_value]=0;
-    }
-  }
-  
-}
 
-void ImageAnalysis::GenerateRGBHist(const Mat &Image,double RGBValues[3][256]){
-  initializeMat(RGBValues);
-  for(int row=0; row < Image.rows; ++row){
-    for(int col=0; col < Image.cols; ++col){
-      for (int i = 0; i < Image.channels(); ++i)
-			{
-        int color_value = Image.at<Vec3b>(row, col)[i];
-				RGBValues[i][color_value]++;
-			}
-    }
-  }
-  string histogramNames[3]={"Blue","Green","Red"};
 
-  for(int i=0; i<3; ++i){
-    cout<<"IMSHOW"<<endl;
-    plotHist(RGBValues[i],histogramNames[i]);
-  }
-  waitKey(0);
+void ImageAnalysis::GenerateRGBHist(const Mat &Image){
+    vector<Mat> bgr_planes;
+    split( Image, bgr_planes );
+    int HIST_SIZE = 256;
+    float range[] = { 0, 256 }; //the upper boundary is exclusive
+    const float* histRange = { range };
+    bool uniform = true, accumulate = false;
+    calcHist( &bgr_planes[0], 1, 0, Mat(), b_hist, 1, &HIST_SIZE, &histRange, uniform, accumulate );
+    calcHist( &bgr_planes[1], 1, 0, Mat(), g_hist, 1, &HIST_SIZE, &histRange, uniform, accumulate );
+    calcHist( &bgr_planes[2], 1, 0, Mat(), r_hist, 1, &HIST_SIZE, &histRange, uniform, accumulate );
+    normalize(b_hist, b_hist, 0, histImages[0].rows, NORM_MINMAX, -1, Mat() );
+    normalize(g_hist, g_hist, 0, histImages[1].rows, NORM_MINMAX, -1, Mat() );
+    normalize(r_hist, r_hist, 0, histImages[2].rows, NORM_MINMAX, -1, Mat() );
 }
 
 void ImageAnalysis::update(){
@@ -64,10 +64,12 @@ void ImageAnalysis::update(){
   // frame manipulation & updates
   Mat hsvFilteredImage = hsvFilter();
   Mat bgrFilteredImage = bgrFilter();
-
+  //update histograms
+  plotHist();
   imshow("HSV Filtered", hsvFilteredImage);
   imshow("BGR Filtered", bgrFilteredImage);
   imshow(screenName, *frame);
+  
 }
 
 Mat ImageAnalysis::hsvFilter(){
