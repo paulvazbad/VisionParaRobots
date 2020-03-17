@@ -60,29 +60,28 @@ void ImageAnalysis::update(){
   imshow(screenName, *frame);
 }
 
-void ImageAnalysis::getColor(int x, int y){
-  // cout << "R = " << (*frame)[x][y][0] << endl;
-  // cout << "G = " << frame.at<Vec3b>(Point(x, y))[1] << endl;
-  // cout << "B = " << frame.at<Vec3b>(Point(x, y))[2] << endl;
-}
-
 void ImageAnalysis::onMouse(int event, int x, int y, int, void* userdata){
-
   ImageAnalysis* imageAnalysis = reinterpret_cast<ImageAnalysis*>(userdata);
   imageAnalysis->onMouse(event, x, y);
-
 }
 
 void ImageAnalysis::onMouse(int event, int x, int y){
-  Vec3b color;
+  Vec3b BGR_color, HSV_color;
+  Mat fullImageHSV;
+  cvtColor(*frame, fullImageHSV, CV_BGR2HSV);
+  imshow("HSV", fullImageHSV);
 
   switch (event){
     case CV_EVENT_LBUTTONDOWN:
         cout << "  Mouse X, Y: " << x << ", " << y << endl;
-        color = (*frame).at<Vec3b>(Point(x,y));
-        cout << "B = " << (int)color[0] << endl;
-        cout << "G = " << (int)color[1] << endl;
-        cout << "R = " << (int)color[2] << endl;
+        BGR_color = (*frame).at<Vec3b>(Point(x,y));
+        HSV_color = (fullImageHSV).at<Vec3b>(Point(x,y));
+        cout << "B = " << (int)BGR_color[0] << endl;
+        cout << "G = " << (int)BGR_color[1] << endl;
+        cout << "R = " << (int)BGR_color[2] << endl;
+        cout << "H = " << (int)HSV_color[0] << endl;
+        cout << "S = " << (int)HSV_color[1] << endl;
+        cout << "V = " << (int)HSV_color[2] << endl;
         break;
     case CV_EVENT_MOUSEMOVE:
         break;

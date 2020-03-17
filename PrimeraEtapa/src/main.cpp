@@ -42,44 +42,6 @@ bool inputValidation(int &argc, char** &argv, Mat &image, VideoCapture &cap){
   return false;
 }
 
-void showCamera(){
-  VideoCapture camera = VideoCapture(0);
-  bool isCameraAvailable = camera.isOpened();
-
-  /* Create images where captured and transformed frames are going to be stored
-   */
-  Mat currentImage;
-  Mat flippedImage;
-  /* Clean the terminal */
-  cout << "\033[2J\033[1;1H";
-  cout << "Basic Show Image \t|\tUse 'x' or 'Esc' to terminate execution\n";
-  while (true) {
-    /* Obtain a new frame from camera */
-    if (isCameraAvailable) {
-      camera.read(currentImage);
-    } else {
-      currentImage = imread("PlaceholderImage.jpg", CV_LOAD_IMAGE_COLOR);
-    }
-
-    if (currentImage.size().width <= 0 && currentImage.size().height <= 0) {
-      cout << "ERROR: Camera returned blank image, check connection\n";
-      break;
-    }
-    /* If 'x' is pressed, exit program */
-    char key = waitKey(1);
-    if(key == 'x' || key == 27 ){ // 27 = ESC
-      break;
-    }
-    imshow("Imagen",currentImage);
-  }
-}
-
-void printValue(double ColorValues[256]){
-  for(int i=0; i<256; i++){
-    cout<<ColorValues[i]<<endl;
-  }
-}
-
 int main(int argc, char *argv[]){
   Mat image;
   VideoCapture cap;
