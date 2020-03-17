@@ -13,11 +13,15 @@ class ImageAnalysis{
         void update();
         
     private:
-        Mat *frame;
+        Mat *frame, hsvImage;
         Mat histograms[3];
         string screenName;
+        Vec3b BGR_color, HSV_color;
+        int epsilon; 
+
         void initializeMat(double RGBValues[3][256]);
-        void getColor(int x, int y);
+        Mat hsvFilter();
+        Mat bgrFilter();
         static void onMouse(int event, int x, int y, int, void* userdata);
         void onMouse(int event, int x, int y);
 };

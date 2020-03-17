@@ -10,8 +10,11 @@ using namespace cv;
 ImageAnalysis::ImageAnalysis(Mat &image, string screenName){
   frame = &image;
   this -> screenName = screenName;
+  epsilon = 35;
+
   namedWindow(screenName);
   setMouseCallback(screenName, onMouse, this);
+  cvtColor(*frame, hsvImage, CV_BGR2HSV);
 }
 
 void ImageAnalysis::plotHist(double ColorValues[256], string histogramName){
@@ -55,9 +58,56 @@ void ImageAnalysis::GenerateRGBHist(const Mat &Image,double RGBValues[3][256]){
 }
 
 void ImageAnalysis::update(){
-  // frame manipulation & updates
+  // color model conversions
+  cvtColor(*frame, hsvImage, CV_BGR2HSV);
 
+  // frame manipulation & updates
+  Mat hsvFilteredImage = hsvFilter();
+  Mat bgrFilteredImage = bgrFilter();
+
+  imshow("HSV Filtered", hsvFilteredImage);
+  imshow("BGR Filtered", bgrFilteredImage);
   imshow(screenName, *frame);
+}
+
+Mat ImageAnalysis::hsvFilter(){
+  Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
+  int hMin, hMax, sMin, sMax, vMin, vMax;
+
+  hMin = max(HSV_color[0] - epsilon, 0);
+  sMin = max(HSV_color[1] - epsilon, 0);
+  vMin = max(HSV_color[2] - epsilon, 0);
+  hMax = min(HSV_color[0] + epsilon, 255);
+  sMax = min(HSV_color[1] + epsilon, 255);
+  vMax = min(HSV_color[2] + epsilon, 255);
+
+  // Updates mask values with the corresponding H,S,V limits
+  inRange(hsvImage, Scalar(hMin, sMin, vMin), Scalar(hMax, sMax, vMax), mask);
+
+  // Combines the mask with the original image, as result we get only the filtered colors 
+  (*frame).copyTo(result, mask);
+
+  return result;
+}
+
+Mat ImageAnalysis::bgrFilter(){
+  Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
+  int bMin, bMax, gMin, gMax, rMin, rMax;
+
+  bMin = max(BGR_color[0] - epsilon, 0);
+  gMin = max(BGR_color[1] - epsilon, 0);
+  rMin = max(BGR_color[2] - epsilon, 0);
+  bMax = min(BGR_color[0] + epsilon, 255);
+  gMax = min(BGR_color[1] + epsilon, 255);
+  rMax = min(BGR_color[2] + epsilon, 255);
+
+  // Updates mask values with the corresponding B,G,R limits
+  inRange(*frame, Scalar(bMin, gMin, rMin), Scalar(bMax, gMax, rMax), mask);
+
+  // Combines the mask with the original image, as result we get only the filtered colors 
+  (*frame).copyTo(result, mask);
+
+  return result;
 }
 
 void ImageAnalysis::onMouse(int event, int x, int y, int, void* userdata){
@@ -66,10 +116,6 @@ void ImageAnalysis::onMouse(int event, int x, int y, int, void* userdata){
 }
 
 void ImageAnalysis::onMouse(int event, int x, int y){
-  Vec3b BGR_color, HSV_color;
-  cvtColor(*frame, hsvImage, CV_BGR2HSV);
-  imshow("HSV", hsvImage);
-
   switch (event){
     case CV_EVENT_LBUTTONDOWN:
         cout << "  Mouse X, Y: " << x << ", " << y << endl;
@@ -82,7 +128,7 @@ void ImageAnalysis::onMouse(int event, int x, int y){
         cout << "S = " << (int)HSV_color[1] << endl;
         cout << "V = " << (int)HSV_color[2] << endl;
         break;
-    case CV_EVENT_MOUSEMOVE:
+    case CV_EVENT_MOUSEMOVE: 
         break;
     case CV_EVENT_LBUTTONUP:
         break;
