@@ -26,7 +26,7 @@ using namespace std;
 using namespace cv;
 
 // Validates input. True if static media / False if not
-bool inputValidation(int &argc, char** &argv, Mat &image, VideoCapture &cap){
+bool inputValidation(int argc, char** argv, Mat &image, VideoCapture &cap){
   string path;
   
   if(argc > 1){
