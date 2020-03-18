@@ -64,10 +64,12 @@ void ImageAnalysis::update(){
   // frame manipulation & updates
   Mat hsvFilteredImage = hsvFilter();
   Mat bgrFilteredImage = bgrFilter();
+  Mat binaryFilteredImage = binaryFilter();
   //update histograms
   plotHist();
   imshow("HSV Filtered", hsvFilteredImage);
   imshow("BGR Filtered", bgrFilteredImage);
+  imshow("Binary Filtered", binaryFilteredImage);
   imshow(screenName, *frame);
   
 }
@@ -109,6 +111,26 @@ Mat ImageAnalysis::bgrFilter(){
   // Combines the mask with the original image, as result we get only the filtered colors 
   (*frame).copyTo(result, mask);
 
+  return result;
+}
+
+Mat ImageAnalysis::binaryFilter(){
+  Mat result = frame->clone();
+
+  for(int i=0; i<result.rows; i++){
+    for(int x=0; x<result.cols; x++){
+      int color_average = (result.at<Vec3b>(i,x)[0] + result.at<Vec3b>(i,x)[1] + result.at<Vec3b>(i,x)[2])/3;
+      if(color_average < 127){
+        result.at<Vec3b>(i,x)[0] = 0;
+        result.at<Vec3b>(i,x)[1] = 0;
+        result.at<Vec3b>(i,x)[2] = 0;
+      }else{
+        result.at<Vec3b>(i,x)[0] = 255;
+        result.at<Vec3b>(i,x)[1] = 255;
+        result.at<Vec3b>(i,x)[2] = 255;
+      }
+    }
+  }
   return result;
 }
 
