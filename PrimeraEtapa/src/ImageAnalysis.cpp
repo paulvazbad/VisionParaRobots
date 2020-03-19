@@ -84,10 +84,16 @@ void ImageAnalysis::update(){
   // frame manipulation & updates
   Mat hsvFilteredImage = hsvFilter();
   Mat bgrFilteredImage = bgrFilter();
+  Mat binaryConvertedImage = binaryFilter();
+  Mat bgrToHsvConvertedImage = bgrToHsv();
+  Mat bgrToYiqConvertedImage = bgrToYIQ();
   //update histograms
   plotHist();
   imshow("HSV Filtered", hsvFilteredImage);
   imshow("BGR Filtered", bgrFilteredImage);
+  imshow("Binary Converted", binaryConvertedImage);
+  imshow("HSV Converted", bgrToHsvConvertedImage);
+  imshow("YIQ Converted", bgrToYiqConvertedImage);
   imshow(screenName, *frame);
   
 }
@@ -129,6 +135,54 @@ Mat ImageAnalysis::bgrFilter(){
   // Combines the mask with the original image, as result we get only the filtered colors 
   (*frame).copyTo(result, mask);
 
+  return result;
+}
+
+Mat ImageAnalysis::binaryFilter(){
+  Mat result = frame->clone();
+
+  for(int i=0; i<result.rows; i++){
+    for(int x=0; x<result.cols; x++){
+      int color_average = (result.at<Vec3b>(i,x)[0] + result.at<Vec3b>(i,x)[1] + result.at<Vec3b>(i,x)[2])/3;
+      if(color_average < 127){
+        result.at<Vec3b>(i,x)[0] = 0;
+        result.at<Vec3b>(i,x)[1] = 0;
+        result.at<Vec3b>(i,x)[2] = 0;
+      }else{
+        result.at<Vec3b>(i,x)[0] = 255;
+        result.at<Vec3b>(i,x)[1] = 255;
+        result.at<Vec3b>(i,x)[2] = 255;
+      }
+    }
+  }
+  return result;
+}
+
+//Formulas from: https://www.eembc.org/techlit/datasheets/yiq_consumer.pdf
+Mat ImageAnalysis::bgrToYIQ(){
+  Mat result = frame->clone();
+
+  for(int z=0; z<result.rows; z++){
+    for(int x=0; x<result.cols; x++){
+      double b = result.at<Vec3b>(z,x)[0];
+      double g = result.at<Vec3b>(z,x)[1];
+      double r = result.at<Vec3b>(z,x)[2];
+      int y = int(0.299*r + 0.587*g + 0.114*b);
+			int i = int(0.596*r - 0.275*g - 0.321*b);
+			int q = int(0.212*r - 0.523*g + 0.311*b);
+
+      //Substitute on resulting image
+      result.at<Vec3b>(z,x)[0] = q;
+      result.at<Vec3b>(z,x)[1] = i;
+      result.at<Vec3b>(z,x)[2] = y;
+    }
+  }
+  return result;
+}
+
+Mat ImageAnalysis::bgrToHsv(){
+  Mat result = frame->clone();
+  cvtColor(*frame, result, CV_BGR2HSV);
   return result;
 }
 
