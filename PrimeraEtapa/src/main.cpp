@@ -66,8 +66,12 @@ int main(int argc, char *argv[]){
 
     imageAnalysis.update();
 
-    if(waitKey(30) == 27)
+    int x = waitKey(30);
+    if(x == 27){
       break;
+    }else if(x == 120){
+      isStatic = !isStatic;
+    }
 
   }
   
