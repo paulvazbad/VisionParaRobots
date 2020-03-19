@@ -8,7 +8,7 @@ using namespace cv;
 class ImageAnalysis{
     public:
         ImageAnalysis(Mat &image, string screenName);
-        void plotHist();
+        void plotLines();
         void GenerateRGBHist(const Mat &Image);
         void update();
         
@@ -22,6 +22,7 @@ class ImageAnalysis{
         static const int HIST_HEIGHT = 400;
         static const int HIST_WIDTH = 512;
         static const int HIST_SIZE = 256;
+        int bin_w;
         Mat histImages[3];
         Mat hsvFilter();
         Mat bgrFilter();
