@@ -26,6 +26,8 @@ class ImageAnalysis{
         Mat hsvFilter();
         Mat bgrFilter();
         Mat binaryFilter();
+        Mat bgrToYIQ();
+        Mat bgrToHsv();
         static void onMouse(int event, int x, int y, int, void* userdata);
         void onMouse(int event, int x, int y);
 };
