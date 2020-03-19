@@ -21,6 +21,7 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName){
 }
 
 void ImageAnalysis::plotHist(){
+    
     int bin_w = cvRound( (double) HIST_WIDTH/HIST_SIZE );
     //Plots main lines of the histogram
     for( int i = 1; i < HIST_SIZE; i++ )
@@ -35,14 +36,33 @@ void ImageAnalysis::plotHist(){
               Point( bin_w*(i), HIST_HEIGHT - cvRound(r_hist.at<float>(i)) ),
               Scalar( 0, 0, 255), 2, 8, 0  );
     }
-    imshow("Blue Histogram", histImages[0] );
-    imshow("Green Histogram", histImages[1] );
-    imshow("Red Histogram", histImages[2] );
+    //Calculate line position in hist
+    float position_x_blue = bin_w*BGR_color[0];
+    float position_x_green = bin_w*BGR_color[1];
+    float position_x_red = bin_w*BGR_color[2]; 
+    //PLot line in hists
+    
+    //Copy of the hists
+    Mat histImagesCopy[3];
+    for(int i = 0; i < 3; i++){
+      histImagesCopy[i] = histImages[i].clone();
+    }
+    line(histImagesCopy[0],Point(position_x_blue,0),Point(position_x_blue,HIST_HEIGHT),
+         Scalar( 255, 255, 255),1,8,0);
+    line(histImagesCopy[1],Point(position_x_green,0),Point(position_x_green,HIST_HEIGHT),
+         Scalar( 255, 255, 255),1,8,0);
+    line(histImagesCopy[2],Point(position_x_red,0),Point(position_x_red,HIST_HEIGHT),
+         Scalar( 255, 255, 255),1,8,0);
+
+    imshow("Blue Histogram", histImagesCopy[0] );
+    imshow("Green Histogram", histImagesCopy[1] );
+    imshow("Red Histogram", histImagesCopy[2] );
 }
 
 
 
 void ImageAnalysis::GenerateRGBHist(const Mat &Image){
+    cout<<"Generate RGBHist"<<endl;
     vector<Mat> bgr_planes;
     split( Image, bgr_planes );
     int HIST_SIZE = 256;
