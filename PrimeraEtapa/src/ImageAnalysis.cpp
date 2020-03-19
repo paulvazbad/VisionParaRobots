@@ -11,9 +11,9 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName){
   frame = &image;
   this -> screenName = screenName;
   epsilon = 35;
-  histImages[0] = Mat( HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar( 0,0,0) );
-  histImages[1] = Mat( HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar( 0,0,0) );
-  histImages[2] = Mat( HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar( 0,0,0) );
+  histImages[0] = Mat( HIST_HEIGHT+50, HIST_WIDTH+50, CV_8UC3, Scalar( 0,0,0) );
+  histImages[1] = Mat( HIST_HEIGHT+50, HIST_WIDTH+50, CV_8UC3, Scalar( 0,0,0) );
+  histImages[2] = Mat( HIST_HEIGHT+50, HIST_WIDTH+50, CV_8UC3, Scalar( 0,0,0) );
   GenerateRGBHist(*frame);
   namedWindow(screenName);
   setMouseCallback(screenName, onMouse, this);
@@ -75,6 +75,7 @@ void ImageAnalysis::GenerateRGBHist(const Mat &Image){
     normalize(b_hist, b_hist, 0, histImages[0].rows, NORM_MINMAX, -1, Mat() );
     normalize(g_hist, g_hist, 0, histImages[1].rows, NORM_MINMAX, -1, Mat() );
     normalize(r_hist, r_hist, 0, histImages[2].rows, NORM_MINMAX, -1, Mat() );
+    //TODO: ADD AXIS
 }
 
 void ImageAnalysis::update(){
