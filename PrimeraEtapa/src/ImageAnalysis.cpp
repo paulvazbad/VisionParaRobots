@@ -191,11 +191,22 @@ Mat ImageAnalysis::bgrFilter(){
 
 Mat ImageAnalysis::binaryFilter(){
   Mat result = frame->clone();
+  int luminosity_average = 0;
+
+  for(int i=0; i<result.rows; i++){
+    for(int x=0; x<result.cols; x++){
+      double b = result.at<Vec3b>(i,x)[0];
+      double g = result.at<Vec3b>(i,x)[1];
+      double r = result.at<Vec3b>(i,x)[2];
+      luminosity_average += int(0.299*r + 0.587*g + 0.114*b);
+    }
+  }
+  luminosity_average /= (result.cols*result.rows);
 
   for(int i=0; i<result.rows; i++){
     for(int x=0; x<result.cols; x++){
       int color_average = (result.at<Vec3b>(i,x)[0] + result.at<Vec3b>(i,x)[1] + result.at<Vec3b>(i,x)[2])/3;
-      if(color_average < 127){
+      if(color_average < luminosity_average){
         result.at<Vec3b>(i,x)[0] = 0;
         result.at<Vec3b>(i,x)[1] = 0;
         result.at<Vec3b>(i,x)[2] = 0;
