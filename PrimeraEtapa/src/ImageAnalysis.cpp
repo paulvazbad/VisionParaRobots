@@ -219,8 +219,8 @@ Mat ImageAnalysis::bgrToYIQ(){
       double g = result.at<Vec3b>(z,x)[1];
       double r = result.at<Vec3b>(z,x)[2];
       int y = int(0.299*r + 0.587*g + 0.114*b);
-			int i = int(0.596*r - 0.275*g - 0.321*b);
-			int q = int(0.212*r - 0.523*g + 0.311*b);
+			int i = int(0.596*r - 0.275*g - 0.321*b) + 127;
+			int q = int(0.212*r - 0.523*g + 0.311*b) + 127;
 
       //Substitute on resulting image
       result.at<Vec3b>(z,x)[0] = q;
