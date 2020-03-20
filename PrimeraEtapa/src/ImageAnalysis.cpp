@@ -4,6 +4,11 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#if WIN32
+  #include <windows.h>
+#else
+  #include <X11/Xlib.h>
+#endif
 using namespace std;
 using namespace cv;
 
@@ -18,6 +23,29 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName){
   namedWindow(screenName);
   setMouseCallback(screenName, onMouse, this);
   cvtColor(*frame, hsvImage, CV_BGR2HSV);
+
+  int width1, height1;
+  height1 = frame->size().height;
+  width1 = frame->size().width;
+  int width2, height2;
+  getScreenResolution(width2, height2);
+  windowsVerticalPosition = height2/3;
+  windowsHeightRatio = (double(windowsVerticalPosition)*0.8)/height1;
+  windowsSecondColumnPosition = windowsHeightRatio*width1*1.2;
+}
+
+
+void ImageAnalysis::getScreenResolution(int &width, int &height) {
+#if WIN32
+    width  = (int) GetSystemMetrics(SM_CXSCREEN);
+    height = (int) GetSystemMetrics(SM_CYSCREEN)*0.9;
+#else
+    Display* disp = XOpenDisplay(NULL);
+    Screen*  scrn = DefaultScreenOfDisplay(disp);
+    width  = scrn->width;
+    height = scrn->height*0.97;
+    verticalOffset = scrn->height*0.03;
+#endif
 }
 
 void ImageAnalysis::plotLines(){
@@ -90,13 +118,34 @@ void ImageAnalysis::update(){
   Mat bgrToHsvConvertedImage = bgrToHsv();
   Mat bgrToYiqConvertedImage = bgrToYIQ();
   //update histograms
-  plotLines();
-  imshow("HSV Filtered", hsvFilteredImage);
-  imshow("BGR Filtered", bgrFilteredImage);
-  imshow("Binary Converted", binaryConvertedImage);
-  imshow("HSV Converted", bgrToHsvConvertedImage);
-  imshow("YIQ Converted", bgrToYiqConvertedImage);
-  imshow(screenName, *frame);
+  //plotLines();
+  //namedWindow(screenName, CV_WINDOW_AUTOSIZE);
+  //
+  Mat outImg;
+
+  moveWindow(screenName, 0,verticalOffset);
+  resize(*frame, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow(screenName, outImg);
+
+  moveWindow("HSV Filtered", windowsSecondColumnPosition,verticalOffset);
+  resize(hsvFilteredImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("HSV Filtered", outImg);
+
+  moveWindow("BGR Filtered", 0,windowsVerticalPosition + verticalOffset);
+  resize(bgrFilteredImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("BGR Filtered", outImg);
+
+  moveWindow("Binary Converted", windowsSecondColumnPosition,windowsVerticalPosition + verticalOffset);
+  resize(binaryConvertedImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("Binary Converted", outImg);
+
+  moveWindow("HSV Converted", 0,windowsVerticalPosition*2 + verticalOffset);
+  resize(bgrToHsvConvertedImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("HSV Converted", outImg);
+
+  moveWindow("YIQ Converted", windowsSecondColumnPosition,windowsVerticalPosition*2 + verticalOffset);
+  resize(bgrToYiqConvertedImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("YIQ Converted", outImg);
   
 }
 

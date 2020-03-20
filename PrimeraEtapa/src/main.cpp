@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
     return -1;
   }
 
-  ImageAnalysis imageAnalysis = ImageAnalysis(image, "Image");
+  ImageAnalysis imageAnalysis = ImageAnalysis(image, "Original Image");
 
   while(true){
     if(!isStatic)

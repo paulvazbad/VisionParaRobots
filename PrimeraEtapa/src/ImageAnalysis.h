@@ -23,6 +23,8 @@ class ImageAnalysis{
         static const int HIST_WIDTH = 512;
         static const int HIST_SIZE = 256;
         int bin_w;
+        double windowsHeightRatio;
+        int windowsVerticalPosition, windowsSecondColumnPosition, verticalOffset;
         Mat histImages[3];
         Mat hsvFilter();
         Mat bgrFilter();
@@ -31,4 +33,5 @@ class ImageAnalysis{
         Mat bgrToHsv();
         static void onMouse(int event, int x, int y, int, void* userdata);
         void onMouse(int event, int x, int y);
+        void getScreenResolution(int &width, int &height);
 };
