@@ -17,14 +17,13 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName)
   frame = &image;
   this->screenName = screenName;
   epsilon = 35;
-  histImages[0] = Mat(HIST_HEIGHT, HIST_WIDTH + 50, CV_8UC3, Scalar(0, 0, 0));
-  histImages[1] = Mat(HIST_HEIGHT, HIST_WIDTH + 50, CV_8UC3, Scalar(0, 0, 0));
-  histImages[2] = Mat(HIST_HEIGHT, HIST_WIDTH + 50, CV_8UC3, Scalar(0, 0, 0));
-  GenerateRGBHist(*frame);
+  histImages[0] = Mat(HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
+  histImages[1] = Mat(HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
+  histImages[2] = Mat(HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
   namedWindow(screenName);
   setMouseCallback(screenName, onMouse, this);
   cvtColor(*frame, hsvImage, CV_BGR2HSV);
-
+  current_hist = 0;
   int width1, height1;
   height1 = frame->size().height;
   width1 = frame->size().width;
@@ -33,6 +32,24 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName)
   windowsVerticalPosition = height2 / 3;
   windowsHeightRatio = (double(windowsVerticalPosition) * 0.8) / height1;
   windowsSecondColumnPosition = windowsHeightRatio * width1 * 1.2;
+  generateGradients();
+}
+
+void ImageAnalysis::generateGradients()
+{
+  //RGB gradient generation
+  for (int i = 0; i < 3; i++)
+  {
+    Mat row = Mat(50, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
+    for (int x = 0; x < HIST_WIDTH; x++)
+    {
+      for (int y = 10; y < 50; y++)
+      {
+        row.at<Vec3b>(y, x)[i] = (x * HIST_SIZE) / HIST_WIDTH;
+      }
+    }
+    rgb_gradients[i] = row;
+  }
 }
 
 void ImageAnalysis::getScreenResolution(int &width, int &height)
@@ -49,9 +66,10 @@ void ImageAnalysis::getScreenResolution(int &width, int &height)
 #endif
 }
 
-void ImageAnalysis::plotLines()
+void ImageAnalysis::plotRGBLines()
 {
   //Calculate line position in hist
+  float position_min_blue = bin_w * max(BGR_color[0] - epsilon, 0);
   float position_x_blue = (bin_w * BGR_color[0]);
   float position_x_green = (bin_w * BGR_color[1]);
   float position_x_red = (bin_w * BGR_color[2]);
@@ -62,8 +80,7 @@ void ImageAnalysis::plotLines()
   {
     //Add space for axis
     histImagesCopy[i] = histImages[i].clone();
-    Mat row = Mat(50, HIST_WIDTH + 50, CV_8UC3, Scalar(0, 0, 0));
-    histImagesCopy[i].push_back(row);
+    histImagesCopy[i].push_back(rgb_gradients[i]);
   }
   line(histImagesCopy[0], Point(position_x_blue, 0), Point(position_x_blue, HIST_HEIGHT),
        Scalar(255, 255, 255), 1, 8, 0);
@@ -76,9 +93,13 @@ void ImageAnalysis::plotLines()
   imshow("Red Histogram", histImagesCopy[2]);
 }
 
+void ImageAnalysis::toggleHist()
+{
+  current_hist == (current_hist + 1) % 3;
+}
+
 void ImageAnalysis::GenerateRGBHist(const Mat &Image)
 {
-  cout << "Generate RGBHist" << endl;
   vector<Mat> bgr_planes;
   split(Image, bgr_planes);
   int HIST_SIZE = 256;
@@ -120,7 +141,8 @@ void ImageAnalysis::update()
   Mat bgrToHsvConvertedImage = bgrToHsv();
   Mat bgrToYiqConvertedImage = bgrToYIQ();
   //update histograms
-  //plotLines();
+  GenerateRGBHist(*frame);
+  plotRGBLines();
   //namedWindow(screenName, CV_WINDOW_AUTOSIZE);
   //
   Mat outImg;

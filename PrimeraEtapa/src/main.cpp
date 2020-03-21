@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
     imageAnalysis.update();
 
     int x = waitKey(30);
+    
     if (x == 27)
     {
       break;
