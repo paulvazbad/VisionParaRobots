@@ -17,9 +17,7 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName)
   frame = &image;
   this->screenName = screenName;
   epsilon = 35;
-  histImages[0] = Mat(HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
-  histImages[1] = Mat(HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
-  histImages[2] = Mat(HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
+
   namedWindow(screenName);
   setMouseCallback(screenName, onMouse, this);
   cvtColor(*frame, hsvImage, CV_BGR2HSV);
@@ -91,19 +89,32 @@ void ImageAnalysis::plotLines(Mat gradients[3], Vec3b colors, string histogramNa
            Scalar(255, 255, 255), 1, 8, 0);
     }
   }
-  imshow("Blue Histogram", histImagesCopy[0]);
-  imshow("Green Histogram", histImagesCopy[1]);
-  imshow("Red Histogram", histImagesCopy[2]);
+  imshow(histogramNames[0], histImagesCopy[0]);
+  imshow(histogramNames[1], histImagesCopy[1]);
+  imshow(histogramNames[2], histImagesCopy[2]);
 }
 
 void ImageAnalysis::toggleHist(int keyPressed)
 {
   if (keyPressed == 49)
   {
+    if (current_hist == 1)
+    {
+      destroyWindow("Hue");
+      destroyWindow("Saturation");
+      destroyWindow("Value");
+    }
     current_hist = 0;
   }
   else if (keyPressed == 50)
   {
+    if (current_hist == 0)
+    {
+      destroyWindow("Blue");
+      destroyWindow("Red");
+      destroyWindow("Green");
+    }
+
     current_hist = 1;
   }
 }
@@ -111,6 +122,9 @@ void ImageAnalysis::toggleHist(int keyPressed)
 void ImageAnalysis::GenerateHist(const Mat &Image, float ranges[3][2], const Scalar colors[])
 {
   vector<Mat> planes;
+  histImages[0] = Mat(HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
+  histImages[1] = Mat(HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
+  histImages[2] = Mat(HIST_HEIGHT, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
   split(Image, planes);
   int HIST_SIZE = 256;
   //float range[] = {0, 256}; //the upper boundary is exclusive
@@ -152,11 +166,25 @@ void ImageAnalysis::update()
   Mat bgrToHsvConvertedImage = bgrToHsv();
   Mat bgrToYiqConvertedImage = bgrToYIQ();
   //update histograms
-  float ranges[3][2] = {{0, 256}, {0, 256}, {0, 256}};
-  Scalar rgb_colors[3] = {Scalar(255, 0, 0), Scalar(0, 255, 0), Scalar(0, 0, 255)};
-  GenerateHist(*frame, ranges, rgb_colors);
-  string histogramNames[3] = {"Blue", "Red", "Green"};
-  plotLines(rgb_gradients, BGR_color, histogramNames);
+  if (current_hist == 0)
+  {
+    //RGB hist
+    float ranges[3][2] = {{0, 256}, {0, 256}, {0, 256}};
+    Scalar rgb_colors[3] = {Scalar(255, 0, 0), Scalar(0, 255, 0), Scalar(0, 0, 255)};
+    GenerateHist(*frame, ranges, rgb_colors);
+    string histogramNames[3] = {"Blue", "Red", "Green"};
+    plotLines(rgb_gradients, BGR_color, histogramNames);
+  }
+  else if (current_hist == 1)
+  {
+    //HSV hist
+    float ranges[3][2] = {{0, 180}, {0, 256}, {0, 256}};
+    Scalar hsv_colors[3] = {Scalar(255, 255, 0), Scalar(0, 255, 255), Scalar(255, 0, 255)};
+    GenerateHist(bgrToHsvConvertedImage, ranges, hsv_colors);
+    string histogramNames[3] = {"Hue", "Saturation", "Value"};
+    plotLines(rgb_gradients, HSV_color, histogramNames);
+  }
+
   //namedWindow(screenName, CV_WINDOW_AUTOSIZE);
   //
   Mat outImg;
