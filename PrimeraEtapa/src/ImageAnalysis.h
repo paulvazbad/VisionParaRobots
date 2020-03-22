@@ -21,6 +21,7 @@ private:
     int epsilon;
     Mat b_hist, g_hist, r_hist;
     Mat rgb_gradients[3];
+    Mat hsv_gradients[3];
     void initializeMat();
     static const int HIST_HEIGHT = 400;
     static const int HIST_WIDTH = 512;

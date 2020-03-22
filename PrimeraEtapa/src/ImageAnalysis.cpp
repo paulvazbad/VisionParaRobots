@@ -39,14 +39,37 @@ void ImageAnalysis::generateGradients()
   for (int i = 0; i < 3; i++)
   {
     Mat row = Mat(50, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
+    Mat hsv_row = Mat(50, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
     for (int x = 0; x < HIST_WIDTH; x++)
     {
       for (int y = 10; y < 50; y++)
       {
         row.at<Vec3b>(y, x)[i] = (x * HIST_SIZE) / HIST_WIDTH;
+        if (i == 0)
+        {
+          //Changing the value of H
+          hsv_row.at<Vec3b>(y,x)[0] = (x * 179) / HIST_WIDTH;
+          hsv_row.at<Vec3b>(y,x)[1] = HSV_color[1];
+          hsv_row.at<Vec3b>(y,x)[2] = HSV_color[2];
+        }
+        else if (i == 1)
+        {
+          //Chinging the value of S
+          hsv_row.at<Vec3b>(y,x)[1] = (x * HIST_SIZE) / HIST_WIDTH;
+          hsv_row.at<Vec3b>(y,x)[0] = HSV_color[0];
+          hsv_row.at<Vec3b>(y,x)[2] = HSV_color[2];
+        }
+        else
+        {
+          // Changing the value of V
+          hsv_row.at<Vec3b>(y,x)[2] = (x * HIST_SIZE) / HIST_WIDTH;
+          hsv_row.at<Vec3b>(y,x)[0] = HSV_color[0];
+          hsv_row.at<Vec3b>(y,x)[1] = HSV_color[1];
+        }
       }
     }
     rgb_gradients[i] = row;
+    hsv_gradients[i] = hsv_row;
   }
 }
 
@@ -181,8 +204,12 @@ void ImageAnalysis::update()
     float ranges[3][2] = {{0, 180}, {0, 256}, {0, 256}};
     Scalar hsv_colors[3] = {Scalar(255, 255, 0), Scalar(0, 255, 255), Scalar(255, 0, 255)};
     GenerateHist(bgrToHsvConvertedImage, ranges, hsv_colors);
+    generateGradients();
     string histogramNames[3] = {"Hue", "Saturation", "Value"};
-    plotLines(rgb_gradients, HSV_color, histogramNames);
+    cvtColor(hsv_gradients[0], hsv_gradients[0], CV_HSV2BGR);
+    cvtColor(hsv_gradients[1], hsv_gradients[1], CV_HSV2BGR);
+    cvtColor(hsv_gradients[2], hsv_gradients[2], CV_HSV2BGR);
+    plotLines(hsv_gradients, HSV_color, histogramNames);
   }
 
   //namedWindow(screenName, CV_WINDOW_AUTOSIZE);
