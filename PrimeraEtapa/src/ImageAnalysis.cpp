@@ -66,13 +66,11 @@ void ImageAnalysis::getScreenResolution(int &width, int &height)
 #endif
 }
 
-void ImageAnalysis::plotLines()
+void ImageAnalysis::plotLines(Mat gradients[3], Vec3b colors, string histogramNames[3])
 {
   //Calculate line position in hist
-  float position_min_blue = bin_w * max(BGR_color[0] - epsilon, 0);
-  float position_x_blue = (bin_w * BGR_color[0]);
-  float position_x_green = (bin_w * BGR_color[1]);
-  float position_x_red = (bin_w * BGR_color[2]);
+  int p_t_p[6];
+  calculateMaxMinChannels(BGR_color, p_t_p[0], p_t_p[1], p_t_p[2], p_t_p[3], p_t_p[4], p_t_p[5]);
   //PLot line in hists
   //Copy of the hists
   Mat histImagesCopy[3];
@@ -80,25 +78,37 @@ void ImageAnalysis::plotLines()
   {
     //Add space for axis
     histImagesCopy[i] = histImages[i].clone();
-    histImagesCopy[i].push_back(rgb_gradients[i]);
+    histImagesCopy[i].push_back(gradients[i]);
   }
-  line(histImagesCopy[0], Point(position_x_blue, 0), Point(position_x_blue, HIST_HEIGHT),
-       Scalar(255, 255, 255), 1, 8, 0);
-  line(histImagesCopy[1], Point(position_x_green, 0), Point(position_x_green, HIST_HEIGHT),
-       Scalar(255, 255, 255), 1, 8, 0);
-  line(histImagesCopy[2], Point(position_x_red, 0), Point(position_x_red, HIST_HEIGHT),
-       Scalar(255, 255, 255), 1, 8, 0);
+  for (int i = 0; i < 6; i++)
+  {
+    line(histImagesCopy[int(i / 2)], Point(p_t_p[i], 0), Point(p_t_p[i], HIST_HEIGHT),
+         Scalar(255, 255, 255), 1, 8, 0);
+    if (i % 2 == 0)
+    {
+      int center_line = bin_w * BGR_color[int(i / 2)];
+      line(histImagesCopy[int(i / 2)], Point(center_line, 0), Point(center_line, HIST_HEIGHT),
+           Scalar(255, 255, 255), 1, 8, 0);
+    }
+  }
   imshow("Blue Histogram", histImagesCopy[0]);
   imshow("Green Histogram", histImagesCopy[1]);
   imshow("Red Histogram", histImagesCopy[2]);
 }
 
-void ImageAnalysis::toggleHist()
+void ImageAnalysis::toggleHist(int keyPressed)
 {
-  current_hist == (current_hist + 1) % 3;
+  if (keyPressed == 49)
+  {
+    current_hist = 0;
+  }
+  else if (keyPressed == 50)
+  {
+    current_hist = 1;
+  }
 }
 
-void ImageAnalysis::GenerateHist(const Mat &Image, float ranges[3][2])
+void ImageAnalysis::GenerateHist(const Mat &Image, float ranges[3][2], const Scalar colors[])
 {
   vector<Mat> planes;
   split(Image, planes);
@@ -121,13 +131,13 @@ void ImageAnalysis::GenerateHist(const Mat &Image, float ranges[3][2])
   {
     line(histImages[0], Point(bin_w * (i - 1), HIST_HEIGHT - cvRound(b_hist.at<float>(i - 1))),
          Point(bin_w * (i), HIST_HEIGHT - cvRound(b_hist.at<float>(i))),
-         Scalar(255, 0, 0), 2, 8, 0);
+         colors[0], 2, 8, 0);
     line(histImages[1], Point(bin_w * (i - 1), HIST_HEIGHT - cvRound(g_hist.at<float>(i - 1))),
          Point(bin_w * (i), HIST_HEIGHT - cvRound(g_hist.at<float>(i))),
-         Scalar(0, 255, 0), 2, 8, 0);
+         colors[1], 2, 8, 0);
     line(histImages[2], Point(bin_w * (i - 1), HIST_HEIGHT - cvRound(r_hist.at<float>(i - 1))),
          Point(bin_w * (i), HIST_HEIGHT - cvRound(r_hist.at<float>(i))),
-         Scalar(0, 0, 255), 2, 8, 0);
+         colors[2], 2, 8, 0);
   }
 }
 
@@ -135,7 +145,6 @@ void ImageAnalysis::update()
 {
   // color model conversions
   cvtColor(*frame, hsvImage, CV_BGR2HSV);
-
   // frame manipulation & updates
   Mat hsvFilteredImage = hsvFilter();
   Mat bgrFilteredImage = bgrFilter();
@@ -143,9 +152,11 @@ void ImageAnalysis::update()
   Mat bgrToHsvConvertedImage = bgrToHsv();
   Mat bgrToYiqConvertedImage = bgrToYIQ();
   //update histograms
-  float ranges[3][2]={{0,256},{0,256},{0,256}};
-  GenerateHist(*frame,ranges);
-  plotLines();
+  float ranges[3][2] = {{0, 256}, {0, 256}, {0, 256}};
+  Scalar rgb_colors[3] = {Scalar(255, 0, 0), Scalar(0, 255, 0), Scalar(0, 0, 255)};
+  GenerateHist(*frame, ranges, rgb_colors);
+  string histogramNames[3] = {"Blue", "Red", "Green"};
+  plotLines(rgb_gradients, BGR_color, histogramNames);
   //namedWindow(screenName, CV_WINDOW_AUTOSIZE);
   //
   Mat outImg;
@@ -179,7 +190,7 @@ Mat ImageAnalysis::hsvFilter()
 {
   Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
   int hMin, hMax, sMin, sMax, vMin, vMax;
-  calculateMaxMinChannels(HSV_color,hMin,sMin,vMin,hMax,sMax,vMax);
+  calculateMaxMinChannels(HSV_color, hMin, sMin, vMin, hMax, sMax, vMax);
 
   // Updates mask values with the corresponding H,S,V limits
   inRange(hsvImage, Scalar(hMin, sMin, vMin), Scalar(hMax, sMax, vMax), mask);
@@ -190,7 +201,8 @@ Mat ImageAnalysis::hsvFilter()
   return result;
 }
 
-void ImageAnalysis::calculateMaxMinChannels(Vec3b color, int &bMin,int &bMax,int &gMin,int &gMax,int &rMin,int &rMax){
+void ImageAnalysis::calculateMaxMinChannels(Vec3b color, int &bMin, int &bMax, int &gMin, int &gMax, int &rMin, int &rMax)
+{
   bMin = max(color[0] - epsilon, 0);
   gMin = max(color[1] - epsilon, 0);
   rMin = max(color[2] - epsilon, 0);
@@ -199,12 +211,11 @@ void ImageAnalysis::calculateMaxMinChannels(Vec3b color, int &bMin,int &bMax,int
   rMax = min(color[2] + epsilon, 255);
 }
 
-
 Mat ImageAnalysis::bgrFilter()
 {
   Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
   int bMin, bMax, gMin, gMax, rMin, rMax;
-  calculateMaxMinChannels(BGR_color,bMin, bMax, gMin, gMax, rMin, rMax);
+  calculateMaxMinChannels(BGR_color, bMin, bMax, gMin, gMax, rMin, rMax);
   // Updates mask values with the corresponding B,G,R limits
   inRange(*frame, Scalar(bMin, gMin, rMin), Scalar(bMax, gMax, rMax), mask);
 

@@ -9,10 +9,11 @@ class ImageAnalysis
 {
 public:
     ImageAnalysis(Mat &image, string screenName);
-    void plotLines();
-    void GenerateHist(const Mat &Image, float ranges[3][2]);
+    void plotLines(Mat gradients[3],Vec3b colors,string histogramNames[3]);
+    void GenerateHist(const Mat &Image, float ranges[3][2], const Scalar colors[]);
     void update();
-    void toggleHist();
+    void toggleHist(int);
+
 private:
     Mat *frame, hsvImage;
     string screenName;
@@ -38,5 +39,5 @@ private:
     void onMouse(int event, int x, int y);
     void getScreenResolution(int &width, int &height);
     void generateGradients();
-    void calculateMaxMinChannels(Vec3b color, int &bMin,int &bMax,int &gMin,int &gMax,int &rMin,int &rMax);
+    void calculateMaxMinChannels(Vec3b color, int &bMin, int &bMax, int &gMin, int &gMax, int &rMin, int &rMax);
 };
