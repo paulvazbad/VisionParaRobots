@@ -179,15 +179,16 @@ void ImageAnalysis::GenerateHist(const Mat &Image, float ranges[3][2], const Sca
 }
 
 void ImageAnalysis::update()
-{
-  // color model conversions
-  cvtColor(*frame, hsvImage, CV_BGR2HSV);
   // frame manipulation & updates
+  Mat bgrToHsvConvertedImage = bgrToHsv();
+  Mat bgrToYiqConvertedImage = bgrToYIQ();
+  hsvImage = hsvFilteredImage;
+  yiqImage = bgrToYiqConvertedImage;
+
   Mat hsvFilteredImage = hsvFilter();
   Mat bgrFilteredImage = bgrFilter();
   Mat binaryConvertedImage = binaryFilter();
-  Mat bgrToHsvConvertedImage = bgrToHsv();
-  Mat bgrToYiqConvertedImage = bgrToYIQ();
+
   //update histograms
   if (current_hist == 0)
   {
@@ -241,6 +242,16 @@ void ImageAnalysis::update()
   imshow("YIQ Converted", outImg);
 }
 
+void ImageAnalysis::calculateMaxMinChannels(Vec3b color, int &bMin, int &bMax, int &gMin, int &gMax, int &rMin, int &rMax)
+{
+  bMin = max(color[0] - epsilon, 0);
+  gMin = max(color[1] - epsilon, 0);
+  rMin = max(color[2] - epsilon, 0);
+  bMax = min(color[0] + epsilon, 255);
+  gMax = min(color[1] + epsilon, 255);
+  rMax = min(color[2] + epsilon, 255);
+}
+
 Mat ImageAnalysis::hsvFilter()
 {
   Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
@@ -256,14 +267,19 @@ Mat ImageAnalysis::hsvFilter()
   return result;
 }
 
-void ImageAnalysis::calculateMaxMinChannels(Vec3b color, int &bMin, int &bMax, int &gMin, int &gMax, int &rMin, int &rMax)
+Mat ImageAnalysis::yiqFilter()
 {
-  bMin = max(color[0] - epsilon, 0);
-  gMin = max(color[1] - epsilon, 0);
-  rMin = max(color[2] - epsilon, 0);
-  bMax = min(color[0] + epsilon, 255);
-  gMax = min(color[1] + epsilon, 255);
-  rMax = min(color[2] + epsilon, 255);
+  Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
+  int yMin, yMax, iMin, iMax, qMin, qMax;
+  calculateMaxMinChannels(YIQ_color, yMin, iMin, qMin, yMax, iMax, qMax);
+
+  // Updates mask values with the corresponding H,S,V limits
+  inRange(yiqImage, Scalar(yMin, iMin, qMin), Scalar(yMax, iMax, qMax), mask);
+
+  // Combines the mask with the original image, as result we get only the filtered colors
+  (*frame).copyTo(result, mask);
+
+  return result;
 }
 
 Mat ImageAnalysis::bgrFilter()
@@ -365,12 +381,16 @@ void ImageAnalysis::onMouse(int event, int x, int y)
     cout << "  Mouse X, Y: " << x << ", " << y << endl;
     BGR_color = (*frame).at<Vec3b>(Point(x, y));
     HSV_color = (hsvImage).at<Vec3b>(Point(x, y));
+    YIQ_color = (yiqImage).at<Vec3b>(Point(x, y));
     cout << "B = " << (int)BGR_color[0] << endl;
     cout << "G = " << (int)BGR_color[1] << endl;
     cout << "R = " << (int)BGR_color[2] << endl;
     cout << "H = " << (int)HSV_color[0] << endl;
     cout << "S = " << (int)HSV_color[1] << endl;
     cout << "V = " << (int)HSV_color[2] << endl;
+    cout << "Y = " << (int)YIQ_color[0] << endl;
+    cout << "I = " << (int)YIQ_color[1] << endl;
+    cout << "Q = " << (int)YIQ_color[2] << endl;
     break;
   case CV_EVENT_MOUSEMOVE:
     break;

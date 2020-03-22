@@ -58,7 +58,8 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  ImageAnalysis imageAnalysis = ImageAnalysis(image, "Original Image");
+  // ImageAnalysis imageAnalysis = ImageAnalysis(image, "Original Image");
+  imshow("xd", image);
 
   while (true)
   {
@@ -71,17 +72,17 @@ int main(int argc, char *argv[])
       break;
     }
 
-    imageAnalysis.update();
+    // imageAnalysis.update();
 
     int x = waitKey(30);
-    imageAnalysis.toggleHist(x);
+    // imageAnalysis.toggleHist(x);
     if (x == 27)
     {
       break;
     }
     else if (x == 120)
     {
-      isStatic = !isStatic;
+      // isStatic = !isStatic;
     }
   }
 

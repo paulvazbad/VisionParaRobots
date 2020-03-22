@@ -15,9 +15,9 @@ public:
     void toggleHist(int);
 
 private:
-    Mat *frame, hsvImage;
+    Mat *frame, hsvImage, yiqImage;
     string screenName;
-    Vec3b BGR_color, HSV_color;
+    Vec3b BGR_color, HSV_color, YIQ_color;
     int epsilon;
     Mat b_hist, g_hist, r_hist;
     Mat rgb_gradients[3];
@@ -33,6 +33,7 @@ private:
     Mat histImages[3];
     Mat hsvFilter();
     Mat bgrFilter();
+    Mat yiqFilter();
     Mat binaryFilter();
     Mat bgrToYIQ();
     Mat bgrToHsv();
