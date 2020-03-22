@@ -9,8 +9,8 @@ class ImageAnalysis
 {
 public:
     ImageAnalysis(Mat &image, string screenName);
-    void plotRGBLines();
-    void GenerateRGBHist(const Mat &Image);
+    void plotLines();
+    void GenerateHist(const Mat &Image, float ranges[3][2]);
     void update();
     void toggleHist();
 private:
@@ -38,4 +38,5 @@ private:
     void onMouse(int event, int x, int y);
     void getScreenResolution(int &width, int &height);
     void generateGradients();
+    void calculateMaxMinChannels(Vec3b color, int &bMin,int &bMax,int &gMin,int &gMax,int &rMin,int &rMax);
 };

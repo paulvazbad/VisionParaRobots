@@ -66,7 +66,7 @@ void ImageAnalysis::getScreenResolution(int &width, int &height)
 #endif
 }
 
-void ImageAnalysis::plotRGBLines()
+void ImageAnalysis::plotLines()
 {
   //Calculate line position in hist
   float position_min_blue = bin_w * max(BGR_color[0] - epsilon, 0);
@@ -98,17 +98,19 @@ void ImageAnalysis::toggleHist()
   current_hist == (current_hist + 1) % 3;
 }
 
-void ImageAnalysis::GenerateRGBHist(const Mat &Image)
+void ImageAnalysis::GenerateHist(const Mat &Image, float ranges[3][2])
 {
-  vector<Mat> bgr_planes;
-  split(Image, bgr_planes);
+  vector<Mat> planes;
+  split(Image, planes);
   int HIST_SIZE = 256;
-  float range[] = {0, 256}; //the upper boundary is exclusive
-  const float *histRange = {range};
+  //float range[] = {0, 256}; //the upper boundary is exclusive
+  const float *histRange_0 = {ranges[0]};
+  const float *histRange_1 = {ranges[1]};
+  const float *histRange_2 = {ranges[2]};
   bool uniform = true, accumulate = false;
-  calcHist(&bgr_planes[0], 1, 0, Mat(), b_hist, 1, &HIST_SIZE, &histRange, uniform, accumulate);
-  calcHist(&bgr_planes[1], 1, 0, Mat(), g_hist, 1, &HIST_SIZE, &histRange, uniform, accumulate);
-  calcHist(&bgr_planes[2], 1, 0, Mat(), r_hist, 1, &HIST_SIZE, &histRange, uniform, accumulate);
+  calcHist(&planes[0], 1, 0, Mat(), b_hist, 1, &HIST_SIZE, &histRange_0, uniform, accumulate);
+  calcHist(&planes[1], 1, 0, Mat(), g_hist, 1, &HIST_SIZE, &histRange_1, uniform, accumulate);
+  calcHist(&planes[2], 1, 0, Mat(), r_hist, 1, &HIST_SIZE, &histRange_2, uniform, accumulate);
   normalize(b_hist, b_hist, 0, histImages[0].rows, NORM_MINMAX, -1, Mat());
   normalize(g_hist, g_hist, 0, histImages[1].rows, NORM_MINMAX, -1, Mat());
   normalize(r_hist, r_hist, 0, histImages[2].rows, NORM_MINMAX, -1, Mat());
@@ -141,8 +143,9 @@ void ImageAnalysis::update()
   Mat bgrToHsvConvertedImage = bgrToHsv();
   Mat bgrToYiqConvertedImage = bgrToYIQ();
   //update histograms
-  GenerateRGBHist(*frame);
-  plotRGBLines();
+  float ranges[3][2]={{0,256},{0,256},{0,256}};
+  GenerateHist(*frame,ranges);
+  plotLines();
   //namedWindow(screenName, CV_WINDOW_AUTOSIZE);
   //
   Mat outImg;
@@ -176,13 +179,7 @@ Mat ImageAnalysis::hsvFilter()
 {
   Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
   int hMin, hMax, sMin, sMax, vMin, vMax;
-
-  hMin = max(HSV_color[0] - epsilon, 0);
-  sMin = max(HSV_color[1] - epsilon, 0);
-  vMin = max(HSV_color[2] - epsilon, 0);
-  hMax = min(HSV_color[0] + epsilon, 255);
-  sMax = min(HSV_color[1] + epsilon, 255);
-  vMax = min(HSV_color[2] + epsilon, 255);
+  calculateMaxMinChannels(HSV_color,hMin,sMin,vMin,hMax,sMax,vMax);
 
   // Updates mask values with the corresponding H,S,V limits
   inRange(hsvImage, Scalar(hMin, sMin, vMin), Scalar(hMax, sMax, vMax), mask);
@@ -193,18 +190,21 @@ Mat ImageAnalysis::hsvFilter()
   return result;
 }
 
+void ImageAnalysis::calculateMaxMinChannels(Vec3b color, int &bMin,int &bMax,int &gMin,int &gMax,int &rMin,int &rMax){
+  bMin = max(color[0] - epsilon, 0);
+  gMin = max(color[1] - epsilon, 0);
+  rMin = max(color[2] - epsilon, 0);
+  bMax = min(color[0] + epsilon, 255);
+  gMax = min(color[1] + epsilon, 255);
+  rMax = min(color[2] + epsilon, 255);
+}
+
+
 Mat ImageAnalysis::bgrFilter()
 {
   Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
   int bMin, bMax, gMin, gMax, rMin, rMax;
-
-  bMin = max(BGR_color[0] - epsilon, 0);
-  gMin = max(BGR_color[1] - epsilon, 0);
-  rMin = max(BGR_color[2] - epsilon, 0);
-  bMax = min(BGR_color[0] + epsilon, 255);
-  gMax = min(BGR_color[1] + epsilon, 255);
-  rMax = min(BGR_color[2] + epsilon, 255);
-
+  calculateMaxMinChannels(BGR_color,bMin, bMax, gMin, gMax, rMin, rMax);
   // Updates mask values with the corresponding B,G,R limits
   inRange(*frame, Scalar(bMin, gMin, rMin), Scalar(bMax, gMax, rMax), mask);
 

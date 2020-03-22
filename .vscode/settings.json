@@ -1,9 +1,13 @@
 {
   "files.associations": {
+    "*.py": "python",
     "*.tcc": "cpp",
     "string": "cpp",
     "unordered_map": "cpp",
     "array": "cpp",
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "string_view": "cpp",
+    "chrono": "cpp",
+    "limits": "cpp"
   }
 }
