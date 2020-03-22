@@ -1,4 +1,4 @@
-LXXLIBS+= -lopencv_core -lopencv_highgui -lopencv_features2d -lopencv_imgproc -lopencv_imgcodecs -lopencv_videoio -lpthread
+LXXLIBS+= -lopencv_core -lopencv_highgui -lopencv_features2d -lopencv_imgproc -lopencv_imgcodecs -lopencv_videoio -lpthread -lX11
 
 OBJS=$(patsubst %.cpp,%.o,$(shell find src/ | grep .cpp))
 #OBJS+=$(patsubst %.c,%.o,$(wildcard src/*.c) $(wildcard src/*/*.c))
