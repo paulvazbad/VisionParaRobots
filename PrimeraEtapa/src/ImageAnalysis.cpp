@@ -23,6 +23,11 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName)
   namedWindow("BGR Range");
   namedWindow("HSV Range");
   namedWindow("YIQ Range");
+
+  moveWindow("BGR Range", windowsSecondColumnPosition*2, verticalOffset);
+  moveWindow("HSV Range", windowsSecondColumnPosition*2, windowsVerticalPosition + verticalOffset);
+  moveWindow("YIQ Range", windowsSecondColumnPosition*2, windowsVerticalPosition*2 + verticalOffset);
+
   createTrackbar("B", "BGR Range", &bgrRange[0], 255);
   createTrackbar("G", "BGR Range", &bgrRange[1], 255);
   createTrackbar("R", "BGR Range", &bgrRange[2], 255);
@@ -44,6 +49,9 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName)
   windowsVerticalPosition = height2 / 3;
   windowsHeightRatio = (double(windowsVerticalPosition) * 0.8) / height1;
   windowsSecondColumnPosition = windowsHeightRatio * width1 * 1.2;
+  histogramSizeRatioVertical = windowFullVerticalSize*0.3/ HIST_HEIGHT;
+  histogramSizeRatioHorizontal = windowFullHorizontalSize*0.4/HIST_WIDTH;
+
   generateGradients();
 }
 
@@ -133,9 +141,12 @@ void ImageAnalysis::getScreenResolution(int &width, int &height)
 #else
   Display *disp = XOpenDisplay(NULL);
   Screen *scrn = DefaultScreenOfDisplay(disp);
-  width = scrn->width;
+  width = scrn->width*0.95;
   height = scrn->height * 0.97;
+  windowFullVerticalSize = scrn->height*0.80;
+  windowFullHorizontalSize = scrn->width*0.88;
   verticalOffset = scrn->height * 0.03;
+  horizontalOffset = scrn->width * 0.05;
 #endif
 }
 
@@ -168,9 +179,19 @@ void ImageAnalysis::plotLines(Mat gradients[3], Vec3b colors, string histogramNa
   center_line = bin_w * BGR_color[2];
   line(histImagesCopy[2], Point(center_line, 0), Point(center_line, HIST_HEIGHT),
        Scalar(255, 100, 255), 1, 8, 0);
-  imshow(histogramNames[0], histImagesCopy[0]);
-  imshow(histogramNames[1], histImagesCopy[1]);
-  imshow(histogramNames[2], histImagesCopy[2]);
+
+  Mat outImageHelper;
+  moveWindow(histogramNames[0], windowFullHorizontalSize*0.75, verticalOffset);
+  resize( histImagesCopy[0], outImageHelper, cv::Size(), histogramSizeRatioHorizontal, histogramSizeRatioVertical);
+  imshow(histogramNames[0], outImageHelper);
+
+  moveWindow(histogramNames[1], windowFullHorizontalSize*0.75, windowFullVerticalSize/3 + verticalOffset*3);
+  resize( histImagesCopy[1], outImageHelper, cv::Size(),  histogramSizeRatioHorizontal, histogramSizeRatioVertical);
+  imshow(histogramNames[1], outImageHelper);
+
+  moveWindow(histogramNames[2], windowFullHorizontalSize*0.75, windowFullVerticalSize * 0.6 + verticalOffset*6.5);
+  resize( histImagesCopy[2], outImageHelper, cv::Size(),  histogramSizeRatioHorizontal, histogramSizeRatioVertical);
+  imshow(histogramNames[2], outImageHelper);
 }
 
 void ImageAnalysis::toggleHist(int keyPressed)
@@ -314,35 +335,35 @@ void ImageAnalysis::update()
     plotLines(yiq_gradients, YIQ_color, histogramNames);
   }
 
-  //namedWindow(screenName, CV_WINDOW_AUTOSIZE);
-  //
-  Mat outImg;
+  Mat outImageHelper;
 
   moveWindow(screenName, 0, verticalOffset);
-  resize(*frame, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
-  imshow(screenName, outImg);
+  resize(*frame, outImageHelper, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow(screenName, outImageHelper);
 
-  moveWindow("HSV Filtered", windowsSecondColumnPosition, verticalOffset);
-  resize(hsvFilteredImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
-  imshow("HSV Filtered", outImg);
+  moveWindow("BGR Filtered", windowsSecondColumnPosition, verticalOffset);
+  resize(bgrFilteredImage, outImageHelper, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("BGR Filtered", outImageHelper);
 
-  moveWindow("BGR Filtered", 0, windowsVerticalPosition + verticalOffset);
-  resize(bgrFilteredImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
-  imshow("BGR Filtered", outImg);
+  moveWindow("HSV Converted", 0, windowsVerticalPosition + verticalOffset);
+  resize(hsvImage, outImageHelper, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("HSV Converted", outImageHelper);
 
-  imshow("YIQ Filtered", yiqFilteredImage);
+  moveWindow("HSV Filtered", windowsSecondColumnPosition, windowsVerticalPosition + verticalOffset);
+  resize(hsvFilteredImage, outImageHelper, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("HSV Filtered", outImageHelper);
 
-  moveWindow("Binary Converted", windowsSecondColumnPosition, windowsVerticalPosition + verticalOffset);
-  resize(binaryConvertedImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
-  imshow("Binary Converted", outImg);
+  moveWindow("YIQ Converted", 0, windowsVerticalPosition * 2 + verticalOffset);
+  resize(yiqImage, outImageHelper, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("YIQ Converted", outImageHelper);
 
-  moveWindow("HSV Converted", 0, windowsVerticalPosition * 2 + verticalOffset);
-  resize(hsvImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
-  imshow("HSV Converted", outImg);
+  moveWindow("YIQ Filtered", windowsSecondColumnPosition, windowsVerticalPosition * 2 + verticalOffset);
+  resize(yiqFilteredImage, outImageHelper, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("YIQ Filtered", outImageHelper);
 
-  moveWindow("YIQ Converted", windowsSecondColumnPosition, windowsVerticalPosition * 2 + verticalOffset);
-  resize(yiqImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
-  imshow("YIQ Converted", outImg);
+  moveWindow("Binary Converted", windowsSecondColumnPosition*1.8, verticalOffset);
+  resize(binaryConvertedImage, outImageHelper, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("Binary Converted", outImageHelper);
 }
 
 Mat ImageAnalysis::hsvFilter()
@@ -591,4 +612,8 @@ void ImageAnalysis::saveRanges()
   file << hsvRange[0] << " " << hsvRange[1] << " " << hsvRange[2] << "\n";
   file << yiqRange[0] << " " << yiqRange[1] << " " << yiqRange[2] << "\n";
   file.close();
+}
+
+void ImageAnalysis::endProgram(){
+   destroyAllWindows();
 }
