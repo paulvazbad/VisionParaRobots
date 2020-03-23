@@ -587,14 +587,14 @@ void ImageAnalysis::saveRanges()
 
   string file;
 
-  file += bgrRange[0] + " " + bgrRange[1];
-  file += " " + bgrRange[2];
+  file += to_string(bgrRange[0]) + " " + to_string(bgrRange[1]);
+  file += " " + to_string(bgrRange[2]);
   file += "\n";
-  file += hsvRange[0] + " " + hsvRange[1];
-  file += " " + hsvRange[2];
+  file += to_string(hsvRange[0]) + " " + to_string(hsvRange[1]);
+  file += " " + to_string(hsvRange[2]);
   file += "\n";
-  file += yiqRange[0] + " " + yiqRange[1];
-  file += " " + yiqRange[2];
+  file += to_string(yiqRange[0]) + " " + to_string(yiqRange[1]);
+  file += " " + to_string(yiqRange[2]);
   file += "\n";
 
   outFile << file;
