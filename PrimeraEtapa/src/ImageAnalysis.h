@@ -41,7 +41,9 @@ private:
     Mat bgrToHsv();
     Mat yiqFilter();
     static void onMouse(int event, int x, int y, int, void *userdata);
+    static void onTrackBar(int pos, void *userptr);
     void onMouse(int event, int x, int y);
+    void onTrackBar(int pos);
     void getScreenResolution(int &width, int &height);
     void generateGradients();
     void calculateMaxMinChannels(Vec3b &color, int &bMin, int &bMax, int &gMin, int &gMax, int &rMin, int &rMax);
