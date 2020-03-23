@@ -1,6 +1,7 @@
 #include "ImageAnalysis.h"
 #include <iostream>
 #include <string.h>
+#include <fstream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -50,10 +51,10 @@ void ImageAnalysis::setRanges()
 {
   ifstream file("ranges.txt");
 
-  if(file.fail()){
+  /*if(file.fail()){
     std::cout << "File could not be opened\n";
     return;  
-  }
+  }*/
 
   file >> bgrRange[0] >> bgrRange[1] >> bgrRange[2];
   file >> hsvRange[0] >> hsvRange[1] >> hsvRange[2];
@@ -583,20 +584,11 @@ void ImageAnalysis::onMouse(int event, int x, int y)
 
 void ImageAnalysis::saveRanges()
 {
-  ofstream outFile("ranges.txt");
+  ofstream file;
+  file.open("ranges.txt");
 
-  string file;
-
-  file += bgrRange[0] + " " + bgrRange[1];
-  file += " " + bgrRange[2];
-  file += "\n";
-  file += hsvRange[0] + " " + hsvRange[1];
-  file += " " + hsvRange[2];
-  file += "\n";
-  file += yiqRange[0] + " " + yiqRange[1];
-  file += " " + yiqRange[2];
-  file += "\n";
-
-  outFile << file;
-  outFile.close();
+  file << bgrRange[0] << " " << bgrRange[1] << " " << bgrRange[2]<<"\n";
+  file << hsvRange[0] << " " << hsvRange[1] << " " <<hsvRange[2]<<"\n";
+  file << yiqRange[0] << " " << yiqRange[1] << " " <<yiqRange[2]<<"\n";
+  file.close();
 }
