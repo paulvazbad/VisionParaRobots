@@ -150,7 +150,7 @@ void ImageAnalysis::getScreenResolution(int &width, int &height)
 #endif
 }
 
-void ImageAnalysis::plotLines(Mat gradients[3], Vec3b colors, string histogramNames[3])
+void ImageAnalysis::plotLines(Mat gradients[3], Vec3b &colors, string histogramNames[3])
 {
   //Calculate line position in hist
   int p_t_p[6];
