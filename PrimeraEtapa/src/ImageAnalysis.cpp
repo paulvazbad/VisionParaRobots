@@ -16,7 +16,6 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName)
 {
   frame = &image;
   this->screenName = screenName;
-  // epsilon = 35;
 
   namedWindow(screenName);
   setMouseCallback(screenName, onMouse, this);
@@ -582,23 +581,15 @@ void ImageAnalysis::onMouse(int event, int x, int y)
   }
 }
 
-void ImageAnalysis::onTrackBar(int pos, void *userptr){
-  ImageAnalysis *imageAnalysis = reinterpret_cast<ImageAnalysis *>(userptr);
-  imageAnalysis->onTrackBar(pos);
-}
-
-void ImageAnalysis::onTrackBar(int pos)
+void ImageAnalysis::saveRanges()
 {
   ofstream outFile("ranges.txt");
 
-  string file, aux;
+  string file;
 
-  aux = format("{} {} {}\n", bgrRange[0], bgrRange[1], bgrRange[2]);
-  file += aux;
-  aux = format("{} {} {}\n", hsvRange[0], hsvRange[1], hsvRange[2]);
-  file += aux;
-  aux = format("{} {} {}\n", yiqRange[0], yiqRange[1], yiqRange[2]);
-  file += aux;
+  file += bgrRange[0] + " " + bgrRange[1] + " " + bgrRange[2] + "\n";
+  file += hsvRange[0] + " " + hsvRange[1] + " " + hsvRange[2] + "\n";
+  file += yiqRange[0] + " " + yiqRange[1] + " " + yiqRange[2] + "\n";
 
   outFile << file;
   outFile.close();

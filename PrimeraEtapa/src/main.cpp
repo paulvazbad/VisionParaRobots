@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
     imageAnalysis.toggleHist(x);
     if (x == 27)
     {
+      imageAnalysis.saveRanges();
       break;
     }
     else if (x == 120)

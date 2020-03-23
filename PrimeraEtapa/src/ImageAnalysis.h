@@ -14,13 +14,13 @@ public:
     void GenerateHist(const Mat &Image, float ranges[3][2], const Scalar colors[]);
     void update();
     void toggleHist(int);
+    void saveRanges();
 
 private:
     Mat *frame, hsvImage, yiqImage;
     int hsvRange[3], yiqRange[3], bgrRange[3];
     string screenName;
     Vec3b BGR_color, HSV_color, YIQ_color;
-    // int epsilon;
     Mat b_hist, g_hist, r_hist;
     Mat rgb_gradients[3];
     Mat hsv_gradients[3];
@@ -41,9 +41,7 @@ private:
     Mat bgrToHsv();
     Mat yiqFilter();
     static void onMouse(int event, int x, int y, int, void *userdata);
-    static void onTrackBar(int pos, void *userptr);
     void onMouse(int event, int x, int y);
-    void onTrackBar(int pos);
     void getScreenResolution(int &width, int &height);
     void generateGradients();
     void calculateMaxMinChannels(Vec3b &color, int &bMin, int &bMax, int &gMin, int &gMax, int &rMin, int &rMax);
