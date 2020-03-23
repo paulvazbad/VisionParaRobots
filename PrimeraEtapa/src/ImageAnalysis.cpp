@@ -20,7 +20,7 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName)
 
   namedWindow(screenName);
   setMouseCallback(screenName, onMouse, this);
-  
+
   namedWindow("HSV Range");
   namedWindow("YIQ Range");
   namedWindow("BGR Range");
@@ -66,11 +66,10 @@ void ImageAnalysis::generateGradients()
           hsv_row.at<Vec3b>(y, x)[0] = (x * 179) / HIST_WIDTH;
           hsv_row.at<Vec3b>(y, x)[1] = HSV_color[1];
           hsv_row.at<Vec3b>(y, x)[2] = HSV_color[2];
-          //Change the value of Y 
+          //Change the value of Y
           yiq_row.at<Vec3b>(y, x)[0] = (x * 256) / HIST_WIDTH;
           yiq_row.at<Vec3b>(y, x)[1] = YIQ_color[1];
           yiq_row.at<Vec3b>(y, x)[2] = YIQ_color[2];
-
         }
         else if (i == 1)
         {
@@ -78,7 +77,7 @@ void ImageAnalysis::generateGradients()
           hsv_row.at<Vec3b>(y, x)[1] = (x * HIST_SIZE) / HIST_WIDTH;
           hsv_row.at<Vec3b>(y, x)[0] = HSV_color[0];
           hsv_row.at<Vec3b>(y, x)[2] = HSV_color[2];
-          //Change the value of I 
+          //Change the value of I
           yiq_row.at<Vec3b>(y, x)[1] = (x * 256) / HIST_WIDTH;
           yiq_row.at<Vec3b>(y, x)[0] = YIQ_color[0];
           yiq_row.at<Vec3b>(y, x)[2] = YIQ_color[2];
@@ -132,15 +131,19 @@ void ImageAnalysis::plotLines(Mat gradients[3], Vec3b colors, string histogramNa
   }
   for (int i = 0; i < 6; i++)
   {
-    line(histImagesCopy[int(i / 2)], Point(p_t_p[i], 0), Point(p_t_p[i], HIST_HEIGHT),
+    line(histImagesCopy[int(i % 3)], Point(bin_w*p_t_p[i], 0), Point(bin_w*p_t_p[i], HIST_HEIGHT),
          Scalar(255, 255, 255), 1, 8, 0);
-    if (i % 2 == 0)
-    {
-      int center_line = bin_w * BGR_color[int(i / 2)];
-      line(histImagesCopy[int(i / 2)], Point(center_line, 0), Point(center_line, HIST_HEIGHT),
-           Scalar(255, 255, 255), 1, 8, 0);
-    }
   }
+  //Paint centers
+  int center_line = bin_w * BGR_color[0];
+  line(histImagesCopy[0], Point(center_line, 0), Point(center_line, HIST_HEIGHT),
+       Scalar(255, 100, 255), 1, 8, 0);
+      center_line = bin_w * BGR_color[1]; 
+  line(histImagesCopy[1], Point(center_line, 0), Point(center_line, HIST_HEIGHT),
+       Scalar(255, 100, 255), 1, 8, 0);
+      center_line = bin_w * BGR_color[2];
+  line(histImagesCopy[2], Point(center_line, 0), Point(center_line, HIST_HEIGHT),
+       Scalar(255, 100, 255), 1, 8, 0);
   imshow(histogramNames[0], histImagesCopy[0]);
   imshow(histogramNames[1], histImagesCopy[1]);
   imshow(histogramNames[2], histImagesCopy[2]);
@@ -158,7 +161,7 @@ void ImageAnalysis::toggleHist(int keyPressed)
     }
     if (current_hist == 2)
     {
-      
+
       destroyWindow("Y");
       destroyWindow("I");
       destroyWindow("Q");
@@ -254,7 +257,7 @@ void ImageAnalysis::update()
     float ranges[3][2] = {{0, 256}, {0, 256}, {0, 256}};
     Scalar rgb_colors[3] = {Scalar(255, 0, 0), Scalar(0, 255, 0), Scalar(0, 0, 255)};
     GenerateHist(*frame, ranges, rgb_colors);
-    string histogramNames[3] = {"Blue", "Red", "Green"};
+    string histogramNames[3] = {"Blue", "Green", "Red"};
     plotLines(rgb_gradients, BGR_color, histogramNames);
   }
   else if (current_hist == 1)
@@ -337,11 +340,11 @@ void ImageAnalysis::calculateMaxMinChannels(Vec3b &color, int &bMin, int &gMin, 
 {
   int epsilon[3];
 
-  if(&color == &BGR_color)
+  if (&color == &BGR_color)
     memcpy(epsilon, bgrRange, 3 * sizeof *bgrRange);
-  else if(&color == &HSV_color)
+  else if (&color == &HSV_color)
     memcpy(epsilon, hsvRange, 3 * sizeof *hsvRange);
-  else if(&color == &YIQ_color)
+  else if (&color == &YIQ_color)
     memcpy(epsilon, yiqRange, 3 * sizeof *yiqRange);
   else
     cout << "ERROR IN CalculateMaxMinChannels" << endl;
@@ -461,7 +464,6 @@ IplImage *ImageAnalysis::convertImageYIQtoRGB(const IplImage imageYIQ)
   const IplImage *image_p = &imageYIQ;
   // Create a blank RGB image
   IplImage *imageRGB = cvCreateImage(cvGetSize(image_p), 8, 3);
-  
 
   int h = imageYIQ.height;              // Pixel height
   int w = imageYIQ.width;               // Pixel width
