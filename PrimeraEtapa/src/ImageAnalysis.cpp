@@ -294,6 +294,7 @@ void ImageAnalysis::update()
   Mat bgrFilteredImage = bgrFilter();
   Mat binaryConvertedImage = binaryFilter();
   Mat yiqFilteredImage = yiqFilter();
+  Mat bgrToGray = ImageAnalysis::bgrToGray();
 
   //update histograms
   if (current_hist == 0)
@@ -364,6 +365,9 @@ void ImageAnalysis::update()
   moveWindow("Binary Converted", windowsSecondColumnPosition*1.8, verticalOffset);
   resize(binaryConvertedImage, outImageHelper, cv::Size(), windowsHeightRatio, windowsHeightRatio);
   imshow("Binary Converted", outImageHelper);
+
+  resize(bgrToGray, outImageHelper, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("Gray Converted", bgrToGray);
 }
 
 Mat ImageAnalysis::hsvFilter()
@@ -467,6 +471,30 @@ Mat ImageAnalysis::binaryFilter()
       }
     }
   }
+  return result;
+}
+
+Mat ImageAnalysis::bgrToGray()
+{
+  Mat result = frame->clone();
+  cvtColor(*frame, result, CV_BGR2GRAY);
+  return result;
+  // int luminosity_average = 0;
+
+  // for (int i = 0; i < result.rows; i++)
+  // {
+  //   for (int x = 0; x < result.cols; x++)
+  //   {
+  //     double b = result.at<Vec3b>(i, x)[0];
+  //     double g = result.at<Vec3b>(i, x)[1];
+  //     double r = result.at<Vec3b>(i, x)[2];
+  //     luminosity_average += int(0.299 * r + 0.587 * g + 0.114 * b);
+
+  //     result.at<Vec3b>(i, x)[0] = luminosity_average;
+  //     result.at<Vec3b>(i, x)[1] = luminosity_average;
+  //     result.at<Vec3b>(i, x)[2] = luminosity_average;
+  //   }
+  // }
   return result;
 }
 

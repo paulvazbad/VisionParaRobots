@@ -42,6 +42,7 @@ private:
     Mat binaryFilter();
     Mat bgrToYIQ(Mat);
     Mat bgrToHsv();
+    Mat bgrToGray();
     Mat yiqFilter();
     static void onMouse(int event, int x, int y, int, void *userdata);
     void onMouse(int event, int x, int y);
