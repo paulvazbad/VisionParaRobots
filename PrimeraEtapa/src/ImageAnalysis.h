@@ -22,6 +22,7 @@ private:
     Mat b_hist, g_hist, r_hist;
     Mat rgb_gradients[3];
     Mat hsv_gradients[3];
+    Mat yiq_gradients[3];
     void initializeMat();
     static const int HIST_HEIGHT = 400;
     static const int HIST_WIDTH = 512;
@@ -34,7 +35,7 @@ private:
     Mat hsvFilter();
     Mat bgrFilter();
     Mat binaryFilter();
-    Mat bgrToYIQ();
+    Mat bgrToYIQ(Mat);
     Mat bgrToHsv();
     Mat yiqFilter();
     static void onMouse(int event, int x, int y, int, void *userdata);
@@ -42,4 +43,5 @@ private:
     void getScreenResolution(int &width, int &height);
     void generateGradients();
     void calculateMaxMinChannels(Vec3b color, int &bMin, int &bMax, int &gMin, int &gMax, int &rMin, int &rMax);
+    IplImage* convertImageYIQtoRGB(const IplImage imageYIQ);
 };

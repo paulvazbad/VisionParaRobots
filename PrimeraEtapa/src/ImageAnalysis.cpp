@@ -40,6 +40,7 @@ void ImageAnalysis::generateGradients()
   {
     Mat row = Mat(50, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
     Mat hsv_row = Mat(50, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
+    Mat yiq_row = Mat(50, HIST_WIDTH, CV_8UC3, Scalar(0, 0, 0));
     for (int x = 0; x < HIST_WIDTH; x++)
     {
       for (int y = 10; y < 50; y++)
@@ -48,28 +49,42 @@ void ImageAnalysis::generateGradients()
         if (i == 0)
         {
           //Changing the value of H
-          hsv_row.at<Vec3b>(y,x)[0] = (x * 179) / HIST_WIDTH;
-          hsv_row.at<Vec3b>(y,x)[1] = HSV_color[1];
-          hsv_row.at<Vec3b>(y,x)[2] = HSV_color[2];
+          hsv_row.at<Vec3b>(y, x)[0] = (x * 179) / HIST_WIDTH;
+          hsv_row.at<Vec3b>(y, x)[1] = HSV_color[1];
+          hsv_row.at<Vec3b>(y, x)[2] = HSV_color[2];
+          //Change the value of Y 
+          yiq_row.at<Vec3b>(y, x)[0] = (x * 256) / HIST_WIDTH;
+          yiq_row.at<Vec3b>(y, x)[1] = YIQ_color[1];
+          yiq_row.at<Vec3b>(y, x)[2] = YIQ_color[2];
+
         }
         else if (i == 1)
         {
           //Chinging the value of S
-          hsv_row.at<Vec3b>(y,x)[1] = (x * HIST_SIZE) / HIST_WIDTH;
-          hsv_row.at<Vec3b>(y,x)[0] = HSV_color[0];
-          hsv_row.at<Vec3b>(y,x)[2] = HSV_color[2];
+          hsv_row.at<Vec3b>(y, x)[1] = (x * HIST_SIZE) / HIST_WIDTH;
+          hsv_row.at<Vec3b>(y, x)[0] = HSV_color[0];
+          hsv_row.at<Vec3b>(y, x)[2] = HSV_color[2];
+          //Change the value of I 
+          yiq_row.at<Vec3b>(y, x)[1] = (x * 256) / HIST_WIDTH;
+          yiq_row.at<Vec3b>(y, x)[0] = YIQ_color[0];
+          yiq_row.at<Vec3b>(y, x)[2] = YIQ_color[2];
         }
         else
         {
           // Changing the value of V
-          hsv_row.at<Vec3b>(y,x)[2] = (x * HIST_SIZE) / HIST_WIDTH;
-          hsv_row.at<Vec3b>(y,x)[0] = HSV_color[0];
-          hsv_row.at<Vec3b>(y,x)[1] = HSV_color[1];
+          hsv_row.at<Vec3b>(y, x)[2] = (x * HIST_SIZE) / HIST_WIDTH;
+          hsv_row.at<Vec3b>(y, x)[0] = HSV_color[0];
+          hsv_row.at<Vec3b>(y, x)[1] = HSV_color[1];
+          //Change the value of Q
+          yiq_row.at<Vec3b>(y, x)[2] = (x * 256) / HIST_WIDTH;
+          yiq_row.at<Vec3b>(y, x)[0] = YIQ_color[0];
+          yiq_row.at<Vec3b>(y, x)[1] = YIQ_color[1];
         }
       }
     }
     rgb_gradients[i] = row;
     hsv_gradients[i] = hsv_row;
+    yiq_gradients[i] = yiq_row;
   }
 }
 
@@ -127,6 +142,13 @@ void ImageAnalysis::toggleHist(int keyPressed)
       destroyWindow("Saturation");
       destroyWindow("Value");
     }
+    if (current_hist == 2)
+    {
+      
+      destroyWindow("Y");
+      destroyWindow("I");
+      destroyWindow("Q");
+    }
     current_hist = 0;
   }
   else if (keyPressed == 50)
@@ -137,8 +159,30 @@ void ImageAnalysis::toggleHist(int keyPressed)
       destroyWindow("Red");
       destroyWindow("Green");
     }
+    if (current_hist == 2)
+    {
 
+      destroyWindow("Y");
+      destroyWindow("I");
+      destroyWindow("Q");
+    }
     current_hist = 1;
+  }
+  else if (keyPressed == 51)
+  {
+    if (current_hist == 0)
+    {
+      destroyWindow("Blue");
+      destroyWindow("Red");
+      destroyWindow("Green");
+    }
+    if (current_hist == 1)
+    {
+      destroyWindow("Hue");
+      destroyWindow("Saturation");
+      destroyWindow("Value");
+    }
+    current_hist = 2;
   }
 }
 
@@ -182,13 +226,13 @@ void ImageAnalysis::update()
 {
   // color model conversions
   hsvImage = bgrToHsv();
-  yiqImage = bgrToYIQ();
+  yiqImage = bgrToYIQ(*frame);
   // frame manipulation & updates
   Mat hsvFilteredImage = hsvFilter();
   Mat bgrFilteredImage = bgrFilter();
   Mat binaryConvertedImage = binaryFilter();
   Mat yiqFilteredImage = yiqFilter();
-  
+
   //update histograms
   if (current_hist == 0)
   {
@@ -211,6 +255,22 @@ void ImageAnalysis::update()
     cvtColor(hsv_gradients[1], hsv_gradients[1], CV_HSV2BGR);
     cvtColor(hsv_gradients[2], hsv_gradients[2], CV_HSV2BGR);
     plotLines(hsv_gradients, HSV_color, histogramNames);
+  }
+  else if (current_hist == 2)
+  {
+    //YIQ hist
+    float ranges[3][2] = {{0, 256}, {0, 256}, {0, 256}};
+    Scalar yiq_colors[3] = {Scalar(255, 255, 180), Scalar(180, 255, 255), Scalar(255, 180, 255)};
+    GenerateHist(yiqImage, ranges, yiq_colors);
+    generateGradients();
+    string histogramNames[3] = {"Y", "I", "Q"};
+    IplImage temp = yiq_gradients[0];
+    yiq_gradients[0] = cvarrToMat(convertImageYIQtoRGB(temp));
+    temp = yiq_gradients[1];
+    yiq_gradients[1] = cvarrToMat(convertImageYIQtoRGB(temp));
+    temp = yiq_gradients[2];
+    yiq_gradients[2] = cvarrToMat(convertImageYIQtoRGB(temp));
+    plotLines(yiq_gradients, YIQ_color, histogramNames);
   }
 
   //namedWindow(screenName, CV_WINDOW_AUTOSIZE);
@@ -285,17 +345,17 @@ Mat ImageAnalysis::bgrFilter()
 
 Mat ImageAnalysis::yiqFilter()
 {
- Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
- int yMin, yMax, iMin, iMax, qMin, qMax;
- calculateMaxMinChannels(YIQ_color, yMin, iMin, qMin, yMax, iMax, qMax);
- 
- // Updates mask values with the corresponding H,S,V limits
- inRange(yiqImage, Scalar(yMin, iMin, qMin), Scalar(yMax, iMax, qMax), mask);
- 
- // Combines the mask with the original image, as result we get only the filtered colors
- (*frame).copyTo(result, mask);
- 
- return result;
+  Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
+  int yMin, yMax, iMin, iMax, qMin, qMax;
+  calculateMaxMinChannels(YIQ_color, yMin, iMin, qMin, yMax, iMax, qMax);
+
+  // Updates mask values with the corresponding H,S,V limits
+  inRange(yiqImage, Scalar(yMin, iMin, qMin), Scalar(yMax, iMax, qMax), mask);
+
+  // Combines the mask with the original image, as result we get only the filtered colors
+  (*frame).copyTo(result, mask);
+
+  return result;
 }
 
 Mat ImageAnalysis::binaryFilter()
@@ -338,9 +398,9 @@ Mat ImageAnalysis::binaryFilter()
 }
 
 //Formulas from: https://www.eembc.org/techlit/datasheets/yiq_consumer.pdf
-Mat ImageAnalysis::bgrToYIQ()
+Mat ImageAnalysis::bgrToYIQ(Mat frame)
 {
-  Mat result = frame->clone();
+  Mat result = frame.clone();
 
   for (int z = 0; z < result.rows; z++)
   {
@@ -360,6 +420,76 @@ Mat ImageAnalysis::bgrToYIQ()
     }
   }
   return result;
+}
+
+IplImage *ImageAnalysis::convertImageYIQtoRGB(const IplImage imageYIQ)
+{
+  float fY, fI, fQ;
+  float fR, fG, fB;
+  const float FLOAT_TO_BYTE = 255.0f;
+  const float BYTE_TO_FLOAT = 1.0f / FLOAT_TO_BYTE;
+  const float MIN_I = -0.5957f;
+  const float MIN_Q = -0.5226f;
+  const float Y_TO_FLOAT = 1.0f / 255.0f;
+  const float I_TO_FLOAT = -2.0f * MIN_I / 255.0f;
+  const float Q_TO_FLOAT = -2.0f * MIN_Q / 255.0f;
+  const IplImage *image_p = &imageYIQ;
+  // Create a blank RGB image
+  IplImage *imageRGB = cvCreateImage(cvGetSize(image_p), 8, 3);
+  
+
+  int h = imageYIQ.height;              // Pixel height
+  int w = imageYIQ.width;               // Pixel width
+  int rowSizeYIQ = imageYIQ.widthStep;  // Size of row in bytes, including extra padding.
+  char *imYIQ = imageYIQ.imageData;     // Pointer to the start of the image pixels.
+  int rowSizeRGB = imageRGB->widthStep; // Size of row in bytes, including extra padding.
+  char *imRGB = imageRGB->imageData;    // Pointer to the start of the image pixels.
+  for (int y = 0; y < h; y++)
+  {
+    for (int x = 0; x < w; x++)
+    {
+      // Get the YIQ pixel components
+      uchar *pYIQ = (uchar *)(imYIQ + y * rowSizeYIQ + x * 3);
+      int bY = *(uchar *)(pYIQ + 0); // Y component
+      int bI = *(uchar *)(pYIQ + 1); // I component
+      int bQ = *(uchar *)(pYIQ + 2); // Q component
+
+      // Convert from 8-bit integers to floats
+      fY = (float)bY * Y_TO_FLOAT;
+      fI = (float)bI * I_TO_FLOAT + MIN_I;
+      fQ = (float)bQ * Q_TO_FLOAT + MIN_Q;
+      // Convert from YIQ to RGB
+      // where R,G,B are 0-1, Y is 0-1, I is -0.5957 to +0.5957, Q is -0.5226 to +0.5226.
+      fR = fY + 0.9563 * fI + 0.6210 * fQ;
+      fG = fY - 0.2721 * fI - 0.6474 * fQ;
+      fB = fY - 1.1070 * fI + 1.7046 * fQ;
+      // Convert from floats to 8-bit integers
+      int bR = (int)(fR * FLOAT_TO_BYTE);
+      int bG = (int)(fG * FLOAT_TO_BYTE);
+      int bB = (int)(fB * FLOAT_TO_BYTE);
+
+      // Clip the values to make sure it fits within the 8bits.
+      if (bR > 255)
+        bR = 255;
+      if (bR < 0)
+        bR = 0;
+      if (bG > 255)
+        bG = 255;
+      if (bG < 0)
+        bG = 0;
+      if (bB > 255)
+        bB = 255;
+      if (bB < 0)
+        bB = 0;
+
+      // Set the RGB pixel components. NOTE that OpenCV stores RGB pixels in B,G,R order.
+      uchar *pRGB = (uchar *)(imRGB + y * rowSizeRGB + x * 3);
+      *(pRGB + 0) = bB; // B component
+      *(pRGB + 1) = bG; // G component
+      *(pRGB + 2) = bR; // R component
+    }
+  }
+  return imageRGB;
 }
 
 Mat ImageAnalysis::bgrToHsv()
