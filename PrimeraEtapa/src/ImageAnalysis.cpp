@@ -22,15 +22,15 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName)
   namedWindow("BGR Range");
   namedWindow("HSV Range");
   namedWindow("YIQ Range");
-  createTrackbar("B", "BGR Range", &bgrRange[0], 255, onTrackBar);
-  createTrackbar("G", "BGR Range", &bgrRange[1], 255, onTrackBar);
-  createTrackbar("R", "BGR Range", &bgrRange[2], 255, onTrackBar);
-  createTrackbar("H", "HSV Range", &hsvRange[0], 255, onTrackBar);
-  createTrackbar("S", "HSV Range", &hsvRange[1], 255, onTrackBar);
-  createTrackbar("V", "HSV Range", &hsvRange[2], 255, onTrackBar);
-  createTrackbar("Y", "YIQ Range", &yiqRange[0], 255, onTrackBar);
-  createTrackbar("I", "YIQ Range", &yiqRange[1], 255, onTrackBar);
-  createTrackbar("Q", "YIQ Range", &yiqRange[2], 255, onTrackBar);
+  createTrackbar("B", "BGR Range", &bgrRange[0], 255);
+  createTrackbar("G", "BGR Range", &bgrRange[1], 255);
+  createTrackbar("R", "BGR Range", &bgrRange[2], 255);
+  createTrackbar("H", "HSV Range", &hsvRange[0], 255);
+  createTrackbar("S", "HSV Range", &hsvRange[1], 255);
+  createTrackbar("V", "HSV Range", &hsvRange[2], 255);
+  createTrackbar("Y", "YIQ Range", &yiqRange[0], 255);
+  createTrackbar("I", "YIQ Range", &yiqRange[1], 255);
+  createTrackbar("Q", "YIQ Range", &yiqRange[2], 255);
   setRanges();
 
   cvtColor(*frame, hsvImage, CV_BGR2HSV);
@@ -587,9 +587,15 @@ void ImageAnalysis::saveRanges()
 
   string file;
 
-  file += bgrRange[0] + " " + bgrRange[1] + " " + bgrRange[2] + "\n";
-  file += hsvRange[0] + " " + hsvRange[1] + " " + hsvRange[2] + "\n";
-  file += yiqRange[0] + " " + yiqRange[1] + " " + yiqRange[2] + "\n";
+  file += bgrRange[0] + " " + bgrRange[1];
+  file += " " + bgrRange[2];
+  file += "\n";
+  file += hsvRange[0] + " " + hsvRange[1];
+  file += " " + hsvRange[2];
+  file += "\n";
+  file += yiqRange[0] + " " + yiqRange[1];
+  file += " " + yiqRange[2];
+  file += "\n";
 
   outFile << file;
   outFile.close();
