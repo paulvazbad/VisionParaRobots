@@ -181,13 +181,14 @@ void ImageAnalysis::GenerateHist(const Mat &Image, float ranges[3][2], const Sca
 void ImageAnalysis::update()
 {
   // color model conversions
-  cvtColor(*frame, hsvImage, CV_BGR2HSV);
+  hsvImage = bgrToHsv();
+  yiqImage = bgrToYIQ();
   // frame manipulation & updates
   Mat hsvFilteredImage = hsvFilter();
   Mat bgrFilteredImage = bgrFilter();
   Mat binaryConvertedImage = binaryFilter();
-  Mat bgrToHsvConvertedImage = bgrToHsv();
-  Mat bgrToYiqConvertedImage = bgrToYIQ();
+  Mat yiqFilteredImage = yiqFilter();
+  
   //update histograms
   if (current_hist == 0)
   {
@@ -203,7 +204,7 @@ void ImageAnalysis::update()
     //HSV hist
     float ranges[3][2] = {{0, 180}, {0, 256}, {0, 256}};
     Scalar hsv_colors[3] = {Scalar(255, 255, 0), Scalar(0, 255, 255), Scalar(255, 0, 255)};
-    GenerateHist(bgrToHsvConvertedImage, ranges, hsv_colors);
+    GenerateHist(hsvImage, ranges, hsv_colors);
     generateGradients();
     string histogramNames[3] = {"Hue", "Saturation", "Value"};
     cvtColor(hsv_gradients[0], hsv_gradients[0], CV_HSV2BGR);
@@ -228,16 +229,18 @@ void ImageAnalysis::update()
   resize(bgrFilteredImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
   imshow("BGR Filtered", outImg);
 
+  imshow("YIQ Filtered", yiqFilteredImage);
+
   moveWindow("Binary Converted", windowsSecondColumnPosition, windowsVerticalPosition + verticalOffset);
   resize(binaryConvertedImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
   imshow("Binary Converted", outImg);
 
   moveWindow("HSV Converted", 0, windowsVerticalPosition * 2 + verticalOffset);
-  resize(bgrToHsvConvertedImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  resize(hsvImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
   imshow("HSV Converted", outImg);
 
   moveWindow("YIQ Converted", windowsSecondColumnPosition, windowsVerticalPosition * 2 + verticalOffset);
-  resize(bgrToYiqConvertedImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  resize(yiqImage, outImg, cv::Size(), windowsHeightRatio, windowsHeightRatio);
   imshow("YIQ Converted", outImg);
 }
 
@@ -278,6 +281,21 @@ Mat ImageAnalysis::bgrFilter()
   (*frame).copyTo(result, mask);
 
   return result;
+}
+
+Mat ImageAnalysis::yiqFilter()
+{
+ Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
+ int yMin, yMax, iMin, iMax, qMin, qMax;
+ calculateMaxMinChannels(YIQ_color, yMin, iMin, qMin, yMax, iMax, qMax);
+ 
+ // Updates mask values with the corresponding H,S,V limits
+ inRange(yiqImage, Scalar(yMin, iMin, qMin), Scalar(yMax, iMax, qMax), mask);
+ 
+ // Combines the mask with the original image, as result we get only the filtered colors
+ (*frame).copyTo(result, mask);
+ 
+ return result;
 }
 
 Mat ImageAnalysis::binaryFilter()
@@ -365,12 +383,16 @@ void ImageAnalysis::onMouse(int event, int x, int y)
     cout << "  Mouse X, Y: " << x << ", " << y << endl;
     BGR_color = (*frame).at<Vec3b>(Point(x, y));
     HSV_color = (hsvImage).at<Vec3b>(Point(x, y));
+    YIQ_color = (yiqImage).at<Vec3b>(Point(x, y));
     cout << "B = " << (int)BGR_color[0] << endl;
     cout << "G = " << (int)BGR_color[1] << endl;
     cout << "R = " << (int)BGR_color[2] << endl;
     cout << "H = " << (int)HSV_color[0] << endl;
     cout << "S = " << (int)HSV_color[1] << endl;
     cout << "V = " << (int)HSV_color[2] << endl;
+    cout << "Y = " << (int)YIQ_color[0] << endl;
+    cout << "I = " << (int)YIQ_color[1] << endl;
+    cout << "Q = " << (int)YIQ_color[2] << endl;
     break;
   case CV_EVENT_MOUSEMOVE:
     break;

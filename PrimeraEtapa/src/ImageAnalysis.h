@@ -15,9 +15,9 @@ public:
     void toggleHist(int);
 
 private:
-    Mat *frame, hsvImage;
+    Mat *frame, hsvImage, yiqImage;
     string screenName;
-    Vec3b BGR_color, HSV_color;
+    Vec3b BGR_color, HSV_color, YIQ_color;
     int epsilon;
     Mat b_hist, g_hist, r_hist;
     Mat rgb_gradients[3];
@@ -36,6 +36,7 @@ private:
     Mat binaryFilter();
     Mat bgrToYIQ();
     Mat bgrToHsv();
+    Mat yiqFilter();
     static void onMouse(int event, int x, int y, int, void *userdata);
     void onMouse(int event, int x, int y);
     void getScreenResolution(int &width, int &height);
