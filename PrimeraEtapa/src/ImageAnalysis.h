@@ -16,9 +16,10 @@ public:
 
 private:
     Mat *frame, hsvImage, yiqImage;
+    int hsvRange[3], yiqRange[3], bgrRange[3];
     string screenName;
     Vec3b BGR_color, HSV_color, YIQ_color;
-    int epsilon;
+    // int epsilon;
     Mat b_hist, g_hist, r_hist;
     Mat rgb_gradients[3];
     Mat hsv_gradients[3];
@@ -42,6 +43,6 @@ private:
     void onMouse(int event, int x, int y);
     void getScreenResolution(int &width, int &height);
     void generateGradients();
-    void calculateMaxMinChannels(Vec3b color, int &bMin, int &bMax, int &gMin, int &gMax, int &rMin, int &rMax);
+    void calculateMaxMinChannels(Vec3b &color, int &bMin, int &bMax, int &gMin, int &gMax, int &rMin, int &rMax);
     IplImage* convertImageYIQtoRGB(const IplImage imageYIQ);
 };

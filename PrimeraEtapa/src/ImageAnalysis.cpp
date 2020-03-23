@@ -16,10 +16,24 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName)
 {
   frame = &image;
   this->screenName = screenName;
-  epsilon = 35;
+  // epsilon = 35;
 
   namedWindow(screenName);
   setMouseCallback(screenName, onMouse, this);
+  
+  namedWindow("HSV Range");
+  namedWindow("YIQ Range");
+  namedWindow("BGR Range");
+  createTrackbar("H", "HSV Range", &hsvRange[0], 255);
+  createTrackbar("S", "HSV Range", &hsvRange[1], 255);
+  createTrackbar("V", "HSV Range", &hsvRange[2], 255);
+  createTrackbar("Y", "YIQ Range", &yiqRange[0], 255);
+  createTrackbar("I", "YIQ Range", &yiqRange[1], 255);
+  createTrackbar("Q", "YIQ Range", &yiqRange[2], 255);
+  createTrackbar("B", "BGR Range", &bgrRange[0], 255);
+  createTrackbar("G", "BGR Range", &bgrRange[1], 255);
+  createTrackbar("R", "BGR Range", &bgrRange[2], 255);
+
   cvtColor(*frame, hsvImage, CV_BGR2HSV);
   current_hist = 0;
   int width1, height1;
@@ -319,14 +333,25 @@ Mat ImageAnalysis::hsvFilter()
   return result;
 }
 
-void ImageAnalysis::calculateMaxMinChannels(Vec3b color, int &bMin, int &gMin, int &rMin, int &bMax, int &gMax, int &rMax)
+void ImageAnalysis::calculateMaxMinChannels(Vec3b &color, int &bMin, int &gMin, int &rMin, int &bMax, int &gMax, int &rMax)
 {
-  bMin = max(color[0] - epsilon, 0);
-  gMin = max(color[1] - epsilon, 0);
-  rMin = max(color[2] - epsilon, 0);
-  bMax = min(color[0] + epsilon, 255);
-  gMax = min(color[1] + epsilon, 255);
-  rMax = min(color[2] + epsilon, 255);
+  int epsilon[3];
+
+  if(&color == &BGR_color)
+    memcpy(epsilon, bgrRange, 3 * sizeof *bgrRange);
+  else if(&color == &HSV_color)
+    memcpy(epsilon, hsvRange, 3 * sizeof *hsvRange);
+  else if(&color == &YIQ_color)
+    memcpy(epsilon, yiqRange, 3 * sizeof *yiqRange);
+  else
+    cout << "ERROR IN CalculateMaxMinChannels" << endl;
+
+  bMin = max(color[0] - epsilon[0], 0);
+  gMin = max(color[1] - epsilon[1], 0);
+  rMin = max(color[2] - epsilon[2], 0);
+  bMax = min(color[0] + epsilon[0], 255);
+  gMax = min(color[1] + epsilon[1], 255);
+  rMax = min(color[2] + epsilon[2], 255);
 }
 
 Mat ImageAnalysis::bgrFilter()
