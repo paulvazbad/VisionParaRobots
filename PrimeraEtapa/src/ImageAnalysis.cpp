@@ -59,7 +59,7 @@ void ImageAnalysis::setRanges()
   file >> bgrRange[0] >> bgrRange[1] >> bgrRange[2];
   file >> hsvRange[0] >> hsvRange[1] >> hsvRange[2];
   file >> yiqRange[0] >> yiqRange[1] >> yiqRange[2];
-  
+
   setTrackbarPos("B", "BGR Range", bgrRange[0]);
   setTrackbarPos("G", "BGR Range", bgrRange[1]);
   setTrackbarPos("R", "BGR Range", bgrRange[2]);
@@ -143,7 +143,7 @@ void ImageAnalysis::plotLines(Mat gradients[3], Vec3b colors, string histogramNa
 {
   //Calculate line position in hist
   int p_t_p[6];
-  calculateMaxMinChannels(BGR_color, p_t_p[0], p_t_p[1], p_t_p[2], p_t_p[3], p_t_p[4], p_t_p[5]);
+  calculateMaxMinChannels(colors, p_t_p[0], p_t_p[1], p_t_p[2], p_t_p[3], p_t_p[4], p_t_p[5]);
   //PLot line in hists
   //Copy of the hists
   Mat histImagesCopy[3];
@@ -155,17 +155,17 @@ void ImageAnalysis::plotLines(Mat gradients[3], Vec3b colors, string histogramNa
   }
   for (int i = 0; i < 6; i++)
   {
-    line(histImagesCopy[int(i % 3)], Point(bin_w*p_t_p[i], 0), Point(bin_w*p_t_p[i], HIST_HEIGHT),
+    line(histImagesCopy[int(i % 3)], Point(bin_w * p_t_p[i], 0), Point(bin_w * p_t_p[i], HIST_HEIGHT),
          Scalar(255, 255, 255), 1, 8, 0);
   }
   //Paint centers
   int center_line = bin_w * BGR_color[0];
   line(histImagesCopy[0], Point(center_line, 0), Point(center_line, HIST_HEIGHT),
        Scalar(255, 100, 255), 1, 8, 0);
-      center_line = bin_w * BGR_color[1]; 
+  center_line = bin_w * BGR_color[1];
   line(histImagesCopy[1], Point(center_line, 0), Point(center_line, HIST_HEIGHT),
        Scalar(255, 100, 255), 1, 8, 0);
-      center_line = bin_w * BGR_color[2];
+  center_line = bin_w * BGR_color[2];
   line(histImagesCopy[2], Point(center_line, 0), Point(center_line, HIST_HEIGHT),
        Scalar(255, 100, 255), 1, 8, 0);
   imshow(histogramNames[0], histImagesCopy[0]);
@@ -587,8 +587,8 @@ void ImageAnalysis::saveRanges()
   ofstream file;
   file.open("ranges.txt");
 
-  file << bgrRange[0] << " " << bgrRange[1] << " " << bgrRange[2]<<"\n";
-  file << hsvRange[0] << " " << hsvRange[1] << " " <<hsvRange[2]<<"\n";
-  file << yiqRange[0] << " " << yiqRange[1] << " " <<yiqRange[2]<<"\n";
+  file << bgrRange[0] << " " << bgrRange[1] << " " << bgrRange[2] << "\n";
+  file << hsvRange[0] << " " << hsvRange[1] << " " << hsvRange[2] << "\n";
+  file << yiqRange[0] << " " << yiqRange[1] << " " << yiqRange[2] << "\n";
   file.close();
 }
