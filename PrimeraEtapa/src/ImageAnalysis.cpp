@@ -21,18 +21,19 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName)
   namedWindow(screenName);
   setMouseCallback(screenName, onMouse, this);
   
+  namedWindow("BGR Range");
   namedWindow("HSV Range");
   namedWindow("YIQ Range");
-  namedWindow("BGR Range");
+  createTrackbar("B", "BGR Range", &bgrRange[0], 255);
+  createTrackbar("G", "BGR Range", &bgrRange[1], 255);
+  createTrackbar("R", "BGR Range", &bgrRange[2], 255);
   createTrackbar("H", "HSV Range", &hsvRange[0], 255);
   createTrackbar("S", "HSV Range", &hsvRange[1], 255);
   createTrackbar("V", "HSV Range", &hsvRange[2], 255);
   createTrackbar("Y", "YIQ Range", &yiqRange[0], 255);
   createTrackbar("I", "YIQ Range", &yiqRange[1], 255);
   createTrackbar("Q", "YIQ Range", &yiqRange[2], 255);
-  createTrackbar("B", "BGR Range", &bgrRange[0], 255);
-  createTrackbar("G", "BGR Range", &bgrRange[1], 255);
-  createTrackbar("R", "BGR Range", &bgrRange[2], 255);
+  setRanges();
 
   cvtColor(*frame, hsvImage, CV_BGR2HSV);
   current_hist = 0;
@@ -45,6 +46,30 @@ ImageAnalysis::ImageAnalysis(Mat &image, string screenName)
   windowsHeightRatio = (double(windowsVerticalPosition) * 0.8) / height1;
   windowsSecondColumnPosition = windowsHeightRatio * width1 * 1.2;
   generateGradients();
+}
+
+void ImageAnalysis::setRanges()
+{
+  ifstream file("ranges.txt");
+
+  if(file.fail()){
+    std::cout << "File could not be opened\n";
+    return;  
+  }
+
+  file >> bgrRange[0] >> bgrRange[1] >> bgrRange[2];
+  file >> hsvRange[0] >> hsvRange[1] >> hsvRange[2];
+  file >> yiqRange[0] >> yiqRange[1] >> yiqRange[2];
+  
+  setTrackbarPos("B", "BGR Range", bgrRange[0]);
+  setTrackbarPos("G", "BGR Range", bgrRange[1]);
+  setTrackbarPos("R", "BGR Range", bgrRange[2]);
+  setTrackbarPos("H", "HSV Range", hsvRange[0]);
+  setTrackbarPos("S", "HSV Range", hsvRange[1]);
+  setTrackbarPos("V", "HSV Range", hsvRange[2]);
+  setTrackbarPos("Y", "YIQ Range", yiqRange[0]);
+  setTrackbarPos("I", "YIQ Range", yiqRange[1]);
+  setTrackbarPos("Q", "YIQ Range", yiqRange[2]);
 }
 
 void ImageAnalysis::generateGradients()

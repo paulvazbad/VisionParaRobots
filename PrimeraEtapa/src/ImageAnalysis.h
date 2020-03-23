@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string.h>
+#include <fstream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -44,5 +45,6 @@ private:
     void getScreenResolution(int &width, int &height);
     void generateGradients();
     void calculateMaxMinChannels(Vec3b &color, int &bMin, int &bMax, int &gMin, int &gMax, int &rMin, int &rMax);
+    void setRanges();
     IplImage* convertImageYIQtoRGB(const IplImage imageYIQ);
 };
