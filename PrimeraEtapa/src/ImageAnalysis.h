@@ -15,6 +15,7 @@ public:
     void update();
     void toggleHist(int);
     void saveRanges();
+    void endProgram();
 
 private:
     Mat *frame, hsvImage, yiqImage;
@@ -32,7 +33,9 @@ private:
     int bin_w;
     int current_hist;
     double windowsHeightRatio;
-    int windowsVerticalPosition, windowsSecondColumnPosition, verticalOffset;
+    int windowsVerticalPosition, windowsSecondColumnPosition;
+    int windowFullHorizontalSize, windowFullVerticalSize, verticalOffset, horizontalOffset;
+    double histogramSizeRatioVertical, histogramSizeRatioHorizontal;
     Mat histImages[3];
     Mat hsvFilter();
     Mat bgrFilter();

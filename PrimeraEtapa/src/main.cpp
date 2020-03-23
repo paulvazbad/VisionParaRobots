@@ -85,6 +85,6 @@ int main(int argc, char *argv[])
       isStatic = !isStatic;
     }
   }
-
+  imageAnalysis.endProgram();
   return 0;
 }
