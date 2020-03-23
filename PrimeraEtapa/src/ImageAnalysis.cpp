@@ -319,7 +319,7 @@ Mat ImageAnalysis::hsvFilter()
   return result;
 }
 
-void ImageAnalysis::calculateMaxMinChannels(Vec3b color, int &bMin, int &bMax, int &gMin, int &gMax, int &rMin, int &rMax)
+void ImageAnalysis::calculateMaxMinChannels(Vec3b color, int &bMin, int &gMin, int &rMin, int &bMax, int &gMax, int &rMax)
 {
   bMin = max(color[0] - epsilon, 0);
   gMin = max(color[1] - epsilon, 0);
@@ -333,7 +333,7 @@ Mat ImageAnalysis::bgrFilter()
 {
   Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
   int bMin, bMax, gMin, gMax, rMin, rMax;
-  calculateMaxMinChannels(BGR_color, bMin, bMax, gMin, gMax, rMin, rMax);
+  calculateMaxMinChannels(BGR_color, bMin, gMin, rMin, bMax, gMax, rMax);
   // Updates mask values with the corresponding B,G,R limits
   inRange(*frame, Scalar(bMin, gMin, rMin), Scalar(bMax, gMax, rMax), mask);
 
