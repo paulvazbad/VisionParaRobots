@@ -1,0 +1,106 @@
+#include "ImageFiltering.h"
+#include <iostream>
+#include <string.h>
+#include <fstream>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#if WIN32
+#include <windows.h>
+#else
+#include <X11/Xlib.h>
+#endif
+using namespace std;
+using namespace cv;
+
+ImageFiltering::ImageFiltering(Mat &image, string screenName)
+{
+  frame = &image;
+  int width1, height1;
+  height1 = frame->size().height;
+  width1 = frame->size().width;
+  int width2, height2;
+  getScreenResolution(width2, height2);
+  windowsVerticalPosition = height2 / 3;
+  windowsHeightRatio = (double(windowsVerticalPosition) * 0.8) / height1;
+  this->screenName = screenName;
+  imshow(screenName,image);
+  grayscaleImage = bgrToGray();
+  
+}
+
+void ImageFiltering::getScreenResolution(int &width, int &height)
+{
+#if WIN32
+  width = (int)GetSystemMetrics(SM_CXSCREEN);
+  height = (int)GetSystemMetrics(SM_CYSCREEN) * 0.9;
+#else
+  Display *disp = XOpenDisplay(NULL);
+  Screen *scrn = DefaultScreenOfDisplay(disp);
+  width = scrn->width*0.95;
+  height = scrn->height * 0.97;
+  windowFullVerticalSize = scrn->height*0.80;
+  windowFullHorizontalSize = scrn->width*0.88;
+  verticalOffset = scrn->height * 0.03;
+  horizontalOffset = scrn->width * 0.05;
+#endif
+}
+
+
+void ImageFiltering::update()
+{
+  Mat outImageHelper;
+  resize(grayscaleImage, outImageHelper, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  imshow("Gray Converted", grayscaleImage);
+}
+
+Mat ImageFiltering::binaryFilter()
+{
+  Mat result = frame->clone();
+  int luminosity_average = 0;
+
+  for (int i = 0; i < result.rows; i++)
+  {
+    for (int x = 0; x < result.cols; x++)
+    {
+      double b = result.at<Vec3b>(i, x)[0];
+      double g = result.at<Vec3b>(i, x)[1];
+      double r = result.at<Vec3b>(i, x)[2];
+      luminosity_average += int(0.299 * r + 0.587 * g + 0.114 * b);
+    }
+  }
+  luminosity_average /= (result.cols * result.rows);
+
+  for (int i = 0; i < result.rows; i++)
+  {
+    for (int x = 0; x < result.cols; x++)
+    {
+      int color_average = (result.at<Vec3b>(i, x)[0] + result.at<Vec3b>(i, x)[1] + result.at<Vec3b>(i, x)[2]) / 3;
+      if (color_average < luminosity_average)
+      {
+        result.at<Vec3b>(i, x)[0] = 0;
+        result.at<Vec3b>(i, x)[1] = 0;
+        result.at<Vec3b>(i, x)[2] = 0;
+      }
+      else
+      {
+        result.at<Vec3b>(i, x)[0] = 255;
+        result.at<Vec3b>(i, x)[1] = 255;
+        result.at<Vec3b>(i, x)[2] = 255;
+      }
+    }
+  }
+  return result;
+}
+
+Mat ImageFiltering::bgrToGray()
+{
+  Mat result = frame->clone();
+  cvtColor(*frame, result, CV_BGR2GRAY);
+  return result;
+}
+
+
+void ImageFiltering::endProgram(){
+   destroyAllWindows();
+}
