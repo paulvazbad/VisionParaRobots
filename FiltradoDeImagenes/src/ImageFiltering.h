@@ -25,11 +25,15 @@ private:
     int windowsVerticalPosition, windowsSecondColumnPosition;
     int windowFullHorizontalSize, windowFullVerticalSize, verticalOffset, horizontalOffset;
     double histogramSizeRatioVertical, histogramSizeRatioHorizontal;
+    Mat grayscaleImage;
     Mat binaryFilter();
     Mat bgrToGray();
     void onMouse(int event, int x, int y);
     static void onMouse(int event, int x, int y, int, void *userdata);
     void getScreenResolution(int &width, int &height);
     void printImageInfo(int x, int y);
-    Mat grayscaleImage;
+    //Low Pass Filters
+    void medianFilter();
+    void averageFilter();
+    void gaussianFilter();
 };

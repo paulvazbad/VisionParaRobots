@@ -30,7 +30,8 @@ ImageFiltering::ImageFiltering(Mat &image, string screenName)
   this->screenName = screenName;
   imshow(screenName,image);
   grayscaleImage = bgrToGray();
-}
+  gaussianFilter();
+  }
 void ImageFiltering::printImageInfo(int x, int y){
   int KS=5;
   cout<<"Rows: "<<grayscaleImage.rows<<endl;
@@ -143,6 +144,29 @@ void ImageFiltering::onMouse(int event, int x, int y)
     break;
   }
 }
+
+//Median Filter
+void ImageFiltering::medianFilter(){
+  Mat copy = grayscaleImage.clone();
+  medianBlur(copy,copy,3);
+  imshow("median blur",copy);
+}
+
+void ImageFiltering::averageFilter(){
+  Mat copy = grayscaleImage.clone();
+  Mat kernel = (Mat_<double>(5, 5) << 0.04, 0.04, 0.04,0.04, 0.04,  
+                            0.04, 0.04, 0.04, 0.04, 0.04,
+                            0.04, 0.04, 0.04, 0.04, 0.04,
+                            0.04, 0.04, 0.04, 0.04, 0.04,
+                            0.04, 0.04, 0.04, 0.04, 0.04);
+  cout<<kernel<<endl;
+  filter2D(copy,copy,-1,kernel,Point(-1,-1),0,BORDER_DEFAULT);
+  imshow("average blur",copy);
+}
+void ImageFiltering::gaussianFilter(){
+  cout<<getGaussianKernel(7,2,CV_32F)<<endl;  
+}
+
 
 void ImageFiltering::endProgram(){
    destroyAllWindows();
