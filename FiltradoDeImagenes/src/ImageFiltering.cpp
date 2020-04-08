@@ -16,6 +16,10 @@ using namespace cv;
 ImageFiltering::ImageFiltering(Mat &image, string screenName)
 {
   frame = &image;
+  this->screenName = screenName;
+  namedWindow(screenName);
+  namedWindow("Gray Converted");
+  setMouseCallback("Gray Converted", onMouse, this);
   int width1, height1;
   height1 = frame->size().height;
   width1 = frame->size().width;
@@ -26,8 +30,28 @@ ImageFiltering::ImageFiltering(Mat &image, string screenName)
   this->screenName = screenName;
   imshow(screenName,image);
   grayscaleImage = bgrToGray();
-  
 }
+void ImageFiltering::printImageInfo(int x, int y){
+  int KS=5;
+  cout<<"Rows: "<<grayscaleImage.rows<<endl;
+  cout<<"Cols "<<grayscaleImage.cols<<endl;
+  cout<<"Channels: "<<grayscaleImage.channels()<<endl;
+  
+  for(int j=y-(KS/2); j<=y+(KS/2); ++j){
+    for(int i=x-(KS/2); i<=x+(KS/2); ++i){
+      if(i>0 && i<grayscaleImage.cols && j>0 && j<grayscaleImage.rows){
+        double value = grayscaleImage.at<Vec3b>(i,j)[0];
+     
+        cout<<value<<" ";
+      }
+      else{
+        cout<<"NaN ";
+      }
+    }
+    cout<<endl;
+  }
+}
+
 
 void ImageFiltering::getScreenResolution(int &width, int &height)
 {
@@ -99,7 +123,26 @@ Mat ImageFiltering::bgrToGray()
   cvtColor(*frame, result, CV_BGR2GRAY);
   return result;
 }
+void ImageFiltering::onMouse(int event, int x, int y, int, void *userdata)
+{
+  ImageFiltering *imageFiltering = reinterpret_cast<ImageFiltering *>(userdata);
+  imageFiltering->onMouse(event, x, y);
+}
 
+void ImageFiltering::onMouse(int event, int x, int y)
+{
+  switch (event)
+  {
+  case CV_EVENT_LBUTTONDOWN:
+    cout << "  Mouse X, Y: " << x << ", " << y << endl;
+    printImageInfo(x,y);
+    break;
+  case CV_EVENT_MOUSEMOVE:
+    break;
+  case CV_EVENT_LBUTTONUP:
+    break;
+  }
+}
 
 void ImageFiltering::endProgram(){
    destroyAllWindows();

@@ -27,6 +27,9 @@ private:
     double histogramSizeRatioVertical, histogramSizeRatioHorizontal;
     Mat binaryFilter();
     Mat bgrToGray();
+    void onMouse(int event, int x, int y);
+    static void onMouse(int event, int x, int y, int, void *userdata);
     void getScreenResolution(int &width, int &height);
+    void printImageInfo(int x, int y);
     Mat grayscaleImage;
 };
