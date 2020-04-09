@@ -5,6 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <math.h>       /* exp */
 #if WIN32
 #include <windows.h>
 #else
@@ -164,7 +165,28 @@ void ImageFiltering::averageFilter(){
   imshow("average blur",copy);
 }
 void ImageFiltering::gaussianFilter(){
-  cout<<getGaussianKernel(7,2,CV_32F)<<endl;  
+  Mat copy = grayscaleImage.clone();
+  cout<<getGaussianKernel(5,1.41421356237,CV_32F)<<endl; 
+  //generate gaussianFilter
+  Mat kernel(5,5,cv::DataType<double>::type);
+  double sigma_squared = 1;
+  int posx = -2;
+  for(int col=0; col<5; col++){
+    int posy = -2;
+    for(int row=0; row<5; row++){
+      double up = -(pow(posx,2)+pow(posy,2))/(2*sigma_squared);
+      double gauss_value = 5 * exp(up);
+      cout<<double(round(gauss_value))<<" at: "<<row<<col<<endl;
+      kernel.at<double>(row, col)=double(round(gauss_value))/25;
+      posy++;
+    }
+    posx++;
+  }
+  cout<<kernel<<endl;
+  filter2D(copy,copy,-1,kernel,Point(-1,-1),0,BORDER_DEFAULT);
+  //Size seven(7,7);
+  //GaussianBlur(copy,copy,seven,1.41421356237,1.41421356237,BORDER_DEFAULT);
+  imshow("gaussian blur",copy);
 }
 
 
