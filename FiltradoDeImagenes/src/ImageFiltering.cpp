@@ -33,6 +33,7 @@ ImageFiltering::ImageFiltering(Mat &image, string screenName)
   grayscaleImage = bgrToGray();
   gaussianFilter();
   laplaceFilter();
+  logFilter();
 }
 void ImageFiltering::printImageInfo(int x, int y)
 {
@@ -201,7 +202,7 @@ void ImageFiltering::gaussianFilter()
 }
 
 void ImageFiltering::laplaceFilter(){
-  Mat src, src_gray, dst;
+  Mat src, dst;
   int kernel_size = 3;
   int scale = 1;
   int delta = 0;
@@ -215,8 +216,27 @@ void ImageFiltering::laplaceFilter(){
   /// Apply Laplace function
   Mat abs_dst;
   Laplacian( src, dst, ddepth, kernel_size, scale, delta, BORDER_DEFAULT );
-  convertScaleAbs( dst, abs_dst ); //converts to CV_8
+  convertScaleAbs( dst, abs_dst ); //converts to CV_8U
   imshow( "Laplace filter", abs_dst );
+}
+
+void ImageFiltering::logFilter(){
+  Mat src, dst;
+  Mat kernel = (Mat_<double>(3,3) << 0,1,0,1,-4,1,0,1,0);
+  Point anchor = Point( -1, -1 );
+  double delta = 0;
+  int ddepth = CV_16S;
+  src = grayscaleImage.clone();
+
+  /// Remove noise by blurring with a Gaussian filter
+  GaussianBlur( src, src, Size(3,3), 0, 0, BORDER_DEFAULT );
+  /// Create window
+  namedWindow( "LoG Filter", CV_WINDOW_AUTOSIZE );
+  /// Apply filter
+  Mat abs_dst;
+  filter2D(src, dst, ddepth , kernel, anchor, delta, BORDER_DEFAULT );
+  convertScaleAbs( dst, abs_dst ); //converts to CV_8U
+  imshow( "LoG Filter", abs_dst);
 }
 
 void ImageFiltering::endProgram()

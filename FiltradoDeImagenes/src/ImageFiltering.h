@@ -37,4 +37,5 @@ private:
     void averageFilter();
     void gaussianFilter();
     void laplaceFilter();
+    void logFilter();
 };
