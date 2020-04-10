@@ -35,6 +35,7 @@ ImageFiltering::ImageFiltering(Mat &image, string screenName)
   laplaceFilter();
   logFilter();
   edgeDetectionFilter();
+  enhancementFilter();
 }
 void ImageFiltering::printImageInfo(int x, int y)
 {
@@ -256,6 +257,25 @@ void ImageFiltering::edgeDetectionFilter(){
   dst = Scalar::all(0);
   src.copyTo( dst, edges);
   imshow( "Canny Edge Detection Filter", dst);
+}
+
+void ImageFiltering::enhancementFilter(){
+  Mat src, dst;
+  Mat kernel = (Mat_<double>(3,3) << -1.67, -2, -1.67, -2, 14.68, -2, -1.67, -2, -1.67)/14.68;
+  Point anchor = Point( -1, -1 );
+  double delta = 0;
+  int ddepth = CV_16S;
+  src = grayscaleImage.clone();
+
+  /// Remove noise by blurring with a Gaussian filter
+  GaussianBlur( src, src, Size(3,3), 0, 0, BORDER_DEFAULT );
+  /// Create window
+  namedWindow( "Enhancement Filter", CV_WINDOW_AUTOSIZE );
+  /// Apply filter
+  Mat abs_dst;
+  filter2D(src, dst, ddepth , kernel, anchor, delta, BORDER_DEFAULT );
+  convertScaleAbs( dst, abs_dst ); //converts to CV_8U
+  imshow( "Enhancement Filter", abs_dst);
 }
 
 void ImageFiltering::endProgram()

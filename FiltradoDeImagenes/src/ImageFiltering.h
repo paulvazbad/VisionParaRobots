@@ -39,4 +39,5 @@ private:
     void laplaceFilter();
     void logFilter();
     void edgeDetectionFilter();
+    void enhancementFilter();
 };
