@@ -261,7 +261,7 @@ void ImageFiltering::edgeDetectionFilter(){
 
 void ImageFiltering::enhancementFilter(){
   Mat src, dst;
-  Mat kernel = (Mat_<double>(3,3) << -1.67, -2, -1.67, -2, 14.68, -2, -1.67, -2, -1.67)/14.68;
+  Mat kernel = (Mat_<double>(3,3) << -1, -1, -1, -1, 9, -1, -1, -1, -1);
   Point anchor = Point( -1, -1 );
   double delta = 0;
   int ddepth = CV_16S;
