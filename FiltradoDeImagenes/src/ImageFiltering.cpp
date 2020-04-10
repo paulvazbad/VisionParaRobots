@@ -32,6 +32,7 @@ ImageFiltering::ImageFiltering(Mat &image, string screenName)
   imshow(screenName, image);
   grayscaleImage = bgrToGray();
   gaussianFilter();
+  laplaceFilter();
 }
 void ImageFiltering::printImageInfo(int x, int y)
 {
@@ -197,6 +198,25 @@ void ImageFiltering::gaussianFilter()
   //Size seven(7,7);
   //GaussianBlur(copy,copy,seven,1.41421356237,1.41421356237,BORDER_DEFAULT);
   imshow("gaussian blur", copy);
+}
+
+void ImageFiltering::laplaceFilter(){
+  Mat src, src_gray, dst;
+  int kernel_size = 3;
+  int scale = 1;
+  int delta = 0;
+  int ddepth = CV_16S;
+  src = grayscaleImage.clone();
+
+  /// Remove noise by blurring with a Gaussian filter
+  GaussianBlur( src, src, Size(3,3), 0, 0, BORDER_DEFAULT );
+  /// Create window
+  namedWindow( "Laplace filter", CV_WINDOW_AUTOSIZE );
+  /// Apply Laplace function
+  Mat abs_dst;
+  Laplacian( src, dst, ddepth, kernel_size, scale, delta, BORDER_DEFAULT );
+  convertScaleAbs( dst, abs_dst ); //converts to CV_8
+  imshow( "Laplace filter", abs_dst );
 }
 
 void ImageFiltering::endProgram()

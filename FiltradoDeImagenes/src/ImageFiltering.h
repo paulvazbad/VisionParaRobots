@@ -36,4 +36,5 @@ private:
     void medianFilter();
     void averageFilter();
     void gaussianFilter();
+    void laplaceFilter();
 };
