@@ -38,4 +38,5 @@ private:
     void gaussianFilter();
     void laplaceFilter();
     void logFilter();
+    void edgeDetectionFilter();
 };
