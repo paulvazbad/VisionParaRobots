@@ -299,11 +299,10 @@ void ImageFiltering::sobelFilter(){
   Sobel(src_gray, grad_y, ddepth, 0, 1, 3, scale, delta, BORDER_DEFAULT);
   convertScaleAbs(grad_y, abs_grad_y);
 
-  // Total Gradient (approximate)
-  addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
-
-  namedWindow("Sobel Filter", CV_WINDOW_AUTOSIZE);
-  imshow("Sobel Filter", grad);
+  namedWindow("Sobel Filter (dx)", CV_WINDOW_AUTOSIZE);
+  namedWindow("Sobel Filter (dy)", CV_WINDOW_AUTOSIZE);
+  imshow("Sobel Filter (dx)", abs_grad_x);
+  imshow("Sobel Filter (dy)", abs_grad_y);
 }
 
 void ImageFiltering::scharrFilter(){
@@ -325,11 +324,10 @@ void ImageFiltering::scharrFilter(){
   Scharr(src_gray, grad_y, ddepth, 0, 1, scale, delta, BORDER_DEFAULT);
   convertScaleAbs(grad_y, abs_grad_y);
 
-  // Total Gradient (approximate)
-  addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
-
-  namedWindow("Scharr Filter", CV_WINDOW_AUTOSIZE);
-  imshow("Scharr Filter", grad);
+  namedWindow("Scharr Filter (dx)", CV_WINDOW_AUTOSIZE);
+  namedWindow("Scharr Filter (dy)", CV_WINDOW_AUTOSIZE);
+  imshow("Scharr Filter (dx)", abs_grad_x);
+  imshow("Scharr Filter (dy)", abs_grad_y);
 }
 
 void ImageFiltering::endProgram()
