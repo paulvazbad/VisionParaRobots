@@ -36,6 +36,8 @@ ImageFiltering::ImageFiltering(Mat &image, string screenName)
   logFilter();
   edgeDetectionFilter();
   enhancementFilter();
+  sobelFilter();
+  scharrFilter();
 }
 void ImageFiltering::printImageInfo(int x, int y)
 {
@@ -276,6 +278,50 @@ void ImageFiltering::enhancementFilter(){
   filter2D(src, dst, ddepth , kernel, anchor, delta, BORDER_DEFAULT );
   convertScaleAbs( dst, abs_dst ); //converts to CV_8U
   imshow( "Enhancement Filter", abs_dst);
+}
+
+void ImageFiltering::sobelFilter(){
+  Mat src_gray = grayscaleImage.clone();
+  // Mat grad_x, abs_grad_x;
+  Mat grad_x, grad_y, grad;
+  Mat abs_grad_x, abs_grad_y;
+  int scale = 1;
+  int delta = 0;
+  int ddepth = CV_16S;
+  
+  GaussianBlur(src_gray, src_gray, Size(3,3), 0, 0, BORDER_DEFAULT);
+  
+  Sobel(src_gray, grad_x, ddepth, 1, 0, 3, scale, delta, BORDER_DEFAULT);
+  convertScaleAbs(grad_x, abs_grad_x);
+
+  Sobel(src_gray, grad_y, ddepth, 0, 1, 3, scale, delta, BORDER_DEFAULT);
+  convertScaleAbs(grad_y, abs_grad_y);
+
+  addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
+
+  namedWindow("Sobel Filter", CV_WINDOW_AUTOSIZE);
+  imshow("Sobel Filter", grad);
+}
+
+void ImageFiltering::scharrFilter(){
+  Mat src_gray = grayscaleImage.clone();
+  Mat grad_x, grad_y, grad;
+  Mat abs_grad_x, abs_grad_y;
+  int scale = 1;
+  int delta = 0;
+  int ddepth = CV_16S;
+  
+  GaussianBlur(src_gray, src_gray, Size(3,3), 0, 0, BORDER_DEFAULT);
+  Scharr(src_gray, grad_x, ddepth, 1, 0, scale, delta, BORDER_DEFAULT);
+  convertScaleAbs(grad_x, abs_grad_x);
+
+  Scharr(src_gray, grad_y, ddepth, 0, 1, scale, delta, BORDER_DEFAULT);
+  convertScaleAbs(grad_y, abs_grad_y);
+
+  addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
+
+  namedWindow("Scharr Filter", CV_WINDOW_AUTOSIZE);
+  imshow("Scharr Filter", grad);
 }
 
 void ImageFiltering::endProgram()

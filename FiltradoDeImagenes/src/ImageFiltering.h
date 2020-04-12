@@ -40,4 +40,6 @@ private:
     void logFilter();
     void edgeDetectionFilter();
     void enhancementFilter();
+    void sobelFilter();
+    void scharrFilter();
 };
