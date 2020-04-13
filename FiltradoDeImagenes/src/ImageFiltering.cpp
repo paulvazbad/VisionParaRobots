@@ -38,6 +38,8 @@ ImageFiltering::ImageFiltering(Mat &image, string screenName)
   enhancementFilter();
   sobelFilter();
   scharrFilter();
+  erotion();
+  dilation();
 }
 void ImageFiltering::printImageInfo(int x, int y)
 {
@@ -89,9 +91,8 @@ void ImageFiltering::update()
   imshow("Gray Converted", grayscaleImage);
 }
 
-Mat ImageFiltering::binaryFilter()
+Mat ImageFiltering::binaryFilter(Mat result)
 {
-  Mat result = frame->clone();
   int luminosity_average = 0;
 
   for (int i = 0; i < result.rows; i++)
@@ -330,6 +331,39 @@ void ImageFiltering::scharrFilter(){
   imshow("Scharr Filter (dy)", abs_grad_y);
 }
 
+void ImageFiltering::erotion(){
+  Mat erosion_dst;
+  Mat binarized_image; 
+  threshold(grayscaleImage,binarized_image,127,255,THRESH_BINARY);
+  int erosion_type = MORPH_RECT;
+  int erosion_size = 5; //here increase for more erosion, reduce for less erosion
+  Mat element = getStructuringElement( erosion_type,
+                                       Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+                                       Point( erosion_size, erosion_size ) );
+
+  /// Apply the erosion operation
+  erode( binarized_image, erosion_dst, element );
+  imshow("Original Binarized",binarized_image);
+  imshow("Erotion 5x5", erosion_dst);
+
+}
+
+void ImageFiltering::dilation(){
+  Mat dilation_dst;
+  Mat binarized_image; 
+  threshold(grayscaleImage,binarized_image,127,255,THRESH_BINARY);
+  int dilation_type = MORPH_RECT;
+  int dilation_size = 5; //here increase for more dilation, reduce for less dilation
+  Mat element = getStructuringElement( dilation_type,
+                                       Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                                       Point( dilation_size, dilation_size ) );
+
+  /// Apply the erosion operation
+  dilate( binarized_image, dilation_dst, element );
+  imshow("Original Binarized",binarized_image);
+  imshow("Dilation 5x5", dilation_dst);
+
+}
 void ImageFiltering::endProgram()
 {
   destroyAllWindows();

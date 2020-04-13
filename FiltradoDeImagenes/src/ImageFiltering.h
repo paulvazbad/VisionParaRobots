@@ -26,7 +26,7 @@ private:
     int windowFullHorizontalSize, windowFullVerticalSize, verticalOffset, horizontalOffset;
     double histogramSizeRatioVertical, histogramSizeRatioHorizontal;
     Mat grayscaleImage;
-    Mat binaryFilter();
+    Mat binaryFilter(Mat frame);
     Mat bgrToGray();
     void onMouse(int event, int x, int y);
     static void onMouse(int event, int x, int y, int, void *userdata);
@@ -42,4 +42,6 @@ private:
     void enhancementFilter();
     void sobelFilter();
     void scharrFilter();
+    void erotion();
+    void dilation();
 };
