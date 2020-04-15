@@ -222,12 +222,14 @@ void ImageFiltering::laplaceFilter(){
   Mat abs_dst;
   Laplacian( src, dst, ddepth, kernel_size, scale, delta, BORDER_DEFAULT );
   convertScaleAbs( dst, abs_dst ); //converts to CV_8U
+  //normalize(abs_dst,  abs_dst, 0, 255, NORM_MINMAX);
   imshow( "Laplace filter", abs_dst );
 }
 
 void ImageFiltering::logFilter(){
-  Mat src, dst;
+  Mat src, dst, dst2;
   Mat kernel = (Mat_<double>(3,3) << 0,1,0,1,-4,1,0,1,0);
+  Mat kernel2 = (Mat_<double>(5,5) << 0,0,-1,0,0,0,-1,-2,-1,0,-1,-2,16,-2,-1,0,-1,-2,-1,0,0,0,-1,0,0);
   Point anchor = Point( -1, -1 );
   double delta = 0;
   int ddepth = CV_16S;
@@ -237,11 +239,16 @@ void ImageFiltering::logFilter(){
   GaussianBlur( src, src, Size(3,3), 0, 0, BORDER_DEFAULT );
   /// Create window
   namedWindow( "LoG Filter", CV_WINDOW_AUTOSIZE );
+  namedWindow( "LoG Filter 5x5", CV_WINDOW_AUTOSIZE );
   /// Apply filter
   Mat abs_dst;
+  Mat abs_dst2;
   filter2D(src, dst, ddepth , kernel, anchor, delta, BORDER_DEFAULT );
   convertScaleAbs( dst, abs_dst ); //converts to CV_8U
-  imshow( "LoG Filter", abs_dst);
+  filter2D(src, dst2, ddepth , kernel, anchor, delta, BORDER_DEFAULT );
+  convertScaleAbs( dst, abs_dst2 ); //converts to CV_8U
+  imshow( "LoG Filter", abs_dst2);
+  imshow( "LoG Filter 5x5", abs_dst);
 }
 
 void ImageFiltering::edgeDetectionFilter(){
