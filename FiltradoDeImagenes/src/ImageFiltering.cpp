@@ -45,13 +45,10 @@ ImageFiltering::ImageFiltering(Mat &image, string screenName)
   namedWindow( "Binary Filtered", CV_WINDOW_AUTOSIZE );
   resize(binaryImage, binaryImage, cv::Size(), 0.7, 0.7);
   imshow("Binary Filtered", binaryImage);
-  
-=======
   sobelFilter();
   scharrFilter();
   erotion();
   dilation();
->>>>>>> 8c3fbc4195bf16de5e625e23fa7b8fa3ff139620
 }
 void ImageFiltering::printImageInfo(int x, int y)
 {
@@ -268,11 +265,8 @@ void ImageFiltering::laplaceFilter(){
   Mat abs_dst;
   Laplacian( src, dst, ddepth, kernel_size, scale, delta, BORDER_DEFAULT );
   convertScaleAbs( dst, abs_dst ); //converts to CV_8U
-<<<<<<< HEAD
   resize(abs_dst, abs_dst, cv::Size(), 0.7, 0.7);
-=======
   //normalize(abs_dst,  abs_dst, 0, 255, NORM_MINMAX);
->>>>>>> 8c3fbc4195bf16de5e625e23fa7b8fa3ff139620
   imshow( "Laplace filter", abs_dst );
 }
 
