@@ -33,9 +33,18 @@ ImageFiltering::ImageFiltering(Mat &image, string screenName)
   grayscaleImage = bgrToGray();
   gaussianFilter();
   laplaceFilter();
+  int const max_elem = 2;
   logFilter();
   edgeDetectionFilter();
   enhancementFilter();
+  degradadoFilter();
+  averageFilter();
+  medianFilter();
+  Mat binaryImage = binaryFilter();
+  namedWindow( "Binary Filtered", CV_WINDOW_AUTOSIZE );
+  resize(binaryImage, binaryImage, cv::Size(), 0.7, 0.7);
+  imshow("Binary Filtered", binaryImage);
+  
 }
 void ImageFiltering::printImageInfo(int x, int y)
 {
@@ -83,7 +92,7 @@ void ImageFiltering::getScreenResolution(int &width, int &height)
 void ImageFiltering::update()
 {
   Mat outImageHelper;
-  resize(grayscaleImage, outImageHelper, cv::Size(), windowsHeightRatio, windowsHeightRatio);
+  resize(grayscaleImage, grayscaleImage, cv::Size(), 0.7, 0.7);
   imshow("Gray Converted", grayscaleImage);
 }
 
@@ -123,6 +132,40 @@ Mat ImageFiltering::binaryFilter()
       }
     }
   }
+
+  Mat erosion_dst, dilation_dst;
+  int erosion_size = 1;
+  int dilation_size = 1;
+  int const max_kernel_size = 21;
+
+  /// Create windows
+  namedWindow( "Erosion", CV_WINDOW_AUTOSIZE );
+  namedWindow( "Dilatacion", CV_WINDOW_AUTOSIZE );
+
+  Mat element = getStructuringElement( MORPH_RECT,
+                                       Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+                                       Point( erosion_size, erosion_size ) );
+
+  /// Apply the erosion operation
+  erode( result, erosion_dst, element );
+  resize(erosion_dst, erosion_dst, cv::Size(), 0.7, 0.7);
+  imshow( "Erosion", erosion_dst );
+
+  Mat element2 = getStructuringElement( MORPH_RECT,
+                                       Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                                       Point( dilation_size, dilation_size ) );
+  /// Apply the dilation operation
+  dilate( result, dilation_dst, element2 );
+  resize(dilation_dst, dilation_dst, cv::Size(), 0.7, 0.7);
+  imshow( "Dilatacion", dilation_dst );
+
+   /// Create windows
+  namedWindow( "Open & Closing", CV_WINDOW_AUTOSIZE );
+  erode( result, erosion_dst, element );
+  dilate( erosion_dst, dilation_dst, element );
+  resize(dilation_dst, dilation_dst, cv::Size(), 0.7, 0.7);
+  imshow( "Open & Closing", dilation_dst );
+
   return result;
 }
 
@@ -159,6 +202,7 @@ void ImageFiltering::medianFilter()
 {
   Mat copy = grayscaleImage.clone();
   medianBlur(copy, copy, 3);
+  resize(copy, copy, cv::Size(), 0.7, 0.7);
   imshow("median blur", copy);
 }
 
@@ -172,6 +216,7 @@ void ImageFiltering::averageFilter()
                 0.04, 0.04, 0.04, 0.04, 0.04);
   cout << kernel << endl;
   filter2D(copy, copy, -1, kernel, Point(-1, -1), 0, BORDER_DEFAULT);
+  resize(copy, copy, cv::Size(), 0.7, 0.7);
   imshow("average blur", copy);
 }
 
@@ -200,6 +245,7 @@ void ImageFiltering::gaussianFilter()
   filter2D(copy, copy, -1, kernel, Point(-1, -1), 0, BORDER_DEFAULT);
   //Size seven(7,7);
   //GaussianBlur(copy,copy,seven,1.41421356237,1.41421356237,BORDER_DEFAULT);
+  resize(copy, copy, cv::Size(), 0.7, 0.7);
   imshow("gaussian blur", copy);
 }
 
@@ -210,15 +256,13 @@ void ImageFiltering::laplaceFilter(){
   int delta = 0;
   int ddepth = CV_16S;
   src = grayscaleImage.clone();
-
-  /// Remove noise by blurring with a Gaussian filter
-  GaussianBlur( src, src, Size(3,3), 0, 0, BORDER_DEFAULT );
   /// Create window
   namedWindow( "Laplace filter", CV_WINDOW_AUTOSIZE );
   /// Apply Laplace function
   Mat abs_dst;
   Laplacian( src, dst, ddepth, kernel_size, scale, delta, BORDER_DEFAULT );
   convertScaleAbs( dst, abs_dst ); //converts to CV_8U
+  resize(abs_dst, abs_dst, cv::Size(), 0.7, 0.7);
   imshow( "Laplace filter", abs_dst );
 }
 
@@ -238,6 +282,7 @@ void ImageFiltering::logFilter(){
   Mat abs_dst;
   filter2D(src, dst, ddepth , kernel, anchor, delta, BORDER_DEFAULT );
   convertScaleAbs( dst, abs_dst ); //converts to CV_8U
+  resize(abs_dst, abs_dst, cv::Size(), 0.7, 0.7);
   imshow( "LoG Filter", abs_dst);
 }
 
@@ -256,6 +301,7 @@ void ImageFiltering::edgeDetectionFilter(){
   Canny( src, edges, lowThreshold, lowThreshold*ratio, kernel_size );
   dst = Scalar::all(0);
   src.copyTo( dst, edges);
+  resize(dst, dst, cv::Size(), 0.7, 0.7);
   imshow( "Canny Edge Detection Filter", dst);
 }
 
@@ -275,7 +321,43 @@ void ImageFiltering::enhancementFilter(){
   Mat abs_dst;
   filter2D(src, dst, ddepth , kernel, anchor, delta, BORDER_DEFAULT );
   convertScaleAbs( dst, abs_dst ); //converts to CV_8U
+  resize(abs_dst, abs_dst, cv::Size(), 0.7, 0.7);
   imshow( "Enhancement Filter", abs_dst);
+}
+
+void ImageFiltering::degradadoFilter(){
+  Mat src, dst;
+  Mat kernel = (Mat_<double>(3,3) << -1, -2, -1, 0, 0, 0, 1, 2, 1);
+  Point anchor = Point( -1, -1 );
+  double delta = 0;
+  int ddepth = CV_16S;
+  src = grayscaleImage.clone();
+  /// Create window
+  namedWindow( "Degradado y", CV_WINDOW_AUTOSIZE );
+  /// Apply filter
+  Mat abs_dst, abs_dst2;
+  filter2D(src, dst, ddepth , kernel, anchor, delta, BORDER_DEFAULT );
+  convertScaleAbs( dst, abs_dst ); //converts to CV_8U
+  resize(abs_dst, abs_dst, cv::Size(), 0.7, 0.7);
+  imshow( "Degradado y", abs_dst);
+
+  kernel = (Mat_<double>(3,3) << -1, 0, 1, -2, 0, 2, -1, 0, 1);
+  filter2D(src, dst, ddepth , kernel, anchor, delta, BORDER_DEFAULT );
+  convertScaleAbs( dst, abs_dst2 ); //converts to CV_8U
+  namedWindow( "Degradado x", CV_WINDOW_AUTOSIZE );
+  resize(abs_dst2, abs_dst2, cv::Size(), 0.7, 0.7);
+  imshow( "Degradado x", abs_dst2);
+
+  for (int col = 0; col < abs_dst.cols; col++)
+  {
+    for (int row = 0; row < abs_dst.rows; row++)
+    {
+      int maxval = max(abs_dst2.at<uchar>(col,row), abs_dst.at<uchar>(col,row));
+      abs_dst2.at<uchar>(col,row) = maxval;
+    }
+  }
+  namedWindow( "Degradado", CV_WINDOW_AUTOSIZE );
+  imshow( "Degradado", abs_dst2);
 }
 
 void ImageFiltering::endProgram()

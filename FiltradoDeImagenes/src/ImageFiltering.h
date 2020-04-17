@@ -40,4 +40,5 @@ private:
     void logFilter();
     void edgeDetectionFilter();
     void enhancementFilter();
+    void degradadoFilter();
 };
