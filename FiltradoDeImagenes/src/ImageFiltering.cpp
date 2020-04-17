@@ -37,6 +37,7 @@ ImageFiltering::ImageFiltering(Mat &image, string screenName)
   logFilter();
   edgeDetectionFilter();
   enhancementFilter();
+<<<<<<< HEAD
   degradadoFilter();
   averageFilter();
   medianFilter();
@@ -45,6 +46,12 @@ ImageFiltering::ImageFiltering(Mat &image, string screenName)
   resize(binaryImage, binaryImage, cv::Size(), 0.7, 0.7);
   imshow("Binary Filtered", binaryImage);
   
+=======
+  sobelFilter();
+  scharrFilter();
+  erotion();
+  dilation();
+>>>>>>> 8c3fbc4195bf16de5e625e23fa7b8fa3ff139620
 }
 void ImageFiltering::printImageInfo(int x, int y)
 {
@@ -96,9 +103,8 @@ void ImageFiltering::update()
   imshow("Gray Converted", grayscaleImage);
 }
 
-Mat ImageFiltering::binaryFilter()
+Mat ImageFiltering::binaryFilter(Mat result)
 {
-  Mat result = frame->clone();
   int luminosity_average = 0;
 
   for (int i = 0; i < result.rows; i++)
@@ -262,13 +268,18 @@ void ImageFiltering::laplaceFilter(){
   Mat abs_dst;
   Laplacian( src, dst, ddepth, kernel_size, scale, delta, BORDER_DEFAULT );
   convertScaleAbs( dst, abs_dst ); //converts to CV_8U
+<<<<<<< HEAD
   resize(abs_dst, abs_dst, cv::Size(), 0.7, 0.7);
+=======
+  //normalize(abs_dst,  abs_dst, 0, 255, NORM_MINMAX);
+>>>>>>> 8c3fbc4195bf16de5e625e23fa7b8fa3ff139620
   imshow( "Laplace filter", abs_dst );
 }
 
 void ImageFiltering::logFilter(){
-  Mat src, dst;
+  Mat src, dst, dst2;
   Mat kernel = (Mat_<double>(3,3) << 0,1,0,1,-4,1,0,1,0);
+  Mat kernel2 = (Mat_<double>(5,5) << 0,0,-1,0,0,0,-1,-2,-1,0,-1,-2,16,-2,-1,0,-1,-2,-1,0,0,0,-1,0,0);
   Point anchor = Point( -1, -1 );
   double delta = 0;
   int ddepth = CV_16S;
@@ -278,12 +289,18 @@ void ImageFiltering::logFilter(){
   GaussianBlur( src, src, Size(3,3), 0, 0, BORDER_DEFAULT );
   /// Create window
   namedWindow( "LoG Filter", CV_WINDOW_AUTOSIZE );
+  namedWindow( "LoG Filter 5x5", CV_WINDOW_AUTOSIZE );
   /// Apply filter
   Mat abs_dst;
+  Mat abs_dst2;
   filter2D(src, dst, ddepth , kernel, anchor, delta, BORDER_DEFAULT );
   convertScaleAbs( dst, abs_dst ); //converts to CV_8U
   resize(abs_dst, abs_dst, cv::Size(), 0.7, 0.7);
   imshow( "LoG Filter", abs_dst);
+  filter2D(src, dst2, ddepth , kernel, anchor, delta, BORDER_DEFAULT );
+  convertScaleAbs( dst, abs_dst2 ); //converts to CV_8U
+  imshow( "LoG Filter", abs_dst2);
+  imshow( "LoG Filter 5x5", abs_dst);
 }
 
 void ImageFiltering::edgeDetectionFilter(){
@@ -358,6 +375,89 @@ void ImageFiltering::degradadoFilter(){
   }
   namedWindow( "Degradado", CV_WINDOW_AUTOSIZE );
   imshow( "Degradado", abs_dst2);
+}
+
+void ImageFiltering::sobelFilter(){
+  Mat src_gray = grayscaleImage.clone();
+  Mat grad_x, grad_y, grad;
+  Mat abs_grad_x, abs_grad_y;
+  int scale = 1;
+  int delta = 0;
+  int ddepth = CV_16S;
+  
+  // Remove noise by blurring with a Gaussian filter
+  GaussianBlur(src_gray, src_gray, Size(3,3), 0, 0, BORDER_DEFAULT);
+  
+  // Gradient X
+  Sobel(src_gray, grad_x, ddepth, 1, 0, 3, scale, delta, BORDER_DEFAULT);
+  convertScaleAbs(grad_x, abs_grad_x);
+
+  // Gradient Y
+  Sobel(src_gray, grad_y, ddepth, 0, 1, 3, scale, delta, BORDER_DEFAULT);
+  convertScaleAbs(grad_y, abs_grad_y);
+
+  namedWindow("Sobel Filter (dx)", CV_WINDOW_AUTOSIZE);
+  namedWindow("Sobel Filter (dy)", CV_WINDOW_AUTOSIZE);
+  imshow("Sobel Filter (dx)", abs_grad_x);
+  imshow("Sobel Filter (dy)", abs_grad_y);
+}
+
+void ImageFiltering::scharrFilter(){
+  Mat src_gray = grayscaleImage.clone();
+  Mat grad_x, grad_y, grad;
+  Mat abs_grad_x, abs_grad_y;
+  int scale = 1;
+  int delta = 0;
+  int ddepth = CV_16S;
+  
+  // Remove noise by blurring with a Gaussian filter
+  GaussianBlur(src_gray, src_gray, Size(3,3), 0, 0, BORDER_DEFAULT);
+
+  // Gradient X
+  Scharr(src_gray, grad_x, ddepth, 1, 0, scale, delta, BORDER_DEFAULT);
+  convertScaleAbs(grad_x, abs_grad_x);
+
+  // Gradient Y
+  Scharr(src_gray, grad_y, ddepth, 0, 1, scale, delta, BORDER_DEFAULT);
+  convertScaleAbs(grad_y, abs_grad_y);
+
+  namedWindow("Scharr Filter (dx)", CV_WINDOW_AUTOSIZE);
+  namedWindow("Scharr Filter (dy)", CV_WINDOW_AUTOSIZE);
+  imshow("Scharr Filter (dx)", abs_grad_x);
+  imshow("Scharr Filter (dy)", abs_grad_y);
+}
+
+void ImageFiltering::erotion(){
+  Mat erosion_dst;
+  Mat binarized_image; 
+  threshold(grayscaleImage,binarized_image,127,255,THRESH_BINARY);
+  int erosion_type = MORPH_RECT;
+  int erosion_size = 5; //here increase for more erosion, reduce for less erosion
+  Mat element = getStructuringElement( erosion_type,
+                                       Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+                                       Point( erosion_size, erosion_size ) );
+
+  /// Apply the erosion operation
+  erode( binarized_image, erosion_dst, element );
+  imshow("Original Binarized",binarized_image);
+  imshow("Erotion 5x5", erosion_dst);
+
+}
+
+void ImageFiltering::dilation(){
+  Mat dilation_dst;
+  Mat binarized_image; 
+  threshold(grayscaleImage,binarized_image,127,255,THRESH_BINARY);
+  int dilation_type = MORPH_RECT;
+  int dilation_size = 5; //here increase for more dilation, reduce for less dilation
+  Mat element = getStructuringElement( dilation_type,
+                                       Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                                       Point( dilation_size, dilation_size ) );
+
+  /// Apply the erosion operation
+  dilate( binarized_image, dilation_dst, element );
+  imshow("Original Binarized",binarized_image);
+  imshow("Dilation 5x5", dilation_dst);
 }
 
 void ImageFiltering::endProgram()
