@@ -40,8 +40,8 @@ private:
     void logFilter();
     void edgeDetectionFilter();
     void enhancementFilter();
+    void degradadoFilter();
     void sobelFilter();
     void scharrFilter();
     void erotion();
-    void dilation();
-};
+    void dilation();};
