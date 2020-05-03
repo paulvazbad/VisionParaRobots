@@ -19,6 +19,7 @@ public:
         this->x = x;
         this->y = y;
     }
+    Coord(){}
 };
 
 class RegionSegmentation
@@ -30,6 +31,7 @@ public:
 private:
     Mat *frame;
     Mat grayscaleImage;
+    Mat color_image;
     string screenName;
     list<Coord> LinkedList;
     Coord generateSeed();

@@ -22,6 +22,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include "RegionSegmentation.h"
+#include <bits/stdc++.h> 
 using namespace std;
 using namespace cv;
 
@@ -49,7 +50,9 @@ int main(int argc, char *argv[])
 {
   Mat image;
   VideoCapture cap;
-
+  ios_base::sync_with_stdio(false); 
+  cin.tie(NULL);  
+  srand(time(0)); 
   bool isStatic = inputValidation(argc, argv, image, cap);
 
   if (!image.data)
@@ -59,15 +62,7 @@ int main(int argc, char *argv[])
   }
 
   RegionSegmentation regionSegmentation = RegionSegmentation(image, "Original Image");
-  regionSegmentation.findRegions(100);
-  while (true)
-  {
-    int x = waitKey(30);
-    if (x == 27)
-    {
-      break;
-    }
-  }
+  regionSegmentation.findRegions(50);
 
   return 0;
 }

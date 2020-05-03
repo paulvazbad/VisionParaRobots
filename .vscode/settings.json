@@ -8,6 +8,8 @@
     "iostream": "cpp",
     "string_view": "cpp",
     "chrono": "cpp",
-    "limits": "cpp"
+    "limits": "cpp",
+    "deque": "cpp",
+    "vector": "cpp"
   }
 }
