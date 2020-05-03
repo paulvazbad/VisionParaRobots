@@ -73,10 +73,13 @@ void RegionSegmentation::findRegions(int number_of_objects)
                 LinkedList.pop_front();
                 //cout << "new coord : " <<coord_origen.x<<": "<<coord_origen.y<< endl;
                 Vec3b color_current(0, 0, 255);
-                //color_image.at<Vec3b>(coord_origen.y, coord_origen.x) = color_current;
                 size_of_region++;
+                //UNCOMMENT THIS TO WATCH THE PROGRESS
+
+                //color_image.at<Vec3b>(coord_origen.y, coord_origen.x) = color_current;
                 //imshow(screenName, color_image);
                //waitKey(1);
+                
                 //Append neigbors if valid
                 Coord north(coord_origen.x, coord_origen.y + 1);
                 Coord south(coord_origen.x, coord_origen.y - 1);
@@ -100,6 +103,7 @@ void RegionSegmentation::findRegions(int number_of_objects)
         //GrowRegion
     }
     imshow(screenName, color_image);
+    waitKey(0);
 }
 
 Coord RegionSegmentation::generateSeed()
