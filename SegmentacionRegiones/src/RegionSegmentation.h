@@ -5,6 +5,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <list>
+#include <queue>
 #include <iterator>
 using namespace std;
 using namespace cv;
@@ -33,9 +34,8 @@ private:
     Mat grayscaleImage;
     Mat color_image;
     string screenName;
-    list<Coord> LinkedList;
     Coord generateSeed();
-    bool is_object_pixel(Coord);
+    bool is_object_coord(Coord);
     void printImageInfo(int x, int y);
     Mat bgrToGray();
     int IMAGE_HEIGHT;

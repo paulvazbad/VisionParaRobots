@@ -1,10 +1,12 @@
 #include "RegionSegmentation.h"
-
+#include <set>
 RegionSegmentation::RegionSegmentation(Mat image, string screenName)
 {
 
     this->frame = &image;
     this->screenName = screenName;
+    cout << "HEIGHT " << frame->size().height << endl;
+    cout << "WIDTH " << frame->size().width << endl;
     grayscaleImage = bgrToGray();
     cv::Mat empty(frame->size(), CV_8U);
     this->color_image = empty;
@@ -55,54 +57,61 @@ void RegionSegmentation::findRegions(int number_of_objects)
     {
         cout << "Current try: " << i << endl;
         Coord seed = generateSeed();
-        if (is_object_pixel(seed))
+        if (is_object_coord(seed))
         {
             //Random Color for this region
-            cout<<"Valid seed found!"<<endl;
-            Vec3b color;
-            color[0] = 150;
-            color[1] = 200;
-            color[2] = 100;
+            cout << "Valid seed found!" << endl;
             //Initialize Size of region
             int size_of_region = 0;
-            LinkedList.push_back(seed);
-            Coord coord_origen;
-            while (!LinkedList.empty())
+            queue<Coord> mq;
+            mq.push(seed);
+            while (!mq.empty())
             {
-                coord_origen = LinkedList.front();
-                LinkedList.pop_front();
-                //cout << "new coord : " <<coord_origen.x<<": "<<coord_origen.y<< endl;
-                Vec3b color_current(0, 0, 255);
+                Coord coord_origen = mq.front();
+                mq.pop();
+                Vec3b color_current(0, 0, 200);
                 size_of_region++;
                 //UNCOMMENT THIS TO WATCH THE PROGRESS
 
-                //color_image.at<Vec3b>(coord_origen.y, coord_origen.x) = color_current;
-                //imshow(screenName, color_image);
-               //waitKey(1);
                 
+                imshow(screenName, color_image);
+                waitKey(1);
+
                 //Append neigbors if valid
                 Coord north(coord_origen.x, coord_origen.y + 1);
                 Coord south(coord_origen.x, coord_origen.y - 1);
                 Coord east(coord_origen.x + 1, coord_origen.y);
-                Coord west(coord_origen.x - 1, coord_origen.y + 1);
-                Coord neighbors[4] = {north, south, east, west};
-                //cout << "Testing neighbors" << endl;
-                for (Coord neighbor : neighbors)
+                Coord west(coord_origen.x - 1, coord_origen.y);
+                if (is_object_coord(north))
                 {
-
-                    if (is_object_pixel(neighbor))
-                    {
-                        LinkedList.push_back(neighbor);
-                    }
+                    this->color_image.at<Vec3b>(north.y, north.x) = color_current;
+                    mq.push(north);
                 }
-                color_image.at<Vec3b>(coord_origen.y, coord_origen.x) = color;
+                if (is_object_coord(south))
+                {
+                    this->color_image.at<Vec3b>(south.y, south.x) = color_current;
+                    mq.push(south);
+                }
+                if (is_object_coord(east))
+                {
+                    this->color_image.at<Vec3b>(east.y, east.x) = color_current;
+                    mq.push(east);
+                }
+                if (is_object_coord(west))
+                {
+                    this->color_image.at<Vec3b>(west.y, west.x) = color_current;
+                    mq.push(west);
+                }
+                //this->color_image.at<Vec3b>(coord_origen.y, coord_origen.x);
             }
-            cout << "Size of region: " << size_of_region << endl;
+            cout << "TOTAL" << size_of_region << endl;
         }
 
         //GrowRegion
     }
+
     imshow(screenName, color_image);
+    imwrite("./result.jpg", color_image);
     waitKey(0);
 }
 
@@ -114,14 +123,16 @@ Coord RegionSegmentation::generateSeed()
     return Coord(x, y);
 }
 
-bool RegionSegmentation::is_object_pixel(Coord pixel)
+bool RegionSegmentation::is_object_coord(Coord coord)
 {
 
-    if (0 <= pixel.x && pixel.x < IMAGE_WIDTH && 0 <= pixel.y && pixel.y < IMAGE_HEIGHT)
+    if (0 <= coord.x && coord.x < IMAGE_WIDTH && 0 <= coord.y && coord.y < IMAGE_HEIGHT)
     {
-        //cout << "x: " << pixel.x << " y: " << pixel.y << endl;
-        //cout << (double)color_image.at<Vec3b>(pixel.y, pixel.x)[0] << endl;
-        return ((double)color_image.at<Vec3b>(pixel.y, pixel.x)[0] == 255);
+        //
+        if((int)this->color_image.at<Vec3b>(coord.y, coord.x)[0]==255){
+            return true;
+        }
+        return false;
     }
     return false;
 }

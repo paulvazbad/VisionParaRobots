@@ -10,6 +10,12 @@
     "chrono": "cpp",
     "limits": "cpp",
     "deque": "cpp",
-    "vector": "cpp"
+    "vector": "cpp",
+    "bitset": "cpp",
+    "initializer_list": "cpp",
+    "regex": "cpp",
+    "utility": "cpp",
+    "valarray": "cpp",
+    "ostream": "cpp"
   }
 }

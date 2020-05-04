@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
   }
 
   RegionSegmentation regionSegmentation = RegionSegmentation(image, "Original Image");
-  regionSegmentation.findRegions(50);
+  regionSegmentation.findRegions(1000);
 
   return 0;
 }
