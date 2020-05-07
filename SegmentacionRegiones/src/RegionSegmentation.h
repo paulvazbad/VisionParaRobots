@@ -32,12 +32,20 @@ public:
 private:
     Mat *frame;
     Mat grayscaleImage;
+    Mat binaryImage;
+    Mat eroded;
+    Mat dilated;
+    Mat processed_image;
     Mat color_image;
     string screenName;
     Coord generateSeed();
     bool is_object_coord(Coord);
     void printImageInfo(int x, int y);
     Mat bgrToGray();
+    void binaryFilter();
+    void erotion();
+    void dilation();
+    Mat pipeline();
     int IMAGE_HEIGHT;
     int IMAGE_WIDTH;
 };

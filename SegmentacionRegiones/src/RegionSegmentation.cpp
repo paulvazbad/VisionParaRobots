@@ -1,19 +1,95 @@
 #include "RegionSegmentation.h"
 #include <set>
+
 RegionSegmentation::RegionSegmentation(Mat image, string screenName)
 {
-
     this->frame = &image;
     this->screenName = screenName;
     cout << "HEIGHT " << frame->size().height << endl;
     cout << "WIDTH " << frame->size().width << endl;
-    grayscaleImage = bgrToGray();
+    imshow("Original image", *frame);
+
+    //uncomment for Paul
+    /* grayscaleImage = bgrToGray();*/
+
+    //uncomment for Auro
+    // binaryFilter();
+    // erotion();
+    // dilation();
+    // bitwise_not(processed_image, grayscaleImage);
+
     cv::Mat empty(frame->size(), CV_8U);
     this->color_image = empty;
     cvtColor(grayscaleImage, color_image, COLOR_GRAY2RGB);
     IMAGE_HEIGHT = grayscaleImage.rows;
     IMAGE_WIDTH = grayscaleImage.cols;
     printImageInfo(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+}
+
+void RegionSegmentation::binaryFilter()
+{
+  int luminosity_average = 0;
+  cv::Mat result = frame->clone();
+
+  for (int i = 0; i < result.rows; i++)
+  {
+    for (int x = 0; x < result.cols; x++)
+    {
+      double b = result.at<Vec3b>(i, x)[0];
+      double g = result.at<Vec3b>(i, x)[1];
+      double r = result.at<Vec3b>(i, x)[2];
+      luminosity_average += int(0.299 * r + 0.587 * g + 0.114 * b);
+    }
+  }
+  luminosity_average /= (result.cols * result.rows);
+
+  cv::Mat binarized(frame->size(), CV_8U);
+  for (int i = 0; i < result.rows; i++)
+  {
+    for (int x = 0; x < result.cols; x++)
+    {
+      int color_average = (result.at<Vec3b>(i, x)[0] + result.at<Vec3b>(i, x)[1] + result.at<Vec3b>(i, x)[2]) / 3;
+      if (color_average < luminosity_average)
+      {
+        binarized.at<uchar>(i, x, 0)= 0;
+      }
+      else
+      {
+        binarized.at<uchar>(i, x, 0)= 255;
+      }
+    }
+  }
+  binaryImage = binarized.clone();
+}
+
+void RegionSegmentation::erotion(){
+  Mat erosion_dst;
+  int erosion_type = MORPH_RECT;
+  int erosion_size = 5; //here increase for more erosion, reduce for less erosion
+  Mat element = getStructuringElement( erosion_type,
+                                       Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+                                       Point( erosion_size, erosion_size ) );
+
+  /// Apply the erosion operation
+  erode( binaryImage, erosion_dst, element );
+  imshow("Original Binarized ",binaryImage);
+  imshow("Erotion 5x5", erosion_dst);
+  eroded = erosion_dst.clone();
+}
+
+void RegionSegmentation::dilation(){
+  Mat dilation_dst;
+  int dilation_type = MORPH_RECT;
+  int dilation_size = 5; //here increase for more dilation, reduce for less dilation
+  Mat element = getStructuringElement( dilation_type,
+                                       Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                                       Point( dilation_size, dilation_size ) );
+
+  /// Apply the erosion operation
+  dilate( eroded, dilation_dst, element );
+  imshow("Original Binarized Dilated", eroded);
+  imshow("Dilation 5x5", dilation_dst);
+  processed_image = dilation_dst.clone();
 }
 
 Mat RegionSegmentation::bgrToGray()
@@ -52,6 +128,10 @@ void RegionSegmentation::printImageInfo(int x, int y)
 
 void RegionSegmentation::findRegions(int number_of_objects)
 {
+    int color_counter = 0;
+    int red [10] = {255, 255, 255, 153, 51, 51, 51, 51, 51, 153};
+    int green [10] = {51, 153, 255, 255, 255, 255, 255, 153, 51, 51};
+    int blue [10] = {51, 51, 51, 51, 51, 153, 255, 255, 255, 255};
     cout << "Finding regions in image..." << endl;
     for (int i = 0; i < number_of_objects; i++)
     {
@@ -65,17 +145,19 @@ void RegionSegmentation::findRegions(int number_of_objects)
             int size_of_region = 0;
             queue<Coord> mq;
             mq.push(seed);
+            int red_color = red[color_counter];
+            int blue_color = blue[color_counter];
+            int green_color = green[color_counter];
             while (!mq.empty())
             {
                 Coord coord_origen = mq.front();
                 mq.pop();
-                Vec3b color_current(0, 0, 200);
+                Vec3b color_current(51, 153, 255);
                 size_of_region++;
                 //UNCOMMENT THIS TO WATCH THE PROGRESS
-
                 
                 imshow(screenName, color_image);
-                waitKey(1);
+                cv::waitKey(1);
 
                 //Append neigbors if valid
                 Coord north(coord_origen.x, coord_origen.y + 1);
@@ -105,14 +187,15 @@ void RegionSegmentation::findRegions(int number_of_objects)
                 //this->color_image.at<Vec3b>(coord_origen.y, coord_origen.x);
             }
             cout << "TOTAL" << size_of_region << endl;
+            color_counter=(color_counter+1)%10;
         }
 
         //GrowRegion
     }
 
     imshow(screenName, color_image);
-    imwrite("./result.jpg", color_image);
-    waitKey(0);
+    cv::imwrite("./result.jpg", color_image);
+    cv::waitKey(0);
 }
 
 Coord RegionSegmentation::generateSeed()
