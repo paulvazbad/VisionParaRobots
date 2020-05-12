@@ -24,10 +24,10 @@ public:
     Coord(){}
 };
 
-class RegionSegmentation
+class ObjectAnalysis
 {
 public:
-    RegionSegmentation(Mat image, string screenName);
+    ObjectAnalysis(Mat image, string screenName);
     void findRegions(int number_of_objects);
 
 private:
@@ -40,6 +40,9 @@ private:
     void printImageInfo(int x, int y);
     void save_partial_results(time_t &last_time, time_t &curr_time, double seconds, int number_of_seed);
     Mat bgrToGray();
+    Mat grayTobgr(Mat);
+    int grow_region_found(queue<Coord>&);
+    void paint_and_append_object_neighbors(Coord,Vec3b,queue<Coord>&);
     int IMAGE_HEIGHT;
     int IMAGE_WIDTH;
 };

@@ -1,0 +1,19 @@
+Compiling src/main.cpp...
+Compiling src/ObjectAnalysis.cpp...
+Linking everything together...
+Done
+HEIGHT 402
+WIDTH 472
+Rows: 402
+Cols 472
+Channels: 1
+0 0 0 0 0 
+0 0 0 0 0 
+0 0 0 0 0 
+0 0 0 0 0 
+0 0 0 0 0 
+----------IMAGE: 472x402
+TOTAL REGION AREA6264
+TOTAL REGION AREA7719
+TOTAL REGION AREA3697
+EXECUTION TIME: 30

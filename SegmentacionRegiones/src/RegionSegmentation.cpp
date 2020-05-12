@@ -50,30 +50,50 @@ void RegionSegmentation::printImageInfo(int x, int y)
     }
 }
 
+void RegionSegmentation::save_partial_results(time_t &last_time, time_t &curr_time, double seconds, int number_of_seed)
+{
+    int target_time = 3;
+    curr_time = time(NULL);
+    seconds = difftime(curr_time, last_time);
+    if (seconds >= target_time)
+    {
+        cout << "Saving checkpoint!" << endl;
+        imwrite("./partial_results/result" + to_string(number_of_seed) + "_" + to_string(target_time) + ".jpg", color_image);
+        last_time = curr_time;
+        target_time = target_time * 3;
+    }
+}
+
 void RegionSegmentation::findRegions(int number_of_objects)
 {
-    cout << "Finding regions in image..." << endl;
+    //cout << "Finding regions in image..." << endl;
+    time_t last_time, curr_time, start_time;
+    double seconds;
+    last_time = time(NULL);
+    start_time  = last_time;
+    cout<<"----------IMAGE: "<<IMAGE_WIDTH<<"x"<<IMAGE_HEIGHT<<endl;
     for (int i = 0; i < number_of_objects; i++)
     {
-        cout << "Current try: " << i << endl;
+        //cout << "Current try: " << i << endl;
         Coord seed = generateSeed();
         if (is_object_coord(seed))
         {
             //Random Color for this region
-            cout << "Valid seed found!" << endl;
+            //cout << "Valid seed found!" << endl;
             //Initialize Size of region
             int size_of_region = 0;
             queue<Coord> mq;
             mq.push(seed);
+            
             while (!mq.empty())
             {
+                //save_partial_results(last_time,curr_time,seconds,i);
                 Coord coord_origen = mq.front();
                 mq.pop();
                 Vec3b color_current(0, 0, 200);
                 size_of_region++;
                 //UNCOMMENT THIS TO WATCH THE PROGRESS
 
-                
                 imshow(screenName, color_image);
                 waitKey(1);
 
@@ -104,15 +124,15 @@ void RegionSegmentation::findRegions(int number_of_objects)
                 }
                 //this->color_image.at<Vec3b>(coord_origen.y, coord_origen.x);
             }
-            cout << "TOTAL" << size_of_region << endl;
+            cout << "TOTAL REGION AREA" << size_of_region << endl;
         }
 
         //GrowRegion
     }
-
+    seconds = difftime(time(NULL), start_time);
+    cout<<"EXECUTION TIME: "<<seconds<<endl;
     imshow(screenName, color_image);
     imwrite("./result.jpg", color_image);
-    waitKey(0);
 }
 
 Coord RegionSegmentation::generateSeed()
@@ -129,7 +149,8 @@ bool RegionSegmentation::is_object_coord(Coord coord)
     if (0 <= coord.x && coord.x < IMAGE_WIDTH && 0 <= coord.y && coord.y < IMAGE_HEIGHT)
     {
         //
-        if((int)this->color_image.at<Vec3b>(coord.y, coord.x)[0]==255){
+        if ((int)this->color_image.at<Vec3b>(coord.y, coord.x)[0] == 255)
+        {
             return true;
         }
         return false;
