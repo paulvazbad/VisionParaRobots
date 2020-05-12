@@ -33,6 +33,10 @@ public:
 private:
     Mat *frame;
     Mat grayscaleImage;
+    Mat binaryImage;
+    Mat eroded;
+    Mat dilated;
+    Mat processed_image;
     Mat color_image;
     string screenName;
     Coord generateSeed();
@@ -40,6 +44,10 @@ private:
     void printImageInfo(int x, int y);
     void save_partial_results(time_t &last_time, time_t &curr_time, double seconds, int number_of_seed);
     Mat bgrToGray();
+    void binaryFilter();
+    void erotion();
+    void dilation();
+    Mat pipeline();
     int IMAGE_HEIGHT;
     int IMAGE_WIDTH;
 };
