@@ -29,7 +29,7 @@ public:
 struct InformationOfRegionFound
 {
     int size;
-    vector<vector<int>> ordinary_moments;
+    vector<vector<long>> ordinary_moments;
 };
 
 class ObjectAnalysis

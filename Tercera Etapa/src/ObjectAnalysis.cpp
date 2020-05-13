@@ -100,7 +100,7 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
 {
     InformationOfRegionFound informationOfRegionFound;
     informationOfRegionFound.size = 0;
-    vector<vector<int>> ordinary_moments(MAX_ORDINARY_MOMENT_P+1, vector<int>(MAX_ORDINARY_MOMENT_Q+1, 0));
+    vector<vector<long>> ordinary_moments(MAX_ORDINARY_MOMENT_P+1, vector<long>(MAX_ORDINARY_MOMENT_Q+1, 0));
     informationOfRegionFound.ordinary_moments  = ordinary_moments;
     Vec3b color_current(0, 0, 200);
     while (!mq.empty())
@@ -124,7 +124,7 @@ void ObjectAnalysis::add_to_ordinary_moments(InformationOfRegionFound &informati
     {
         for (int q = 0; q <= MAX_ORDINARY_MOMENT_Q; q++)
         {
-            informationOfRegionFound.ordinary_moments[p][q] += pow(origen.x, p) * pow(origen.y, q);
+            informationOfRegionFound.ordinary_moments[p][q] += (long)(pow(origen.x, p) * pow(origen.y, q));
         }
     }
 }
