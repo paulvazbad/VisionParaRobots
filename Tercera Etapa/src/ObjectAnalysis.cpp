@@ -1,4 +1,5 @@
 #include "ObjectAnalysis.h"
+
 ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
 {
 
@@ -82,11 +83,11 @@ void ObjectAnalysis::findRegions(int number_of_objects)
         Coord seed = generateSeed();
         if (is_object_coord(seed))
         {
-            int size_of_region;
             queue<Coord> mq;
             mq.push(seed);
-            size_of_region = grow_region_found(mq);
-            cout << "TOTAL REGION AREA" << size_of_region << endl;
+            InformationOfRegionFound informationOfRegionFound = grow_region_found(mq);
+            cout << "TOTAL REGION AREA" << informationOfRegionFound.size << endl;
+            print_ordinary_moments(informationOfRegionFound);
         }
     }
     seconds = difftime(time(NULL), start_time);
@@ -95,22 +96,46 @@ void ObjectAnalysis::findRegions(int number_of_objects)
     imwrite("./result.jpg", color_image);
 }
 
-int ObjectAnalysis::grow_region_found(queue<Coord> &mq)
+InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
 {
-    int size_of_region = 1;
+    InformationOfRegionFound informationOfRegionFound;
+    informationOfRegionFound.size = 0;
+    vector<vector<int>> ordinary_moments(MAX_ORDINARY_MOMENT_P+1, vector<int>(MAX_ORDINARY_MOMENT_Q+1, 0));
+    informationOfRegionFound.ordinary_moments  = ordinary_moments;
     Vec3b color_current(0, 0, 200);
     while (!mq.empty())
     {
         Coord coord_origen = mq.front();
         mq.pop();
-        size_of_region++;
+        informationOfRegionFound.size++;
         //UNCOMMENT THIS TO WATCH THE PROGRESS
         imshow(screenName, color_image);
         waitKey(1);
+        add_to_ordinary_moments(informationOfRegionFound, coord_origen);
         //Append neigbors if valid
         paint_and_append_object_neighbors(coord_origen, color_current, mq);
     }
-    return size_of_region;
+    return informationOfRegionFound;
+}
+void ObjectAnalysis::add_to_ordinary_moments(InformationOfRegionFound &informationOfRegionFound, Coord origen)
+{
+
+    for (int p = 0; p <= MAX_ORDINARY_MOMENT_P; p++)
+    {
+        for (int q = 0; q <= MAX_ORDINARY_MOMENT_Q; q++)
+        {
+            informationOfRegionFound.ordinary_moments[p][q] += pow(origen.x, p) * pow(origen.y, q);
+        }
+    }
+}
+void ObjectAnalysis::print_ordinary_moments(InformationOfRegionFound informationOfRegionFound){
+    for (int p = 0; p <= MAX_ORDINARY_MOMENT_P; p++)
+    {
+        for (int q = 0; q <= MAX_ORDINARY_MOMENT_Q; q++)
+        {
+            cout<<"Moment "<<p<<" "<<q<<" :"<<informationOfRegionFound.ordinary_moments[p][q]<<endl;
+        }
+    }
 }
 
 void ObjectAnalysis::paint_and_append_object_neighbors(Coord coord_origen, Vec3b color, queue<Coord> &mq)
