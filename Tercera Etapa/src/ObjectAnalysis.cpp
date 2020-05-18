@@ -86,8 +86,8 @@ void ObjectAnalysis::findRegions(int number_of_objects)
             queue<Coord> mq;
             mq.push(seed);
             InformationOfRegionFound informationOfRegionFound = grow_region_found(mq);
-            cout << "TOTAL REGION AREA" << informationOfRegionFound.size << endl;
-            print_ordinary_moments(informationOfRegionFound);
+            cout << "TOTAL REGION AREA = " << informationOfRegionFound.size << endl;
+            print_moments(informationOfRegionFound);
         }
     }
     seconds = difftime(time(NULL), start_time);
@@ -100,7 +100,7 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
 {
     InformationOfRegionFound informationOfRegionFound;
     informationOfRegionFound.size = 0;
-    vector<vector<long>> ordinary_moments(MAX_ORDINARY_MOMENT_P+1, vector<long>(MAX_ORDINARY_MOMENT_Q+1, 0));
+    vector<vector<long> > ordinary_moments(MAX_ORDINARY_MOMENT_P+1, vector<long>(MAX_ORDINARY_MOMENT_Q+1, 0));
     informationOfRegionFound.ordinary_moments  = ordinary_moments;
     Vec3b color_current(0, 0, 200);
     while (!mq.empty())
@@ -110,13 +110,36 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
         informationOfRegionFound.size++;
         //UNCOMMENT THIS TO WATCH THE PROGRESS
         imshow(screenName, color_image);
-        waitKey(1);
+        // waitKey(1);
         add_to_ordinary_moments(informationOfRegionFound, coord_origen);
         //Append neigbors if valid
         paint_and_append_object_neighbors(coord_origen, color_current, mq);
     }
+
+    calculate_moments(informationOfRegionFound);
+    
     return informationOfRegionFound;
 }
+
+void ObjectAnalysis::calculate_moments(InformationOfRegionFound &inf){
+    // Centralized moments
+    inf.u20 = inf.ordinary_moments[2][0] - (pow(inf.ordinary_moments[1][0],2) / inf.ordinary_moments[0][0]);
+    inf.u02 = inf.ordinary_moments[0][2] - (pow(inf.ordinary_moments[0][1],2) / inf.ordinary_moments[0][0]);
+    inf.u11 = inf.ordinary_moments[1][1] - (inf.ordinary_moments[0][1] * inf.ordinary_moments[1][0] / inf.ordinary_moments[0][0]);
+    // Normalized moments
+    inf.n20 = get_normalized_moments(inf, inf.u20, 2, 0);
+    inf.n02 = get_normalized_moments(inf, inf.u02, 0, 2);
+    inf.n11 = get_normalized_moments(inf, inf.u11, 1, 1);
+    // Hu moments
+    inf.ph1 = inf.n20 + inf.n02;
+    inf.ph2 = pow(inf.n20 - inf.n02, 2) + 4 * pow(inf.n11, 2);
+}
+
+long double ObjectAnalysis::get_normalized_moments(InformationOfRegionFound &inf, long centralizedMoment, int p, int q){
+    double gamma = ((p + q) / 2) + 1;
+    return centralizedMoment / (pow(inf.ordinary_moments[0][0], gamma));
+}
+
 void ObjectAnalysis::add_to_ordinary_moments(InformationOfRegionFound &informationOfRegionFound, Coord origen)
 {
 
@@ -128,14 +151,23 @@ void ObjectAnalysis::add_to_ordinary_moments(InformationOfRegionFound &informati
         }
     }
 }
-void ObjectAnalysis::print_ordinary_moments(InformationOfRegionFound informationOfRegionFound){
-    for (int p = 0; p <= MAX_ORDINARY_MOMENT_P; p++)
-    {
-        for (int q = 0; q <= MAX_ORDINARY_MOMENT_Q; q++)
-        {
-            cout<<"Moment "<<p<<" "<<q<<" :"<<informationOfRegionFound.ordinary_moments[p][q]<<endl;
-        }
-    }
+
+void ObjectAnalysis::print_moments(InformationOfRegionFound informationOfRegionFound){
+    // for (int p = 0; p <= MAX_ORDINARY_MOMENT_P; p++)
+    // {
+    //     for (int q = 0; q <= MAX_ORDINARY_MOMENT_Q; q++)
+    //     {
+    //         cout<<"Moment "<<p<<" "<<q<<": "<<informationOfRegionFound.ordinary_moments[p][q]<<endl;
+    //     }
+    // }
+    // cout << "Moment u20: " << informationOfRegionFound.u20 << endl;
+    // cout << "Moment u02: " << informationOfRegionFound.u02 << endl;
+    // cout << "Moment u11: " << informationOfRegionFound.u11 << endl;
+    // cout << "Moment n20: " << informationOfRegionFound.n20 << endl;
+    // cout << "Moment n02: " << informationOfRegionFound.n02 << endl;
+    // cout << "Moment n11: " << informationOfRegionFound.n11 << endl;
+    cout << "Moment ph1: " << informationOfRegionFound.ph1 << endl;
+    cout << "Moment ph2: " << informationOfRegionFound.ph2 << endl;
 }
 
 void ObjectAnalysis::paint_and_append_object_neighbors(Coord coord_origen, Vec3b color, queue<Coord> &mq)

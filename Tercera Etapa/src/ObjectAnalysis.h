@@ -10,6 +10,7 @@
 #include <time.h>  
 #include <vector>
 #include <cmath>
+
 using namespace std;
 using namespace cv;
 
@@ -29,7 +30,10 @@ public:
 struct InformationOfRegionFound
 {
     int size;
-    vector<vector<long>> ordinary_moments;
+    vector<vector<long> > ordinary_moments;
+    long u20, u02, u11;
+    long double n20, n02, n11;
+    long double ph1, ph2;
 };
 
 class ObjectAnalysis
@@ -52,7 +56,9 @@ private:
     InformationOfRegionFound grow_region_found(queue<Coord>&);
     void paint_and_append_object_neighbors(Coord,Vec3b,queue<Coord>&);
     void add_to_ordinary_moments(InformationOfRegionFound&,Coord);
-    void print_ordinary_moments(InformationOfRegionFound);
+    void calculate_moments(InformationOfRegionFound&);
+    void print_moments(InformationOfRegionFound);
+    long double get_normalized_moments(InformationOfRegionFound&, long centralizedMoment, int p, int q);
     int IMAGE_HEIGHT;
     int IMAGE_WIDTH;
     const static int MAX_ORDINARY_MOMENT_P = 2, MAX_ORDINARY_MOMENT_Q = 2;
