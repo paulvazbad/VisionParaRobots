@@ -84,19 +84,29 @@ public:
     void findRegions(int number_of_objects);
     void train(string name_of_object);
     void captureTrainData(Mat image);
+    void filterImage(Mat image);
 
 private:
-    Mat *frame;
+    Mat *frame, filteredImage, hsvImage;
     Mat grayscaleImage;
     Mat color_image;
     string screenName;
+    Vec3b HSV_color;
     vector<InformationOfRegionFound> regionsFound;
+    int hsvRange[3];
     Coord generateSeed();
     bool is_object_coord(Coord);
     void printImageInfo(int x, int y);
     void save_partial_results(time_t &last_time, time_t &curr_time, double seconds, int number_of_seed);
     void save_moments_to_dataset(string);
     void recalculate_models();
+    void calculateMaxMinChannels(Vec3b &color, int &bMin, int &gMin, int &rMin, int &bMax, int &gMax, int &rMax);
+    void dilation();
+    void erotion();
+    void bgrToHsv();
+    void hsvFilter();
+    static void onMouse(int event, int x, int y, int, void *userdata);
+    void onMouse(int event, int x, int y);
     Mat bgrToGray();
     Mat grayTobgr(Mat);
     InformationOfRegionFound grow_region_found(queue<Coord>&);

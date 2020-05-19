@@ -11,6 +11,23 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     IMAGE_HEIGHT = grayscaleImage.rows;
     IMAGE_WIDTH = grayscaleImage.cols;
     printImageInfo(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+
+    namedWindow("HSV Range");
+    createTrackbar("H", "HSV Range", &hsvRange[0], 255);
+    createTrackbar("S", "HSV Range", &hsvRange[1], 255);
+    createTrackbar("V", "HSV Range", &hsvRange[2], 255);
+
+    hsvRange[0] = 8;
+    hsvRange[1] = 72;
+    hsvRange[2] = 169;
+
+    setTrackbarPos("H", "HSV Range", hsvRange[0]);
+    setTrackbarPos("S", "HSV Range", hsvRange[1]);
+    setTrackbarPos("V", "HSV Range", hsvRange[2]);
+
+    //Click callback
+    namedWindow(screenName);
+    setMouseCallback(screenName, onMouse, this);
 }
 
 void ObjectAnalysis::captureTrainData(Mat image){
@@ -29,6 +46,11 @@ Mat ObjectAnalysis::grayTobgr(Mat color_image)
     return color_image;
 }
 
+
+/////////////////////////////////////////////////////////////////////
+////////////   IMAGE FILTERING //////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
 Mat ObjectAnalysis::bgrToGray()
 {
     cv::Mat result(frame->size(), CV_8U);
@@ -37,6 +59,97 @@ Mat ObjectAnalysis::bgrToGray()
     threshold(result, binarized_image, 127, 255, 0);
     return binarized_image;
 }
+
+void ObjectAnalysis::filterImage(Mat image)
+{
+    this->frame = &image;
+    imshow(screenName, *frame);
+    cvtColor(*frame, hsvImage, CV_BGR2HSV);
+    hsvFilter();
+    imshow("HSV filtered", filteredImage);
+    erotion();
+    dilation();
+    imshow("Final filtered", filteredImage);
+}
+
+void ObjectAnalysis::hsvFilter()
+{
+    Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
+    int hMin, hMax, sMin, sMax, vMin, vMax;
+    calculateMaxMinChannels(HSV_color, hMin, sMin, vMin, hMax, sMax, vMax);
+
+    // Updates mask values with the corresponding H,S,V limits
+    inRange(hsvImage, Scalar(hMin, sMin, vMin), Scalar(hMax, sMax, vMax), filteredImage);
+}
+
+void ObjectAnalysis::calculateMaxMinChannels(Vec3b &color, int &hMin, int &sMin, int &vMin, int &hMax, int &sMax, int &vMax)
+{
+    int epsilon[3];
+    memcpy(epsilon, hsvRange, 3 * sizeof *hsvRange);
+
+    hMin = max(color[0] - epsilon[0], 0);
+    sMin = max(color[1] - epsilon[1], 0);
+    vMin = max(color[2] - epsilon[2], 0);
+    hMax = min(color[0] + epsilon[0], 255);
+    sMax = min(color[1] + epsilon[1], 255);
+    vMax = min(color[2] + epsilon[2], 255);
+}
+
+void ObjectAnalysis::dilation(){
+    Mat dilation_dst;
+    int dilation_type = MORPH_RECT;
+    int dilation_size = 5; //here increase for more dilation, reduce for less dilation
+    Mat element = getStructuringElement( dilation_type,
+                                        Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                                        Point( dilation_size, dilation_size ) );
+
+    /// Apply the erosion operation
+    dilate( filteredImage, filteredImage, element );
+    //   imshow("Original Binarized Dilated", eroded);
+    //   imshow("Dilation 5x5", dilation_dst);
+}
+
+
+void ObjectAnalysis::erotion(){
+    Mat erosion_dst;
+    int erosion_type = MORPH_RECT;
+    int erosion_size = 5; //here increase for more erosion, reduce for less erosion
+    Mat element = getStructuringElement( erosion_type,
+                                        Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+                                        Point( erosion_size, erosion_size ) );
+    /// Apply the erosion operation
+    erode( filteredImage, filteredImage, element );
+    //   imshow("Original Binarized ",binaryImage);
+    //   imshow("Erotion 5x5", erosion_dst);
+}
+
+void ObjectAnalysis::onMouse(int event, int x, int y, int, void *userdata)
+{
+  ObjectAnalysis *objectAnalysis = reinterpret_cast<ObjectAnalysis *>(userdata);
+  objectAnalysis->onMouse(event, x, y);
+}
+
+void ObjectAnalysis::onMouse(int event, int x, int y)
+{
+  switch (event)
+  {
+  case CV_EVENT_LBUTTONDOWN:
+    cout << "  Mouse X, Y: " << x << ", " << y << endl;
+    HSV_color = (hsvImage).at<Vec3b>(Point(x, y));
+    cout << "H = " << (int)HSV_color[0] << endl;
+    cout << "S = " << (int)HSV_color[1] << endl;
+    cout << "V = " << (int)HSV_color[2] << endl;
+    break;
+  case CV_EVENT_MOUSEMOVE:
+    break;
+  case CV_EVENT_LBUTTONUP:
+    break;
+  }
+}
+
+
+//////////////////////////////////////////////////////////////////////
+
 void ObjectAnalysis::printImageInfo(int x, int y)
 {
     int KS = 5;
