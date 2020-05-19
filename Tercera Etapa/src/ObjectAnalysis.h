@@ -83,6 +83,7 @@ public:
     ObjectAnalysis(Mat image, string screenName);
     void findRegions(int number_of_objects);
     void train(string name_of_object);
+    void captureTrainData(Mat image);
 
 private:
     Mat *frame;
