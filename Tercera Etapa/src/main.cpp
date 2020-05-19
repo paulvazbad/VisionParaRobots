@@ -83,8 +83,6 @@ int main(int argc, char *argv[])
     }
   }
 
-  ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");
-
   string mode = "default";
   if(argc > 2 && (string(argv[2]) == "calibrate" || string(argv[2]) == "train"))
     mode = string(argv[2]);
