@@ -249,7 +249,7 @@ void ObjectAnalysis::save_moments_to_dataset(string name_of_object)
     ofstream file;
     cout << "Saving into figures_dataset.txt" << endl;
     file.open("figures_dataset.txt", ofstream::out | ofstream::app);
-    file << name_of_object << " " << regionsFound[0].ph1 << " " << regionsFound[0].ph1 << "\n";
+    file << name_of_object << " " << regionsFound[0].ph1 << " " << regionsFound[0].ph2 << "\n";
     file.close();
     cout << "Done saving! " << endl;
 }
@@ -268,6 +268,8 @@ void ObjectAnalysis::load_dataset_into_hashmap(unordered_map<string, ObjectInfor
     dataset_file.open("figures_dataset.txt");
     string name_of_object;
     long double ph1, ph2;
+    //skip titles line
+    getline(dataset_file,name_of_object);
     while (dataset_file >> name_of_object >> ph1 >> ph2)
     {
         if (objects_hashmap.find(name_of_object) == objects_hashmap.end())

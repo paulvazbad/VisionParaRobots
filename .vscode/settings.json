@@ -17,5 +17,6 @@
     "utility": "cpp",
     "valarray": "cpp",
     "ostream": "cpp"
-  }
+  },
+  "python.pythonPath": "/usr/bin/python3"
 }
