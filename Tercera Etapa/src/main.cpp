@@ -83,7 +83,20 @@ int main(int argc, char *argv[])
     }
   }
 
-  // objectAnalysis.findRegions(1000);
-  // objectAnalysis.train("A");
+  ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");
+
+  string mode = "default";
+  if(argc > 2 && (string(argv[2]) == "calibrate" || string(argv[2]) == "train"))
+    mode = string(argv[2]);
+  
+  cout << "Running on " << mode << " mode!\n\n";
+
+  if(mode == "train")
+    objectAnalysis.train("A");
+  else if(mode == "calibrate")
+    cout << "Change this console out for calibration method" << endl;
+  else
+    objectAnalysis.findRegions(5000);
+    
   return 0;
 }

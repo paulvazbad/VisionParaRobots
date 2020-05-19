@@ -213,7 +213,8 @@ void ObjectAnalysis::findRegions(int number_of_objects)
     }
     seconds = difftime(time(NULL), start_time);
     cout << "EXECUTION TIME: " << seconds << endl;
-    imshow(screenName, color_image);
+    // imshow(screenName, color_image);
+    // waitKey(0);
     imwrite("./result.jpg", color_image);
 }
 
@@ -238,6 +239,10 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
     }
 
     calculate_moments(informationOfRegionFound);
+    draw_moments(informationOfRegionFound, 100);
+
+    imshow(screenName, color_image);
+    waitKey(0);
 
     return informationOfRegionFound;
 }
@@ -292,6 +297,18 @@ void ObjectAnalysis::print_moments(InformationOfRegionFound informationOfRegionF
     // cout << "Moment n11: " << informationOfRegionFound.n11 << endl;
     cout << "Moment ph1: " << informationOfRegionFound.ph1 << endl;
     cout << "Moment ph2: " << informationOfRegionFound.ph2 << endl;
+}
+
+// Hyp determines half the size (in pixels) of the line to pass through
+void ObjectAnalysis::draw_moments(InformationOfRegionFound inf, int hyp){
+    double angle = 0.5 * atan2(2 * inf.u11, inf.u20 - inf.u02);
+    int x = inf.ordinary_moments[1][0]/inf.ordinary_moments[0][0];
+    int y =  inf.ordinary_moments[0][1]/inf.ordinary_moments[0][0];
+    int adj = cos(angle) * hyp;
+    int opp = sin(angle) * hyp;
+
+    circle(color_image, Point(x,y), 1, Scalar(0,255,0), 2);
+    line(color_image, Point(x - adj, y - opp), Point(x + adj, y + opp), Scalar(0,255,0), 1);
 }
 
 void ObjectAnalysis::paint_and_append_object_neighbors(Coord coord_origen, Vec3b color, queue<Coord> &mq)
