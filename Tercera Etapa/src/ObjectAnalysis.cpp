@@ -251,10 +251,8 @@ void ObjectAnalysis::recalculate_models()
 {
     unordered_map<string, ObjectInformation> objects_hashmap;
     load_dataset_into_hashmap(objects_hashmap);
-    calculate_median_variance(objects_hashmap);
+    update_median_variance(objects_hashmap);
     //load each entry from figures_dataset.txt and calculate median and variance
-    //
-    //save name_of_object median variance
 }
 
 void ObjectAnalysis::load_dataset_into_hashmap(unordered_map<string, ObjectInformation> &objects_hashmap)
@@ -272,8 +270,8 @@ void ObjectAnalysis::load_dataset_into_hashmap(unordered_map<string, ObjectInfor
         else
         {
             objects_hashmap[name_of_object].name_of_object = name_of_object;
-            objects_hashmap[name_of_object].median_ph1+=ph1;
-            objects_hashmap[name_of_object].median_ph2+=ph2;
+            objects_hashmap[name_of_object].median_ph1 += ph1;
+            objects_hashmap[name_of_object].median_ph2 += ph2;
             objects_hashmap[name_of_object].ph1s.push_back(ph1);
             objects_hashmap[name_of_object].ph2s.push_back(ph2);
         }
@@ -282,12 +280,21 @@ void ObjectAnalysis::load_dataset_into_hashmap(unordered_map<string, ObjectInfor
     dataset_file.close();
 }
 
-void ObjectAnalysis::calculate_median_variance(unordered_map<string, ObjectInformation> &objects_hashmap)
+void ObjectAnalysis::update_median_variance(unordered_map<string, ObjectInformation> &objects_hashmap)
 {
+    ofstream file;
+    cout << "Saving recalculation into models.txt" << endl;
+    file.open("models.txt", ofstream::out);
+    file << "Figure_name median_ph1 variance_ph1 median_ph2 variance_ph2" << endl;
     for (auto i : objects_hashmap)
     {
-        ObjectInformation *current_object = &i.second;
-        current_object->median_ph1 = current_object->median_ph1 / current_object->entries_in_dataset;
-        
+        i.second.calculate_median();
+        i.second.calculate_variance();
+        cout << i.first << " "
+             << "median " << i.second.median_ph1 << " variance " << i.second.variance_ph1 << endl;
+        file << i.first << " " << i.second.median_ph1 << " " << i.second.variance_ph1 << " "
+             << i.second.median_ph2 << " " << i.second.variance_ph2 << "\n";
     }
+    file.close();
+    cout << "Done saving! " << endl;
 }

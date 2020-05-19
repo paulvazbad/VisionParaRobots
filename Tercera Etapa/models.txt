@@ -1,0 +1,2 @@
+Figure_name median_ph1 variance_ph1 median_ph2 variance_ph2
+A 0.206889 0.000599981 0.206889 0.000599981

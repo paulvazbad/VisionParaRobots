@@ -57,6 +57,24 @@ public:
     ObjectInformation(){
         entries_in_dataset = 0;
     }
+    void calculate_median(){
+        median_ph1 /= entries_in_dataset;
+        median_ph2 /= entries_in_dataset; 
+    }
+    void calculate_variance(){
+        double squared_differences_ph1= 0,squared_differences_ph2= 0;
+        for(int i=0; i<ph1s.size(); i++){
+            try{
+                squared_differences_ph1 += pow(median_ph1 - ph1s[i], 2);
+                squared_differences_ph2 += pow(median_ph2 - ph2s[i], 2); 
+            }
+            catch(...){
+                cout<<"different # of ph1s or ph2s for "<<name_of_object<<endl;
+            }
+        }
+        this->variance_ph1 = squared_differences_ph1 / entries_in_dataset;
+        this->variance_ph2 = squared_differences_ph2 / entries_in_dataset;
+    }
 };
 
 class ObjectAnalysis
@@ -86,7 +104,7 @@ private:
     void calculate_moments(InformationOfRegionFound&);
     void print_moments(InformationOfRegionFound);
     void load_dataset_into_hashmap(unordered_map<string,ObjectInformation>&);
-    void calculate_median_variance(unordered_map<string,ObjectInformation>&);
+    void update_median_variance(unordered_map<string,ObjectInformation>&);
     long double get_normalized_moments(InformationOfRegionFound&, long centralizedMoment, int p, int q);
     int IMAGE_HEIGHT;
     int IMAGE_WIDTH;
