@@ -103,6 +103,7 @@ private:
     void add_to_ordinary_moments(InformationOfRegionFound&,Coord);
     void calculate_moments(InformationOfRegionFound&);
     void print_moments(InformationOfRegionFound);
+    void draw_moments(InformationOfRegionFound);
     void load_dataset_into_hashmap(unordered_map<string,ObjectInformation>&);
     void update_median_variance(unordered_map<string,ObjectInformation>&);
     long double get_normalized_moments(InformationOfRegionFound&, long centralizedMoment, int p, int q);
