@@ -249,7 +249,7 @@ void ObjectAnalysis::save_moments_to_dataset(string name_of_object)
     ofstream file;
     cout << "Saving into figures_dataset.txt" << endl;
     file.open("figures_dataset.txt", ofstream::out | ofstream::app);
-    file << name_of_object << " " << regionsFound[0].ph1 << " " << regionsFound[0].ph1 << "\n";
+    file << name_of_object << " " << regionsFound[0].ph1 << " " << regionsFound[0].ph2 << "\n";
     file.close();
     cout << "Done saving! " << endl;
 }
