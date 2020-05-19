@@ -40,6 +40,12 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
       return true;
     }
   }
+  
+  if(cap.open("rtsp://192.168.0.8:8080/h264_pcm.sdp")) {
+    if(cap.read(image)) {
+      return false;
+    }
+  }
 
   argc > 1 && string(argv[1]).find(".mp4") ? cap.open(path) : cap.open(0);
   cap >> image;
@@ -47,7 +53,7 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
 }
 
 int main(int argc, char *argv[])
-{
+{  
   Mat image;
   VideoCapture cap;
   ios_base::sync_with_stdio(false); 
@@ -62,7 +68,30 @@ int main(int argc, char *argv[])
   }
 
   ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");
-  //objectAnalysis.findRegions(1000);
-  objectAnalysis.train("A");
+
+  for(;;){
+    if(!isStatic){
+      cap >> image;
+    }
+
+    if (image.empty())
+    {
+      cout << "No image has been found\n";
+      break;
+    }
+    cv::imshow("Image captured", image);
+    int key = cv::waitKey(1);
+    if( key == 99){
+      objectAnalysis.captureTrainData(image);
+    }else if(key == 120){
+      cout<<"Bye"<<endl;
+      break;
+    }
+  }
+
   return 0;
+  
+  //objectAnalysis.findRegions(1000);
+  // objectAnalysis.train("A");
+  // return 0;
 }

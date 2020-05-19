@@ -2,7 +2,6 @@
 
 ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
 {
-
     this->frame = &image;
     this->screenName = screenName;
     cout << "HEIGHT " << frame->size().height << endl;
@@ -12,6 +11,14 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     IMAGE_HEIGHT = grayscaleImage.rows;
     IMAGE_WIDTH = grayscaleImage.cols;
     printImageInfo(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+}
+
+void ObjectAnalysis::captureTrainData(Mat image){
+    string name;
+    cout << "Name: "<< endl;
+    cin >> name;
+    imwrite("./train_data/" + name + ".jpg", image);
+    cout<<"Image saved"<<endl;
 }
 
 Mat ObjectAnalysis::grayTobgr(Mat color_image)
