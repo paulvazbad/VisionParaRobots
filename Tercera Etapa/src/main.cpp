@@ -88,10 +88,8 @@ int main(int argc, char *argv[])
       break;
     }
   }
-
-  return 0;
   
-  //objectAnalysis.findRegions(1000);
+  // objectAnalysis.findRegions(1000);
   // objectAnalysis.train("A");
-  // return 0;
+  return 0;
 }
