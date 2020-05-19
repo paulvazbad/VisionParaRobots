@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
   }
 
   ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");
-  objectAnalysis.findRegions(1000);
-
+  //objectAnalysis.findRegions(1000);
+  objectAnalysis.train("A");
   return 0;
 }

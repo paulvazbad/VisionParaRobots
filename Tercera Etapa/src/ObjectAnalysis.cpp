@@ -88,6 +88,7 @@ void ObjectAnalysis::findRegions(int number_of_objects)
             InformationOfRegionFound informationOfRegionFound = grow_region_found(mq);
             cout << "TOTAL REGION AREA = " << informationOfRegionFound.size << endl;
             print_moments(informationOfRegionFound);
+            regionsFound.push_back(informationOfRegionFound);
         }
     }
     seconds = difftime(time(NULL), start_time);
@@ -100,8 +101,8 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
 {
     InformationOfRegionFound informationOfRegionFound;
     informationOfRegionFound.size = 0;
-    vector<vector<long> > ordinary_moments(MAX_ORDINARY_MOMENT_P+1, vector<long>(MAX_ORDINARY_MOMENT_Q+1, 0));
-    informationOfRegionFound.ordinary_moments  = ordinary_moments;
+    vector<vector<long>> ordinary_moments(MAX_ORDINARY_MOMENT_P + 1, vector<long>(MAX_ORDINARY_MOMENT_Q + 1, 0));
+    informationOfRegionFound.ordinary_moments = ordinary_moments;
     Vec3b color_current(0, 0, 200);
     while (!mq.empty())
     {
@@ -117,14 +118,15 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
     }
 
     calculate_moments(informationOfRegionFound);
-    
+
     return informationOfRegionFound;
 }
 
-void ObjectAnalysis::calculate_moments(InformationOfRegionFound &inf){
+void ObjectAnalysis::calculate_moments(InformationOfRegionFound &inf)
+{
     // Centralized moments
-    inf.u20 = inf.ordinary_moments[2][0] - (pow(inf.ordinary_moments[1][0],2) / inf.ordinary_moments[0][0]);
-    inf.u02 = inf.ordinary_moments[0][2] - (pow(inf.ordinary_moments[0][1],2) / inf.ordinary_moments[0][0]);
+    inf.u20 = inf.ordinary_moments[2][0] - (pow(inf.ordinary_moments[1][0], 2) / inf.ordinary_moments[0][0]);
+    inf.u02 = inf.ordinary_moments[0][2] - (pow(inf.ordinary_moments[0][1], 2) / inf.ordinary_moments[0][0]);
     inf.u11 = inf.ordinary_moments[1][1] - (inf.ordinary_moments[0][1] * inf.ordinary_moments[1][0] / inf.ordinary_moments[0][0]);
     // Normalized moments
     inf.n20 = get_normalized_moments(inf, inf.u20, 2, 0);
@@ -135,7 +137,8 @@ void ObjectAnalysis::calculate_moments(InformationOfRegionFound &inf){
     inf.ph2 = pow(inf.n20 - inf.n02, 2) + 4 * pow(inf.n11, 2);
 }
 
-long double ObjectAnalysis::get_normalized_moments(InformationOfRegionFound &inf, long centralizedMoment, int p, int q){
+long double ObjectAnalysis::get_normalized_moments(InformationOfRegionFound &inf, long centralizedMoment, int p, int q)
+{
     double gamma = ((p + q) / 2) + 1;
     return centralizedMoment / (pow(inf.ordinary_moments[0][0], gamma));
 }
@@ -152,7 +155,8 @@ void ObjectAnalysis::add_to_ordinary_moments(InformationOfRegionFound &informati
     }
 }
 
-void ObjectAnalysis::print_moments(InformationOfRegionFound informationOfRegionFound){
+void ObjectAnalysis::print_moments(InformationOfRegionFound informationOfRegionFound)
+{
     // for (int p = 0; p <= MAX_ORDINARY_MOMENT_P; p++)
     // {
     //     for (int q = 0; q <= MAX_ORDINARY_MOMENT_Q; q++)
@@ -208,4 +212,82 @@ bool ObjectAnalysis::is_object_coord(Coord coord)
         return false;
     }
     return false;
+}
+
+void ObjectAnalysis::train(string name_of_object)
+{
+    //find regions
+    this->findRegions(1000);
+    cout << "Number of objects found in image: " << regionsFound.size() << endl;
+    //Assumes only one object in the image provided
+    if (name_of_object.size() == 0)
+    {
+        cout << "Give me the name of the object found: " << endl;
+        cin >> name_of_object;
+        cout << endl;
+    }
+    print_moments(regionsFound[0]);
+    string save_confirmation = "Y";
+    cout << "Do you want to save this moments to the dataset? [Y/n] " << endl;
+    cin >> save_confirmation;
+    if (save_confirmation == "Y")
+    {
+        save_moments_to_dataset(name_of_object);
+        recalculate_models();
+    }
+}
+
+void ObjectAnalysis::save_moments_to_dataset(string name_of_object)
+{
+    ofstream file;
+    cout << "Saving into figures_dataset.txt" << endl;
+    file.open("figures_dataset.txt", ofstream::out | ofstream::app);
+    file << name_of_object << " " << regionsFound[0].ph1 << " " << regionsFound[0].ph1 << "\n";
+    file.close();
+    cout << "Done saving! " << endl;
+}
+
+void ObjectAnalysis::recalculate_models()
+{
+    unordered_map<string, ObjectInformation> objects_hashmap;
+    load_dataset_into_hashmap(objects_hashmap);
+    calculate_median_variance(objects_hashmap);
+    //load each entry from figures_dataset.txt and calculate median and variance
+    //
+    //save name_of_object median variance
+}
+
+void ObjectAnalysis::load_dataset_into_hashmap(unordered_map<string, ObjectInformation> &objects_hashmap)
+{
+    ifstream dataset_file;
+    dataset_file.open("figures_dataset.txt");
+    string name_of_object;
+    long double ph1, ph2;
+    while (dataset_file >> name_of_object >> ph1 >> ph2)
+    {
+        if (objects_hashmap.find(name_of_object) == objects_hashmap.end())
+        {
+            objects_hashmap[name_of_object] = ObjectInformation(name_of_object, ph1, ph2);
+        }
+        else
+        {
+            objects_hashmap[name_of_object].name_of_object = name_of_object;
+            objects_hashmap[name_of_object].median_ph1+=ph1;
+            objects_hashmap[name_of_object].median_ph2+=ph2;
+            objects_hashmap[name_of_object].ph1s.push_back(ph1);
+            objects_hashmap[name_of_object].ph2s.push_back(ph2);
+        }
+        objects_hashmap[name_of_object].entries_in_dataset++;
+    }
+    dataset_file.close();
+}
+
+void ObjectAnalysis::calculate_median_variance(unordered_map<string, ObjectInformation> &objects_hashmap)
+{
+    for (auto i : objects_hashmap)
+    {
+        ObjectInformation *current_object = &i.second;
+        current_object->median_ph1 = current_object->median_ph1 / current_object->entries_in_dataset;
+        
+    }
 }
