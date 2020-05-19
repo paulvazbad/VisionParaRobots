@@ -268,6 +268,8 @@ void ObjectAnalysis::load_dataset_into_hashmap(unordered_map<string, ObjectInfor
     dataset_file.open("figures_dataset.txt");
     string name_of_object;
     long double ph1, ph2;
+    //skip titles line
+    getline(dataset_file,name_of_object);
     while (dataset_file >> name_of_object >> ph1 >> ph2)
     {
         if (objects_hashmap.find(name_of_object) == objects_hashmap.end())
