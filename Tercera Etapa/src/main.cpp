@@ -67,14 +67,8 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-<<<<<<< HEAD
   ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");
   objectAnalysis.findRegions(5000);
   // objectAnalysis.train("A");
-=======
-  ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");  
-  objectAnalysis.findRegions(1000);
-  objectAnalysis.train("A");
->>>>>>> 0e0c5ea6229dc908a5ca08a2123cbff4a03153ba
   return 0;
 }
