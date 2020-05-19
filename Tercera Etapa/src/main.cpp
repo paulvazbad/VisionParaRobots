@@ -67,29 +67,8 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");
-
-  for(;;){
-    if(!isStatic){
-      cap >> image;
-    }
-
-    if (image.empty())
-    {
-      cout << "No image has been found\n";
-      break;
-    }
-    cv::imshow("Image captured", image);
-    int key = cv::waitKey(1);
-    if( key == 99){
-      objectAnalysis.captureTrainData(image);
-    }else if(key == 120){
-      cout<<"Bye"<<endl;
-      break;
-    }
-  }
-  
-  // objectAnalysis.findRegions(1000);
-  // objectAnalysis.train("A");
+  ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");  
+  objectAnalysis.findRegions(1000);
+  objectAnalysis.train("A");
   return 0;
 }
