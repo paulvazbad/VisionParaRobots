@@ -90,7 +90,8 @@ int main(int argc, char *argv[])
     }
     objectAnalysis.save_calibration_values();
   }
-  else
-    objectAnalysis.findRegions(1,1000);
+  // else
+  //   objectAnalysis.findRegions(1,1000);
+  
   return 0;
 }
