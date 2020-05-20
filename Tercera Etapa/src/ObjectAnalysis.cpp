@@ -343,8 +343,8 @@ void ObjectAnalysis::findRegions(const int number_of_objects, const int SEED_LIM
     seconds = difftime(time(NULL), start_time);
     cout << "EXECUTION TIME: " << seconds << endl;
     imshow(screenName, color_image);
-    // waitKey(0);
-    imwrite(".results/result.jpg", color_image);
+    waitKey(0);
+    imwrite("./results/result.jpg", color_image);
 }
 
 InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
@@ -353,7 +353,7 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
     informationOfRegionFound.size = 0;
     vector<vector<long>> ordinary_moments(MAX_ORDINARY_MOMENT_P + 1, vector<long>(MAX_ORDINARY_MOMENT_Q + 1, 0));
     informationOfRegionFound.ordinary_moments = ordinary_moments;
-    Vec3b color_current(0, 0, 200);
+    Vec3b color_current(100, rand()%256, rand()%256);
     while (!mq.empty())
     {
         Coord coord_origen = mq.front();
@@ -553,7 +553,7 @@ void ObjectAnalysis::trainDataset()
 void ObjectAnalysis::train(string name_of_object)
 {
     //find regions
-    this->findRegions(1, 1000, 500);
+    this->findRegions(1, 1000, 2000);
     // cout << "Number of objects found in image: " << regionsFound.size() << endl;
     //Assumes only one object in the image provided
     if (name_of_object.size() == 0)
