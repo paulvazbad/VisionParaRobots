@@ -11,6 +11,25 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     IMAGE_HEIGHT = grayscaleImage.rows;
     IMAGE_WIDTH = grayscaleImage.cols;
     printImageInfo(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+    read_model();
+}
+
+void ObjectAnalysis::read_model(){
+    std::ifstream file("models.txt");
+    if(file.fail()){
+        std::cout << "Models file cannot be opened\n";
+        return;  
+    }
+
+    long double ph1, ph2, var1, var2;
+    string name;
+
+    getline(file, name);
+    while(file >> name >> ph1 >> var1 >> ph2 >> var2){
+        ObjectInformation obj = ObjectInformation(name, ph1, ph2);
+        obj.set_variance(var1, var2);
+        objectModels.push_back(obj);
+    }
 }
 
 void ObjectAnalysis::captureTrainData(Mat image){
@@ -118,7 +137,7 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
         mq.pop();
         informationOfRegionFound.size++;
         //UNCOMMENT THIS TO WATCH THE PROGRESS
-        imshow(screenName, color_image);
+        // imshow(screenName, color_image);
         // waitKey(1);
         add_to_ordinary_moments(informationOfRegionFound, coord_origen);
         //Append neigbors if valid
@@ -127,11 +146,29 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
 
     calculate_moments(informationOfRegionFound);
     draw_moments(informationOfRegionFound, 100);
+    cout << "MATCH SHAPE = " << match_shape(informationOfRegionFound) << endl;
 
-    imshow(screenName, color_image);
-    waitKey(0);
+    // imshow(screenName, color_image);
+    // waitKey(0);
 
     return informationOfRegionFound;
+}
+
+string ObjectAnalysis::match_shape(InformationOfRegionFound inf){
+    int closest = 0;
+    for(int i = 1; i < objectModels.size() ; i++){
+        if(eucladian_distance(inf.ph1, objectModels[i].median_ph1, inf.ph2, objectModels[i].median_ph2) < eucladian_distance(inf.ph1, objectModels[closest].median_ph1, inf.ph2, objectModels[closest].median_ph2))
+            closest = i;
+    }
+
+    if( fabs(objectModels[closest].median_ph1 - inf.ph1) <= objectModels[closest].variance_ph1 && fabs(objectModels[closest].median_ph2 - inf.ph2) <= objectModels[closest].variance_ph2)
+        return objectModels[closest].name_of_object;
+
+    return "";
+}
+
+long double ObjectAnalysis::eucladian_distance(long double x1, long double x2, long double y1, long double y2){
+    return sqrtf(pow(x2-x1, 2) + pow(y2 - y1, 2));
 }
 
 void ObjectAnalysis::calculate_moments(InformationOfRegionFound &inf)
@@ -147,6 +184,10 @@ void ObjectAnalysis::calculate_moments(InformationOfRegionFound &inf)
     // Hu moments
     inf.ph1 = inf.n20 + inf.n02;
     inf.ph2 = pow(inf.n20 - inf.n02, 2) + 4 * pow(inf.n11, 2);
+
+    inf.angle = 0.5 * atan2(2 * inf.u11, inf.u20 - inf.u02);
+    inf.cx = inf.ordinary_moments[1][0]/inf.ordinary_moments[0][0];
+    inf.cy = inf.ordinary_moments[0][1]/inf.ordinary_moments[0][0];
 }
 
 long double ObjectAnalysis::get_normalized_moments(InformationOfRegionFound &inf, long centralizedMoment, int p, int q)
@@ -188,14 +229,11 @@ void ObjectAnalysis::print_moments(InformationOfRegionFound informationOfRegionF
 
 // Hyp determines half the size (in pixels) of the line to pass through
 void ObjectAnalysis::draw_moments(InformationOfRegionFound inf, int hyp){
-    double angle = 0.5 * atan2(2 * inf.u11, inf.u20 - inf.u02);
-    int x = inf.ordinary_moments[1][0]/inf.ordinary_moments[0][0];
-    int y =  inf.ordinary_moments[0][1]/inf.ordinary_moments[0][0];
-    int adj = cos(angle) * hyp;
-    int opp = sin(angle) * hyp;
+    int adj = cos(inf.angle) * hyp;
+    int opp = sin(inf.angle) * hyp;
 
-    circle(color_image, Point(x,y), 1, Scalar(0,255,0), 2);
-    line(color_image, Point(x - adj, y - opp), Point(x + adj, y + opp), Scalar(0,255,0), 1);
+    circle(color_image, Point(inf.cx,inf.cy), 1, Scalar(0,255,0), 2);
+    line(color_image, Point(inf.cx - adj, inf.cy - opp), Point(inf.cx + adj, inf.cy + opp), Scalar(0,255,0), 1);
 }
 
 void ObjectAnalysis::paint_and_append_object_neighbors(Coord coord_origen, Vec3b color, queue<Coord> &mq)
