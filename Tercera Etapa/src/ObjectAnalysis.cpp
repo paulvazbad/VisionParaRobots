@@ -50,8 +50,17 @@ void ObjectAnalysis::load_calibration_values(){
         std::cout << "Calibration file cannot be opened\n";
         return;  
     }
-    file>>HSV_color[H]>>HSV_color[S]>>HSV_color[V];
-    file>>this->hsvRange[H]>>this->hsvRange[S]>>this->hsvRange[V];    
+    int COLOR_STREAM[3];
+    file>>COLOR_STREAM[H];
+    file>>COLOR_STREAM[S];
+    file>>COLOR_STREAM[V];
+    HSV_color[H]=(u_char)COLOR_STREAM[H];
+    HSV_color[S]=(u_char)COLOR_STREAM[S];
+    HSV_color[V]=(u_char)COLOR_STREAM[V];
+    file>>this->hsvRange[H];
+    file>>this->hsvRange[S];
+    file>>this->hsvRange[V]; 
+    cout<<HSV_color[H]<<HSV_color[S]<<HSV_color[V]<<endl;   
     file.close();
 }
 void ObjectAnalysis::save_calibration_values(){
