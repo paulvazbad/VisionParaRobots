@@ -76,7 +76,20 @@ int main(int argc, char *argv[])
     objectAnalysis.save_calibration_values();
   }
   else if(mode == "calibrate")
-    cout << "Change this console out for calibration method" << endl;
+  {
+    for(;;)
+    {
+      if(!isStatic)
+        cap >> image;
+      objectAnalysis.filterImage(image);
+      int x = waitKey(30);
+      if (x == 's')
+      {
+          break;
+      }
+    }
+    objectAnalysis.save_calibration_values();
+  }
   else
     objectAnalysis.findRegions(1,1000);
   return 0;

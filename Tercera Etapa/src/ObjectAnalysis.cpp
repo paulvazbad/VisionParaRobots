@@ -502,9 +502,9 @@ void ObjectAnalysis::captureTrainData(Mat image){
 void ObjectAnalysis::trainDataset()
 {
     string figures[4] = {"A", "B", "C", "D"};
-    for(int i=0; i<1; i++)
+    for(int i=0; i<4; i++)
     {
-        for(int x=0; x<5; x++)
+        for(int x=0; x<20; x++)
         {
             string img_name = "./train_data/" + figures[i] + to_string(x) + ".jpg";
             cout<<img_name<<endl;
