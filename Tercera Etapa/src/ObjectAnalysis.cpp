@@ -1,4 +1,9 @@
 #include "ObjectAnalysis.h"
+#if WIN32
+#include <windows.h>
+#else
+#include <X11/Xlib.h>
+#endif
 
 ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
 {
@@ -28,15 +33,90 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     //Click callback
     namedWindow(screenName);
     setMouseCallback(screenName, onMouse, this);
+
+    //Mira
+    //displayResult(None, 0);
 }
 
-void ObjectAnalysis::captureTrainData(Mat image){
-    string name;
-    cout << "Name: "<< endl;
-    cin >> name;
-    imwrite("./train_data/" + name + ".jpg", image);
-    cout<<"Image saved"<<endl;
+void ObjectAnalysis::printImageInfo(int x, int y)
+{
+    int KS = 5;
+    cout << "Rows: " << grayscaleImage.rows << endl;
+    cout << "Cols " << grayscaleImage.cols << endl;
+    cout << "Channels: " << grayscaleImage.channels() << endl;
+
+    for (int j = y - (KS / 2); j <= y + (KS / 2); ++j)
+    {
+        for (int i = x - (KS / 2); i <= x + (KS / 2); ++i)
+        {
+            if (i > 0 && i < grayscaleImage.cols && j > 0 && j < grayscaleImage.rows)
+            {
+                double value = grayscaleImage.at<Vec3b>(i, j)[0];
+
+                cout << value << " ";
+            }
+            else
+            {
+                cout << "NaN ";
+            }
+        }
+        cout << endl;
+    }
 }
+
+
+/////////////////////////////////////////////////////////////////////
+//////////////////////   DISPLAY RESULT   ///////////////////////////
+/////////////////////////////////////////////////////////////////////
+
+void ObjectAnalysis::displayResult(InformationOfRegionFound inf, int combination){
+    int width, height;
+    getScreenResolution(width, height);
+    Mat mira(height, width,CV_8UC3,Scalar(255,255,255));
+    int qx, qy, x, y;
+
+    switch(combination){
+        case 0:
+            qx = width;
+            qy = height/2;
+            x = width/2;
+            y = 0;
+            break;
+        case 1:
+            qx = width/2;
+            qy = height/2;
+            x = 0;
+            y = 0;
+            break;  
+        case 2:
+            qx = width/2;
+            qy = height;
+            x = 0;
+            y = height/2;
+            break;
+        case 3:
+            qx = width;
+            qy = height;
+            x = width/2;
+            y = height/2;
+            break;
+    }
+
+    //Draw mira
+    rectangle(mira,Point(x,y),Point(qx, qy), Scalar(255, 107, 0), FILLED, LINE_8);
+    line(mira, Point(width/2, 0), Point(width/2, height), Scalar(0,0,0), 3);
+    line(mira, Point(0, height/2), Point( width, height/2), Scalar(0,0,0), 3);
+
+    //TODO draw pendiente de figura
+
+    imshow("Mira", mira);
+    moveWindow("Mira", 0, 0);
+    
+}
+
+/////////////////////////////////////////////////////////////////////
+////////////   IMAGE FILTERING //////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 
 Mat ObjectAnalysis::grayTobgr(Mat color_image)
 {
@@ -45,11 +125,6 @@ Mat ObjectAnalysis::grayTobgr(Mat color_image)
     cvtColor(grayscaleImage, color_image, COLOR_GRAY2RGB);
     return color_image;
 }
-
-
-/////////////////////////////////////////////////////////////////////
-////////////   IMAGE FILTERING //////////////////////////////////////
-/////////////////////////////////////////////////////////////////////
 
 Mat ObjectAnalysis::bgrToGray()
 {
@@ -150,31 +225,7 @@ void ObjectAnalysis::onMouse(int event, int x, int y)
 
 //////////////////////////////////////////////////////////////////////
 
-void ObjectAnalysis::printImageInfo(int x, int y)
-{
-    int KS = 5;
-    cout << "Rows: " << grayscaleImage.rows << endl;
-    cout << "Cols " << grayscaleImage.cols << endl;
-    cout << "Channels: " << grayscaleImage.channels() << endl;
 
-    for (int j = y - (KS / 2); j <= y + (KS / 2); ++j)
-    {
-        for (int i = x - (KS / 2); i <= x + (KS / 2); ++i)
-        {
-            if (i > 0 && i < grayscaleImage.cols && j > 0 && j < grayscaleImage.rows)
-            {
-                double value = grayscaleImage.at<Vec3b>(i, j)[0];
-
-                cout << value << " ";
-            }
-            else
-            {
-                cout << "NaN ";
-            }
-        }
-        cout << endl;
-    }
-}
 
 void ObjectAnalysis::save_partial_results(time_t &last_time, time_t &curr_time, double seconds, int number_of_seed)
 {
@@ -351,6 +402,19 @@ bool ObjectAnalysis::is_object_coord(Coord coord)
     return false;
 }
 
+
+////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// TRAINING //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+void ObjectAnalysis::captureTrainData(Mat image){
+    string name;
+    cout << "Name: "<< endl;
+    cin >> name;
+    imwrite("./train_data/" + name + ".jpg", image);
+    cout<<"Image saved"<<endl;
+}
+
 void ObjectAnalysis::train(string name_of_object)
 {
     //find regions
@@ -436,4 +500,23 @@ void ObjectAnalysis::update_median_variance(unordered_map<string, ObjectInformat
     }
     file.close();
     cout << "Done saving! " << endl;
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// DISPLAY //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+
+void ObjectAnalysis::getScreenResolution(int &width, int &height)
+{
+#if WIN32
+  width = (int)GetSystemMetrics(SM_CXSCREEN);
+  height = (int)GetSystemMetrics(SM_CYSCREEN) * 0.9;
+#else
+  Display *disp = XOpenDisplay(NULL);
+  Screen *scrn = DefaultScreenOfDisplay(disp);
+  width = scrn->width*0.97;
+  height = scrn->height * 0.97;
+#endif
 }
