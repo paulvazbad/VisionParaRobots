@@ -16,16 +16,14 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     IMAGE_HEIGHT = grayscaleImage.rows;
     IMAGE_WIDTH = grayscaleImage.cols;
     printImageInfo(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+    load_calibration_values();
     read_model();
-    
     namedWindow("HSV Range");
+    
     createTrackbar("H", "HSV Range", &hsvRange[0], 255);
     createTrackbar("S", "HSV Range", &hsvRange[1], 255);
     createTrackbar("V", "HSV Range", &hsvRange[2], 255);
-
-    hsvRange[0] = 8;
-    hsvRange[1] = 72;
-    hsvRange[2] = 169;
+    
 
     setTrackbarPos("H", "HSV Range", hsvRange[0]);
     setTrackbarPos("S", "HSV Range", hsvRange[1]);
@@ -37,6 +35,33 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
 
     //Mira
     //displayResult(None, 0);
+}
+
+
+
+void ObjectAnalysis::load_calibration_values(){
+    const int H=0,S=1,V=2;
+    std::ifstream file("calibration.txt");
+    cout<<"Load"<<endl;
+    if(file.fail()){
+        std::cout << "Calibration file cannot be opened\n";
+        return;  
+    }
+    int COLOR_H,COLOR_S,COLOR_V;
+    file>>HSV_color[H]>>HSV_color[S]>>HSV_color[V];
+    file>>this->hsvRange[H]>>this->hsvRange[S]>>this->hsvRange[V];    
+    file.close();
+}
+void ObjectAnalysis::save_calibration_values(){
+    const int H=0,S=1,V=2;
+    std::ofstream file("calibration.txt",ofstream::out);
+    if(file.fail()){
+        std::cout << "Calibration file cannot be opened\n";
+        return;  
+    }
+    file<<HSV_color[H]<<HSV_color[S]<<HSV_color[V];
+    file<<hsvRange[H]<<hsvRange[S]<<hsvRange[V];
+    file.close();
 }
 
 void ObjectAnalysis::read_model(){

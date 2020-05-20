@@ -93,6 +93,7 @@ public:
     void train(string name_of_object);
     void captureTrainData(Mat image);
     void filterImage(Mat image);
+    void save_calibration_values();
 
 private:
     Mat *frame, filteredImage, hsvImage;
@@ -132,6 +133,7 @@ private:
     void read_model();
     string match_shape(InformationOfRegionFound);
     long double eucladian_distance(long double x1, long double x2, long double y1, long double y2);
+    void load_calibration_values();
     int IMAGE_HEIGHT;
     int IMAGE_WIDTH;
     const static int MAX_ORDINARY_MOMENT_P = 2, MAX_ORDINARY_MOMENT_Q = 2;

@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 make clean
 make
-./bin/main regiones_50%.jpg
+./bin/main ./train_data/A0.jpg

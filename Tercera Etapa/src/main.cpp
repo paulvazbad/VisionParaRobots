@@ -95,6 +95,7 @@ int main(int argc, char *argv[])
     cout << "Change this console out for calibration method" << endl;
   else
     objectAnalysis.findRegions(1,1000);
-    
+  
+  ObjectAnalysis.save_calibration_values();
   return 0;
 }
