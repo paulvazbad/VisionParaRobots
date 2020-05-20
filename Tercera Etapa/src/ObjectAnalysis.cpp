@@ -144,6 +144,7 @@ void ObjectAnalysis::filterImage(Mat image)
     imshow("HSV filtered", filteredImage);
     erotion();
     dilation();
+    threshold( filteredImage, filteredImage, 127, 255, CV_THRESH_BINARY );
     imshow("Final filtered", filteredImage);
 }
 
