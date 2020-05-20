@@ -15,6 +15,7 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     this->color_image = grayTobgr(this->color_image);
     IMAGE_HEIGHT = grayscaleImage.rows;
     IMAGE_WIDTH = grayscaleImage.cols;
+    getScreenResolution(SCREEN_WIDTH,SCREEN_HEIGHT);
     printImageInfo(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
     load_calibration_values();
     read_model();
@@ -33,6 +34,8 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     namedWindow(screenName);
     setMouseCallback(screenName, onMouse, this);
 
+    setNumThreads(1);
+
     //Mira
     //displayResult(None, 0);
 }
@@ -47,7 +50,6 @@ void ObjectAnalysis::load_calibration_values(){
         std::cout << "Calibration file cannot be opened\n";
         return;  
     }
-    int COLOR_H,COLOR_S,COLOR_V;
     file>>HSV_color[H]>>HSV_color[S]>>HSV_color[V];
     file>>this->hsvRange[H]>>this->hsvRange[S]>>this->hsvRange[V];    
     file.close();
@@ -59,13 +61,16 @@ void ObjectAnalysis::save_calibration_values(){
         std::cout << "Calibration file cannot be opened\n";
         return;  
     }
+    hsvRange[H] = getTrackbarPos("H","HSV Range");
+    hsvRange[S] = getTrackbarPos("S","HSV Range");
+    hsvRange[V] = getTrackbarPos("V","HSV Range");
     file<<HSV_color[H]<<HSV_color[S]<<HSV_color[V];
     file<<hsvRange[H]<<hsvRange[S]<<hsvRange[V];
     file.close();
 }
 
 void ObjectAnalysis::read_model(){
-    std::ifstream file("models.txt");
+    std::ifstream file("results/models.txt");
     if(file.fail()){
         std::cout << "Models file cannot be opened\n";
         return;  
@@ -163,6 +168,30 @@ void ObjectAnalysis::displayResult(InformationOfRegionFound inf, int combination
 ////////////   IMAGE FILTERING //////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
+void ObjectAnalysis::filterImage(Mat image)
+{
+    Mat outImageHelper;
+
+    imshow(screenName, image);
+    cvtColor(image, hsvImage, CV_BGR2HSV);
+    hsvFilter();
+    resize(filteredImage, outImageHelper, cv::Size(), 0.5, 0.5);
+    imshow("HSV filtered", outImageHelper);
+    erotion();
+    dilation();
+    threshold( filteredImage, filteredImage, 127, 255, CV_THRESH_BINARY );
+    resize(filteredImage, outImageHelper, cv::Size(), 0.5, 0.5);
+    imshow("Final filtered", outImageHelper);
+    moveWindow("HSV filtered", SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
+    moveWindow("Final filtered", SCREEN_WIDTH/4*3, SCREEN_HEIGHT/2);
+    moveWindow(screenName, 0, SCREEN_HEIGHT/3);
+}
+
+void finalizeFiltering(){
+    destroyWindow("HSV filtered");
+    destroyWindow("Final filtered");
+}
+
 Mat ObjectAnalysis::grayTobgr(Mat color_image)
 {
     cv::Mat empty(frame->size(), CV_8U);
@@ -178,19 +207,6 @@ Mat ObjectAnalysis::bgrToGray()
     cvtColor(*frame, result, CV_BGR2GRAY);
     threshold(result, binarized_image, 127, 255, 0);
     return binarized_image;
-}
-
-void ObjectAnalysis::filterImage(Mat image)
-{
-    this->frame = &image;
-    imshow(screenName, *frame);
-    cvtColor(*frame, hsvImage, CV_BGR2HSV);
-    hsvFilter();
-    imshow("HSV filtered", filteredImage);
-    erotion();
-    dilation();
-    threshold( filteredImage, filteredImage, 127, 255, CV_THRESH_BINARY );
-    imshow("Final filtered", filteredImage);
 }
 
 void ObjectAnalysis::hsvFilter()
@@ -313,9 +329,9 @@ void ObjectAnalysis::findRegions(const int number_of_objects,const int SEED_LIMI
     }
     seconds = difftime(time(NULL), start_time);
     cout << "EXECUTION TIME: " << seconds << endl;
-    // imshow(screenName, color_image);
+    imshow(screenName, color_image);
     // waitKey(0);
-    imwrite("./result.jpg", color_image);
+    imwrite(".results/result.jpg", color_image);
 }
 
 InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
@@ -331,8 +347,8 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
         mq.pop();
         informationOfRegionFound.size++;
         //UNCOMMENT THIS TO WATCH THE PROGRESS
-        imshow(screenName, color_image);
-        waitKey(1);
+        // imshow(screenName, color_image);
+        // waitKey(1);
         add_to_ordinary_moments(informationOfRegionFound, coord_origen);
         //Append neigbors if valid
         paint_and_append_object_neighbors(coord_origen, color_current, mq);
@@ -340,7 +356,7 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
 
     calculate_moments(informationOfRegionFound);
     draw_moments(informationOfRegionFound, 100);
-    cout << "MATCH SHAPE = " << match_shape(informationOfRegionFound) << endl;
+    //cout << "MATCH SHAPE = " << match_shape(informationOfRegionFound) << endl;
 
     // imshow(screenName, color_image);
     // waitKey(0);
@@ -483,11 +499,41 @@ void ObjectAnalysis::captureTrainData(Mat image){
     cout<<"Image saved"<<endl;
 }
 
+void ObjectAnalysis::trainDataset()
+{
+    string figures[4] = {"A", "B", "C", "D"};
+    for(int i=0; i<1; i++)
+    {
+        for(int x=0; x<5; x++)
+        {
+            string img_name = "./train_data/" + figures[i] + to_string(x) + ".jpg";
+            cout<<img_name<<endl;
+            this->color_image = imread(img_name, CV_LOAD_IMAGE_COLOR);
+            IMAGE_HEIGHT = this->color_image.rows;
+            IMAGE_WIDTH = this->color_image.cols;
+            for(;;){
+                filterImage(color_image);
+                int x = waitKey(30);
+                if (x == 'k')
+                {
+                    break;
+                }
+            }
+            finalizeFiltering();
+            cvtColor(filteredImage, this->color_image, COLOR_GRAY2RGB);
+            train(figures[i]);
+            print_moments(regionsFound[10*i+x]);
+            save_moments_to_dataset(figures[i], 10*i+x);
+        }
+    }
+    recalculate_models();
+}
+
 void ObjectAnalysis::train(string name_of_object)
 {
     //find regions
     this->findRegions(1,1000);
-    cout << "Number of objects found in image: " << regionsFound.size() << endl;
+    // cout << "Number of objects found in image: " << regionsFound.size() << endl;
     //Assumes only one object in the image provided
     if (name_of_object.size() == 0)
     {
@@ -495,23 +541,23 @@ void ObjectAnalysis::train(string name_of_object)
         cin >> name_of_object;
         cout << endl;
     }
-    print_moments(regionsFound[0]);
-    string save_confirmation = "Y";
-    cout << "Do you want to save this moments to the dataset? [Y/n] " << endl;
-    cin >> save_confirmation;
-    if (save_confirmation == "Y")
-    {
-        save_moments_to_dataset(name_of_object);
-        recalculate_models();
-    }
+    // print_moments(regionsFound[0]);
+    // string save_confirmation = "Y";
+    // cout << "Do you want to save this moments to the dataset? [Y/n] " << endl;
+    // cin >> save_confirmation;
+    // if (save_confirmation == "Y")
+    // {
+    //     save_moments_to_dataset(name_of_object);
+    //     recalculate_models();
+    // }
 }
 
-void ObjectAnalysis::save_moments_to_dataset(string name_of_object)
+void ObjectAnalysis::save_moments_to_dataset(string name_of_object, int object_index)
 {
     ofstream file;
     cout << "Saving into figures_dataset.txt" << endl;
-    file.open("figures_dataset.txt", ofstream::out | ofstream::app);
-    file << name_of_object << " " << regionsFound[0].ph1 << " " << regionsFound[0].ph2 << "\n";
+    file.open("./results/figures_dataset.txt", ofstream::out | ofstream::app);
+    file << name_of_object << " " << regionsFound[object_index].ph1 << " " << regionsFound[object_index].ph2 << "\n";
     file.close();
     cout << "Done saving! " << endl;
 }
@@ -527,7 +573,7 @@ void ObjectAnalysis::recalculate_models()
 void ObjectAnalysis::load_dataset_into_hashmap(unordered_map<string, ObjectInformation> &objects_hashmap)
 {
     ifstream dataset_file;
-    dataset_file.open("figures_dataset.txt");
+    dataset_file.open("./results/figures_dataset.txt");
     string name_of_object;
     long double ph1, ph2;
     //skip titles line
@@ -555,7 +601,7 @@ void ObjectAnalysis::update_median_variance(unordered_map<string, ObjectInformat
 {
     ofstream file;
     cout << "Saving recalculation into models.txt" << endl;
-    file.open("models.txt", ofstream::out);
+    file.open("./results/models.txt", ofstream::out);
     file << "Figure_name median_ph1 variance_ph1 median_ph2 variance_ph2" << endl;
     for (auto i : objects_hashmap)
     {

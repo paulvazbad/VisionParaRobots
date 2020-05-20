@@ -94,6 +94,7 @@ public:
     void captureTrainData(Mat image);
     void filterImage(Mat image);
     void save_calibration_values();
+    void trainDataset();
 
 private:
     Mat *frame, filteredImage, hsvImage;
@@ -109,7 +110,7 @@ private:
     void displayResult(InformationOfRegionFound inf, int combination);
     void printImageInfo(int x, int y);
     void save_partial_results(time_t &last_time, time_t &curr_time, double seconds, int number_of_seed);
-    void save_moments_to_dataset(string);
+    void save_moments_to_dataset(string, int);
     void recalculate_models();
     void calculateMaxMinChannels(Vec3b &color, int &bMin, int &gMin, int &rMin, int &bMax, int &gMax, int &rMax);
     void dilation();
@@ -136,5 +137,7 @@ private:
     void load_calibration_values();
     int IMAGE_HEIGHT;
     int IMAGE_WIDTH;
+    int SCREEN_HEIGHT;
+    int SCREEN_WIDTH;
     const static int MAX_ORDINARY_MOMENT_P = 2, MAX_ORDINARY_MOMENT_Q = 2;
 };
