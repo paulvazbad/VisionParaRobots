@@ -60,7 +60,6 @@ void ObjectAnalysis::load_calibration_values(){
     file>>this->hsvRange[H];
     file>>this->hsvRange[S];
     file>>this->hsvRange[V]; 
-    cout<<HSV_color[H]<<HSV_color[S]<<HSV_color[V]<<endl;   
     file.close();
 }
 void ObjectAnalysis::save_calibration_values(){
@@ -520,6 +519,7 @@ void ObjectAnalysis::trainDataset()
             this->color_image = imread(img_name, CV_LOAD_IMAGE_COLOR);
             IMAGE_HEIGHT = this->color_image.rows;
             IMAGE_WIDTH = this->color_image.cols;
+            cout<<"Press k for ok, when filtering is done"<<endl;
             for(;;){
                 filterImage(color_image);
                 int x = waitKey(30);
