@@ -261,7 +261,7 @@ void ObjectAnalysis::save_partial_results(time_t &last_time, time_t &curr_time, 
     }
 }
 
-void ObjectAnalysis::findRegions(int number_of_objects)
+void ObjectAnalysis::findRegions(const int number_of_objects,const int SEED_LIMIT)
 {
     //cout << "Finding regions in image..." << endl;
     time_t last_time, curr_time, start_time;
@@ -269,7 +269,8 @@ void ObjectAnalysis::findRegions(int number_of_objects)
     last_time = time(NULL);
     start_time = last_time;
     cout << "----------IMAGE: " << IMAGE_WIDTH << "x" << IMAGE_HEIGHT << endl;
-    for (int i = 0; i < number_of_objects; i++)
+    int number_regions_found = 0, seeds_deposited=0;
+    while(number_regions_found<number_of_objects && seeds_deposited<SEED_LIMIT)
     {
         Coord seed = generateSeed();
         if (is_object_coord(seed))
@@ -280,7 +281,9 @@ void ObjectAnalysis::findRegions(int number_of_objects)
             cout << "TOTAL REGION AREA = " << informationOfRegionFound.size << endl;
             print_moments(informationOfRegionFound);
             regionsFound.push_back(informationOfRegionFound);
+            number_regions_found++;
         }
+        seeds_deposited++;
     }
     seconds = difftime(time(NULL), start_time);
     cout << "EXECUTION TIME: " << seconds << endl;
@@ -302,8 +305,8 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
         mq.pop();
         informationOfRegionFound.size++;
         //UNCOMMENT THIS TO WATCH THE PROGRESS
-        // imshow(screenName, color_image);
-        // waitKey(1);
+        imshow(screenName, color_image);
+        waitKey(1);
         add_to_ordinary_moments(informationOfRegionFound, coord_origen);
         //Append neigbors if valid
         paint_and_append_object_neighbors(coord_origen, color_current, mq);
@@ -457,7 +460,7 @@ void ObjectAnalysis::captureTrainData(Mat image){
 void ObjectAnalysis::train(string name_of_object)
 {
     //find regions
-    this->findRegions(1000);
+    this->findRegions(1,1000);
     cout << "Number of objects found in image: " << regionsFound.size() << endl;
     //Assumes only one object in the image provided
     if (name_of_object.size() == 0)
