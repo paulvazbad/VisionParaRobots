@@ -60,14 +60,28 @@ int main(int argc, char *argv[])
   cin.tie(NULL);  
   srand(time(0)); 
   bool isStatic = inputValidation(argc, argv, image, cap);
-
-  if (!image.data)
-  {
-    cout << "Could not open or find the image/video\n";
-    return -1;
-  }
-
   ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");
+
+  for(;;){
+
+    if(!isStatic){
+      cap >> image;
+    }
+
+    if (!image.data)
+    {
+      cout << "Could not open or find the image/video\n";
+      break;
+    }
+
+    objectAnalysis.filterImage(image);
+
+    int key = cv::waitKey(1);
+    if(key == 120){
+      cout<<"Bye"<<endl;
+      break;
+    }
+  }
 
   string mode = "default";
   if(argc > 2 && (string(argv[2]) == "calibrate" || string(argv[2]) == "train"))
