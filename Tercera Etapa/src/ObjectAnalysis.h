@@ -105,6 +105,7 @@ private:
     int hsvRange[3];
     Coord generateSeed();
     bool is_object_coord(Coord);
+    void displayResult(InformationOfRegionFound inf, int combination);
     void printImageInfo(int x, int y);
     void save_partial_results(time_t &last_time, time_t &curr_time, double seconds, int number_of_seed);
     void save_moments_to_dataset(string);
@@ -114,8 +115,9 @@ private:
     void erotion();
     void bgrToHsv();
     void hsvFilter();
-    static void onMouse(int event, int x, int y, int, void *userdata);
     void onMouse(int event, int x, int y);
+    void getScreenResolution(int &width, int &height);
+    static void onMouse(int event, int x, int y, int, void *userdata);
     Mat bgrToGray();
     Mat grayTobgr(Mat); 
     InformationOfRegionFound grow_region_found(queue<Coord>&);

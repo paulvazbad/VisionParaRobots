@@ -53,7 +53,7 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
 }
 
 int main(int argc, char *argv[])
-{  
+{ 
   Mat image;
   VideoCapture cap;
   ios_base::sync_with_stdio(false); 
