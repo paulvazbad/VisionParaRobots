@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
   bool isStatic = inputValidation(argc, argv, image, cap);
   ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");
 
+<<<<<<< HEAD
   // for(;;){
 
   //   if(!isStatic){
@@ -83,6 +84,8 @@ int main(int argc, char *argv[])
   //   }
   // }
 
+=======
+>>>>>>> 501a98ee3268dda090f6cf988f69c513dcf03e7a
   string mode = "default";
   if(argc > 2 && (string(argv[2]) == "calibrate" || string(argv[2]) == "train"))
     mode = string(argv[2]);
@@ -90,11 +93,29 @@ int main(int argc, char *argv[])
   cout << "Running on " << mode << " mode!\n\n";
 
   if(mode == "train")
-    objectAnalysis.train("A");
+  {
+    cout<< "Training really hard!" << endl;
+    objectAnalysis.trainDataset();
+    cout<<"Saving calibration values"<<endl;
+    objectAnalysis.save_calibration_values();
+  }
   else if(mode == "calibrate")
-    cout << "Change this console out for calibration method" << endl;
-  else
-    objectAnalysis.findRegions(5000);
-    
+  {
+    for(;;)
+    {
+      if(!isStatic)
+        cap >> image;
+      objectAnalysis.filterImage(image);
+      int x = waitKey(30);
+      if (x == 's')
+      {
+          break;
+      }
+    }
+    objectAnalysis.save_calibration_values();
+  }
+  // else
+  //   objectAnalysis.findRegions(1,1000,2000);
+  
   return 0;
 }
