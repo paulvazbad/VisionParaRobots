@@ -313,8 +313,8 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
     draw_moments(informationOfRegionFound, 100);
     cout << "MATCH SHAPE = " << match_shape(informationOfRegionFound) << endl;
 
-    // imshow(screenName, color_image);
-    // waitKey(0);
+    imshow(screenName, color_image);
+    waitKey(0);
 
     return informationOfRegionFound;
 }
