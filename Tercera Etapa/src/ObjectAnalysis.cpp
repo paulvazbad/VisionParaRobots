@@ -175,6 +175,13 @@ void ObjectAnalysis::displayResult(double angle, int combination)
     imshow("Mira", mira);
     moveWindow("Mira", 0, 0);
 }
+void ObjectAnalysis::print_descriptive_table(){
+    printf("|%15s|%15s|%15s|%15s|%15s|%15s| \n", "Area","m10", "m01", "m20", "m02","m11");
+
+    for(auto region : regionsFound){
+        printf("|%15d|%15ld|%15ld|%15ld|%15ld|%15ld|\n", region.size,region.ordinary_moments[1][0], region.ordinary_moments[0][1], region.ordinary_moments[2][0], region.ordinary_moments[0][2],region.ordinary_moments[1][1]);
+    }
+}
 
 void ObjectAnalysis::prepareResults(Mat image){
     regionsFound.clear();
@@ -184,7 +191,6 @@ void ObjectAnalysis::prepareResults(Mat image){
     if(regionsFound.size() == 2){
         string figure1 = match_shape(regionsFound[0]);
         string figure2 = match_shape(regionsFound[1]);
-
         if(figure1 == "" || figure2 == ""){
             cout<<"No se encontraron figuras validas "<<figure1<<" "<<figure2<<endl;
             displayResult(0,0);
@@ -394,8 +400,7 @@ void ObjectAnalysis::findRegions(const int number_of_objects, const int SEED_LIM
             InformationOfRegionFound informationOfRegionFound = grow_region_found(mq);
             if (informationOfRegionFound.size >= MIN_SIZE_VALID_REGION)
             {
-                cout << "TOTAL REGION AREA = " << informationOfRegionFound.size << endl;
-                print_moments(informationOfRegionFound);
+                //print_moments(informationOfRegionFound);
                 regionsFound.push_back(informationOfRegionFound);
                 number_regions_found++;
             }
@@ -404,6 +409,7 @@ void ObjectAnalysis::findRegions(const int number_of_objects, const int SEED_LIM
     }
     seconds = difftime(time(NULL), start_time);
     cout << "EXECUTION TIME: " << seconds << endl;
+    print_descriptive_table();
     imshow(screenName, color_image);
     waitKey(0);
     imwrite("./results/result.jpg", color_image);
@@ -500,19 +506,19 @@ void ObjectAnalysis::add_to_ordinary_moments(InformationOfRegionFound &informati
 
 void ObjectAnalysis::print_moments(InformationOfRegionFound informationOfRegionFound)
 {
-    // for (int p = 0; p <= MAX_ORDINARY_MOMENT_P; p++)
-    // {
-    //     for (int q = 0; q <= MAX_ORDINARY_MOMENT_Q; q++)
-    //     {
-    //         cout<<"Moment "<<p<<" "<<q<<": "<<informationOfRegionFound.ordinary_moments[p][q]<<endl;
-    //     }
-    // }
-    // cout << "Moment u20: " << informationOfRegionFound.u20 << endl;
-    // cout << "Moment u02: " << informationOfRegionFound.u02 << endl;
-    // cout << "Moment u11: " << informationOfRegionFound.u11 << endl;
-    // cout << "Moment n20: " << informationOfRegionFound.n20 << endl;
-    // cout << "Moment n02: " << informationOfRegionFound.n02 << endl;
-    // cout << "Moment n11: " << informationOfRegionFound.n11 << endl;
+    for (int p = 0; p <= MAX_ORDINARY_MOMENT_P; p++)
+    {
+        for (int q = 0; q <= MAX_ORDINARY_MOMENT_Q; q++)
+        {
+            cout<<"Moment "<<p<<" "<<q<<": "<<informationOfRegionFound.ordinary_moments[p][q]<<endl;
+        }
+    }
+    cout << "Moment u20: " << informationOfRegionFound.u20 << endl;
+    cout << "Moment u02: " << informationOfRegionFound.u02 << endl;
+    cout << "Moment u11: " << informationOfRegionFound.u11 << endl;
+    cout << "Moment n20: " << informationOfRegionFound.n20 << endl;
+    cout << "Moment n02: " << informationOfRegionFound.n02 << endl;
+    cout << "Moment n11: " << informationOfRegionFound.n11 << endl;
     cout << "Moment ph1: " << informationOfRegionFound.ph1 << endl;
     cout << "Moment ph2: " << informationOfRegionFound.ph2 << endl;
 }

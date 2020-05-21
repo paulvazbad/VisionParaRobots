@@ -142,6 +142,7 @@ private:
     void update_median_variance(unordered_map<string,ObjectInformation>&);
     long double get_normalized_moments(InformationOfRegionFound&, long centralizedMoment, int p, int q);
     void read_model();
+    void print_descriptive_table();
     string match_shape(InformationOfRegionFound);
     long double eucladian_distance(long double x1, long double x2, long double y1, long double y2);
     void load_calibration_values();
