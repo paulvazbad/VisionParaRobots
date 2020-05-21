@@ -197,6 +197,7 @@ void ObjectAnalysis::prepareResults(Mat image){
         string figure2 = match_shape(regionsFound[1]);
         if(figure1 == "" || figure2 == ""){
             displayResult(0,0);
+            cout<<"Non-identified figures found: "<<figure1<<" "<<figure2<<endl;
         }else{
             cout<<"Figures found: "<<figure1<<" "<<figure2<<endl;
             figures_found["F"] = false;
@@ -461,7 +462,10 @@ string ObjectAnalysis::match_shape(InformationOfRegionFound inf)
             closest = i;
     }
 
-    if (fabs(objectModels[closest].median_ph1 - inf.ph1) <= objectModels[closest].variance_ph1 && fabs(objectModels[closest].median_ph2 - inf.ph2) <= objectModels[closest].variance_ph2)
+    cout<<"Distance phi1:" << pow(fabs(objectModels[closest].median_ph1 - inf.ph1),2)<< " " << objectModels[closest].variance_ph1*2<<endl;
+    cout <<"Distance phi2:" << pow(fabs(objectModels[closest].median_ph2 - inf.ph2),2) << " " << objectModels[closest].variance_ph2*2<<endl;
+
+    if (pow(fabs(objectModels[closest].median_ph1 - inf.ph1),2) <= objectModels[closest].variance_ph1*2 || pow(fabs(objectModels[closest].median_ph2 - inf.ph2),2) <= objectModels[closest].variance_ph2*2)
         return objectModels[closest].name_of_object;
 
     return "";
