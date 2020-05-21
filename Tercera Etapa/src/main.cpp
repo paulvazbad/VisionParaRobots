@@ -1,21 +1,3 @@
-/*
- * Title: Flipped Image Sample (Cascaron)
- * Class: Vision para Robot
- * Instructor: Dr. Jose Luis Gordillo (http://LabRob.mty.itesm.mx/)
- * Code: Manlio Barajas (manlito@gmail.com), Alberto Jahuey (A01039835@itesm.mx)
- * Institution: Tec de Monterrey, Campus Monterrey
- * Date: January 10, 2012 Last Update: January 30, 2019
- *
- * Description: This program takes input from a camera (recognizable by
- * OpenCV) and it flips it horizontally.
- * "Basic" version uses frequently the "Cv::Mat::At" method which slows down
- * performance. This program has illustrative purposes, provided the existence
- * of cv::flip method.
- *
- *
- * This programs uses OpenCV http://opencv.willowgarage.com/wiki/
- */
-
 #include <iostream>
 #include <string.h>
 #include <opencv2/core/core.hpp>
@@ -63,7 +45,7 @@ int main(int argc, char *argv[])
   ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");
 
   string mode = "default";
-  if(argc > 2 && (string(argv[2]) == "calibrate" || string(argv[2]) == "train"))
+  if(argc > 2 && (string(argv[2]) == "calibrate" || string(argv[2]) == "train" || string(argv[2]) == "capture"))
     mode = string(argv[2]);
   
   cout << "Running on " << mode << " mode!\n\n";
@@ -72,8 +54,6 @@ int main(int argc, char *argv[])
   {
     cout<< "Training really hard!" << endl;
     objectAnalysis.trainDataset();
-    cout<<"Saving calibration values"<<endl;
-    objectAnalysis.save_calibration_values();
   }
   else if(mode == "calibrate")
   {
@@ -90,8 +70,28 @@ int main(int argc, char *argv[])
     }
     objectAnalysis.save_calibration_values();
   }
-  else
-    objectAnalysis.findRegions(2,1000,2000);
+  else if(mode == "capture")
+  {
+    for(;;)
+    {
+      if(!isStatic)
+        cap >> image;
+
+      imshow("Current frame",image);
+
+      int x = waitKey(30);
+      if (x == 's')
+      {
+          objectAnalysis.captureTrainData(image);
+      }
+      else if (x == 'x')
+      {
+          break;
+      }
+    }
+  }
+  // else
+  //   objectAnalysis.findRegions(2,1000,2000);
   
   return 0;
 }

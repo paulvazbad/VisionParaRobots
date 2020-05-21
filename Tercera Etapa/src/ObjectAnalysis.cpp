@@ -323,8 +323,6 @@ void ObjectAnalysis::dilation()
 
     /// Apply the erosion operation
     dilate(filteredImage, filteredImage, element);
-    //   imshow("Original Binarized Dilated", eroded);
-    //   imshow("Dilation 5x5", dilation_dst);
 }
 
 void ObjectAnalysis::erotion()
@@ -337,8 +335,6 @@ void ObjectAnalysis::erotion()
                                         Point(erosion_size, erosion_size));
     /// Apply the erosion operation
     erode(filteredImage, filteredImage, element);
-    //   imshow("Original Binarized ",binaryImage);
-    //   imshow("Erotion 5x5", erosion_dst);
 }
 
 void ObjectAnalysis::onMouse(int event, int x, int y, int, void *userdata)
@@ -438,10 +434,6 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
     calculate_moments(informationOfRegionFound);
     draw_moments(informationOfRegionFound, 100);
     // cout << "MATCH SHAPE = " << match_shape(informationOfRegionFound) << endl;
-
-    imshow(screenName, color_image);
-    waitKey(0);
-
     return informationOfRegionFound;
 }
 
@@ -588,8 +580,8 @@ void ObjectAnalysis::captureTrainData(Mat image)
 
 void ObjectAnalysis::trainDataset()
 {
-    string figures[4] = {"A", "B", "C", "D"};
-    const int NUMBER_TRAINING_SAMPLES[4] = {15, 18, 20, 20};
+    string figures[4] = {"F", "B", "L", "R"};
+    const int NUMBER_TRAINING_SAMPLES[4] = {10, 0, 20, 19};
     for (int i = 0; i < 4; i++)
     {
         for (int x = 0; x < NUMBER_TRAINING_SAMPLES[i]; x++)
@@ -618,6 +610,8 @@ void ObjectAnalysis::trainDataset()
         }
     }
     recalculate_models();
+    cout<<"Saving calibration values"<<endl;
+    save_calibration_values();
 }
 
 void ObjectAnalysis::train(string name_of_object)
@@ -632,15 +626,6 @@ void ObjectAnalysis::train(string name_of_object)
         cin >> name_of_object;
         cout << endl;
     }
-    // print_moments(regionsFound[0]);
-    // string save_confirmation = "Y";
-    // cout << "Do you want to save this moments to the dataset? [Y/n] " << endl;
-    // cin >> save_confirmation;
-    // if (save_confirmation == "Y")
-    // {
-    //     save_moments_to_dataset(name_of_object);
-    //     recalculate_models();
-    // }
 }
 
 void ObjectAnalysis::save_moments_to_dataset(string name_of_object, int object_index)
