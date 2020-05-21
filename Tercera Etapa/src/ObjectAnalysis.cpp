@@ -163,10 +163,14 @@ void ObjectAnalysis::displayResult(double angle, int combination)
         rectangle(mira, Point(x, y), Point(qx, qy), Scalar(255, 107, 0), FILLED, LINE_8);
 
         //Draw slope
+        while(angle<0)
+        {
+            angle+=(M_PI*2);
+        }
         if((angle < M_PI/2 && angle >= 0)||(angle < M_PI*3/2 && angle >= M_PI)){
-            line(mira, Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT/2), Point(SCREEN_WIDTH, 0), Scalar(0, 0, 255), 3);
-        }else{
             line(mira, Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT/2), Point(SCREEN_WIDTH, SCREEN_HEIGHT), Scalar(0, 0, 255), 3);
+        }else{
+            line(mira, Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT/2), Point(SCREEN_WIDTH, 0), Scalar(0, 0, 255), 3);
         }
     }
     resize(mira, mira, cv::Size(), 0.5, 1.0);
@@ -598,7 +602,7 @@ void ObjectAnalysis::captureTrainData(Mat image)
 void ObjectAnalysis::trainDataset()
 {
     string figures[4] = {"F", "B", "L", "R"};
-    const int NUMBER_TRAINING_SAMPLES[4] = {20, 20, 20, 20};
+    const int NUMBER_TRAINING_SAMPLES[4] = {22, 20, 21, 20};
     for (int i = 0; i < 4; i++)
     {
         for (int x = 0; x < NUMBER_TRAINING_SAMPLES[i]; x++)
