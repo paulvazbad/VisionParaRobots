@@ -603,7 +603,7 @@ void ObjectAnalysis::trainDataset()
 {
     string figures[4] = {"F", "B", "L", "R"};
     const int NUMBER_TRAINING_SAMPLES[4] = {22, 20, 21, 20};
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 1; i++)
     {
         for (int x = 0; x < NUMBER_TRAINING_SAMPLES[i]; x++)
         {
