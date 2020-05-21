@@ -208,8 +208,8 @@ void ObjectAnalysis::prepareResults(Mat image){
             figures_found["B"] = false;
             figures_found["L"] = false;
             figures_found["R"] = false;
-            figures_found["F"] = true;
-            figures_found["L"] = true;
+            figures_found[figure1] = true;
+            figures_found[figure2] = true;
             int large_figure = (figure1=="F"||figure1=="B")? 0:1;
             
             if(figures_found["F"] && figures_found["R"]){
@@ -218,7 +218,7 @@ void ObjectAnalysis::prepareResults(Mat image){
                 displayResult(regionsFound[large_figure].angle,2);
             }else if(figures_found["B"] && figures_found["L"]){
                 displayResult(regionsFound[large_figure].angle,3);
-            }else if(figures_found["F"] && figures_found["R"]){
+            }else if(figures_found["B"] && figures_found["R"]){
                 displayResult(regionsFound[large_figure].angle,4);
             }else{
                 cout<<"Not a valid combination."<<endl;
