@@ -14,12 +14,11 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     printImageInfo(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
     load_calibration_values();
     read_model();
-    namedWindow("HSV Range");
 
+    namedWindow("HSV Range");
     createTrackbar("H", "HSV Range", &hsvRange[0], 255);
     createTrackbar("S", "HSV Range", &hsvRange[1], 255);
     createTrackbar("V", "HSV Range", &hsvRange[2], 255);
-
     setTrackbarPos("H", "HSV Range", hsvRange[0]);
     setTrackbarPos("S", "HSV Range", hsvRange[1]);
     setTrackbarPos("V", "HSV Range", hsvRange[2]);
@@ -29,9 +28,11 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     setMouseCallback(screenName, onMouse, this);
 
     setNumThreads(1);
-
     //Mira
-    Mat mira_clean(SCREEN_WIDTH, SCREEN_HEIGHT, CV_8UC3, Scalar(255, 255, 255));
+    Mat clean(SCREEN_HEIGHT, SCREEN_WIDTH, CV_8UC3, Scalar(255, 255, 255));
+    this->mira_clean = clean.clone();
+    line(mira_clean, Point(SCREEN_WIDTH / 2, 0), Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT), Scalar(0, 0, 0), 3);
+    line(mira_clean, Point(0, SCREEN_HEIGHT / 2), Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2), Scalar(0, 0, 0), 3);
     this->mira = mira_clean.clone();
 }
 
@@ -39,7 +40,7 @@ void ObjectAnalysis::load_calibration_values()
 {
     const int H = 0, S = 1, V = 2;
     std::ifstream file("calibration.txt");
-    cout << "Load" << endl;
+    cout << "Loading calibration values." << endl;
     if (file.fail())
     {
         std::cout << "Calibration file cannot be opened\n";
@@ -127,54 +128,52 @@ void ObjectAnalysis::printImageInfo(int x, int y)
 
 void ObjectAnalysis::displayResult(double angle, int combination)
 {
-    int width, height;
-    getScreenResolution(width, height);
-    this->mira = mira_clean.clone();
-
+    mira = mira_clean.clone();
     if(combination != 0){
+        cout<<"Combination detected."<<endl;
         int qx, qy, x, y;
         switch (combination)
         {
             case 1:
-                qx = width;
-                qy = height / 2;
-                x = width / 2;
+                qx = SCREEN_WIDTH;
+                qy = SCREEN_HEIGHT / 2;
+                x = SCREEN_WIDTH / 2;
                 y = 0;
                 break;
             case 2:
-                qx = width / 2;
-                qy = height / 2;
+                qx = SCREEN_WIDTH / 2;
+                qy = SCREEN_HEIGHT / 2;
                 x = 0;
                 y = 0;
                 break;
             case 3:
-                qx = width / 2;
-                qy = height;
+                qx = SCREEN_WIDTH / 2;
+                qy = SCREEN_HEIGHT;
                 x = 0;
-                y = height / 2;
+                y = SCREEN_HEIGHT / 2;
                 break;
             case 4:
-                qx = width;
-                qy = height;
-                x = width / 2;
-                y = height / 2;
+                qx = SCREEN_WIDTH;
+                qy = SCREEN_HEIGHT;
+                x = SCREEN_WIDTH / 2;
+                y = SCREEN_HEIGHT / 2;
                 break;
         }
         //Draw mira
         rectangle(mira, Point(x, y), Point(qx, qy), Scalar(255, 107, 0), FILLED, LINE_8);
 
         //Draw slope
-        if((angle < M_PI/4 && angle >= 0)||(angle < M_PI*3/4 && angle >= M_PI)){
-            line(mira, Point(width / 2, height/2), Point(width, 0), Scalar(0, 0, 255), 3);
+        if((angle < M_PI/2 && angle >= 0)||(angle < M_PI*3/2 && angle >= M_PI)){
+            line(mira, Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT/2), Point(SCREEN_WIDTH, 0), Scalar(0, 0, 255), 3);
         }else{
-            line(mira, Point(width / 2, height/2), Point(width, height), Scalar(0, 0, 255), 3);
+            line(mira, Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT/2), Point(SCREEN_WIDTH, SCREEN_HEIGHT), Scalar(0, 0, 255), 3);
         }
     }
-    line(mira, Point(width / 2, 0), Point(width / 2, height), Scalar(0, 0, 0), 3);
-    line(mira, Point(0, height / 2), Point(width, height / 2), Scalar(0, 0, 0), 3);
+    resize(mira, mira, cv::Size(), 0.5, 1.0);
     imshow("Mira", mira);
     moveWindow("Mira", 0, 0);
 }
+
 void ObjectAnalysis::print_descriptive_table(){
     printf("|%15s|%15s|%15s|%15s|%15s|%15s| \n", "Area","m10", "m01", "m20", "m02","m11");
 
@@ -184,15 +183,19 @@ void ObjectAnalysis::print_descriptive_table(){
 }
 
 void ObjectAnalysis::prepareResults(Mat image){
+    Mat helper = image.clone();
+    resize(image, helper, cv::Size(), 0.5, 0.6);
+    imshow("Original", helper);
+    moveWindow("Original", SCREEN_WIDTH * 3 / 4 + 50, SCREEN_HEIGHT / 2 + 50);
     regionsFound.clear();
     justFilter(image);
-    this->color_image = filteredImage.clone();
-    findRegions(2, 1000, 20000);
+    cvtColor(filteredImage, this->color_image, COLOR_GRAY2RGB);
+    findRegions(2, 1000, 2000);
+
     if(regionsFound.size() == 2){
         string figure1 = match_shape(regionsFound[0]);
         string figure2 = match_shape(regionsFound[1]);
         if(figure1 == "" || figure2 == ""){
-            cout<<"No se encontraron figuras validas "<<figure1<<" "<<figure2<<endl;
             displayResult(0,0);
         }else{
             cout<<"Figures found: "<<figure1<<" "<<figure2<<endl;
@@ -200,8 +203,8 @@ void ObjectAnalysis::prepareResults(Mat image){
             figures_found["B"] = false;
             figures_found["L"] = false;
             figures_found["R"] = false;
-            figures_found[figure1] = true;
-            figures_found[figure2] = true;
+            figures_found["F"] = true;
+            figures_found["L"] = true;
             int large_figure = (figure1=="F"||figure1=="B")? 0:1;
             
             if(figures_found["F"] && figures_found["R"]){
@@ -224,7 +227,7 @@ void ObjectAnalysis::prepareResults(Mat image){
             if(figure1 != ""){
                 cout<<"Figure "<<figure1<<" found."<<endl;
             }else{
-                cout<<"Figure not identified"<<figure1<<" found."<<endl;
+                cout<<"Figure not identified."<<endl;
             }
         }else{
             cout<<"No figures found."<<endl;
@@ -234,6 +237,12 @@ void ObjectAnalysis::prepareResults(Mat image){
         cout<<"Multiple figures found!"<<endl;
         displayResult(0,0);
     }
+}
+
+void ObjectAnalysis::closeResults(){
+    destroyWindow("Mira");
+    destroyWindow("Regions found");
+    destroyWindow("Original");
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -254,18 +263,21 @@ void ObjectAnalysis::filterImage(Mat image)
     threshold(filteredImage, filteredImage, 127, 255, CV_THRESH_BINARY);
     resize(filteredImage, outImageHelper, cv::Size(), 0.5, 0.5);
     imshow("Final filtered", outImageHelper);
-    moveWindow("HSV filtered", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-    moveWindow("Final filtered", SCREEN_WIDTH / 4 * 3, SCREEN_HEIGHT / 2);
+    moveWindow("HSV filtered", SCREEN_WIDTH / 2 + 50, SCREEN_HEIGHT / 2 + 50);
+    moveWindow("Final filtered", SCREEN_WIDTH / 4 * 3 + 50, SCREEN_HEIGHT / 2 + 50);
     moveWindow(screenName, 0, SCREEN_HEIGHT / 3);
 }
 
-void finalizeFiltering()
+void ObjectAnalysis::finalizeFiltering()
 {
     destroyWindow("HSV filtered");
     destroyWindow("Final filtered");
+    destroyWindow(screenName);
+    save_calibration_values();    
 }
 
 void ObjectAnalysis::justFilter(Mat image){
+    cvtColor(image, hsvImage, CV_BGR2HSV);
     hsvFilter();
     erotion();
     dilation();
@@ -294,7 +306,6 @@ void ObjectAnalysis::hsvFilter()
     Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
     int hMin, hMax, sMin, sMax, vMin, vMax;
     calculateMaxMinChannels(HSV_color, hMin, sMin, vMin, hMax, sMax, vMax);
-
     // Updates mask values with the corresponding H,S,V limits
     inRange(hsvImage, Scalar(hMin, sMin, vMin), Scalar(hMax, sMax, vMax), filteredImage);
 }
@@ -404,11 +415,13 @@ void ObjectAnalysis::findRegions(const int number_of_objects, const int SEED_LIM
         seeds_deposited++;
     }
     seconds = difftime(time(NULL), start_time);
-    cout << "EXECUTION TIME: " << seconds << endl;
+    //cout << "EXECUTION TIME: " << seconds << endl;
     print_descriptive_table();
-    imshow(screenName, color_image);
-    waitKey(0);
-    imwrite("./results/result.jpg", color_image);
+    resize(color_image, color_image, cv::Size(), 0.5, 0.6);
+    imshow("Regions found", color_image);
+    moveWindow("Regions found", SCREEN_WIDTH / 2 + 50, SCREEN_HEIGHT / 2 + 50);
+    //waitKey(0);
+    //imwrite("./results/result.jpg", color_image);
 }
 
 InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)

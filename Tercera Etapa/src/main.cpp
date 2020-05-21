@@ -44,11 +44,14 @@ int main(int argc, char *argv[])
   bool isStatic = inputValidation(argc, argv, image, cap);
   ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");
 
+  cout << "Todo correcto?" << endl;
+
   string mode = "default";
   if(argc > 2 && (string(argv[2]) == "calibrate" || string(argv[2]) == "train" || string(argv[2]) == "capture"))
     mode = string(argv[2]);
   
-  cout << "Running on " << mode << " mode!\n\n";
+  cout << "Yo que me alegro" << endl;
+  cout << "Running on " << mode << " mode!"<< endl;
 
   if(mode == "train")
   {
@@ -90,8 +93,40 @@ int main(int argc, char *argv[])
       }
     }
   }
-  // else
-  //   objectAnalysis.findRegions(2,1000,2000);
+  else
+  {
+    bool analyzeOrCalibrate = false;
+    for(;;)
+    {
+      if(!isStatic)
+        cap >> image;
+
+      if(!analyzeOrCalibrate){
+        objectAnalysis.filterImage(image);
+      }else if(!isStatic){
+        objectAnalysis.prepareResults(image);
+      }
+
+      int x = waitKey(30);
+      if (x == 'r')
+      {
+        objectAnalysis.prepareResults(image);
+        objectAnalysis.save_calibration_values();
+        objectAnalysis.finalizeFiltering();
+        analyzeOrCalibrate = true;
+      }
+      else if (x == 'c')
+      {
+        objectAnalysis.closeResults();
+        analyzeOrCalibrate = false;
+        objectAnalysis.filterImage(image);
+      }
+      else if (x == 'x')
+      {
+          break;
+      }
+    }
+  }
   
   return 0;
 }
