@@ -431,7 +431,7 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
 
     calculate_moments(informationOfRegionFound);
     draw_moments(informationOfRegionFound, 100);
-    //cout << "MATCH SHAPE = " << match_shape(informationOfRegionFound) << endl;
+    // cout << "MATCH SHAPE = " << match_shape(informationOfRegionFound) << endl;
 
     imshow(screenName, color_image);
     waitKey(0);
@@ -441,6 +441,8 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
 
 string ObjectAnalysis::match_shape(InformationOfRegionFound inf)
 {
+    if(objectModels.size() < 1) return "";
+
     int closest = 0;
     for (int i = 1; i < objectModels.size(); i++)
     {

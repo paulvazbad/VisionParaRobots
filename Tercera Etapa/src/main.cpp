@@ -62,30 +62,6 @@ int main(int argc, char *argv[])
   bool isStatic = inputValidation(argc, argv, image, cap);
   ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Original Image");
 
-<<<<<<< HEAD
-  // for(;;){
-
-  //   if(!isStatic){
-  //     cap >> image;
-  //   }
-
-  //   if (!image.data)
-  //   {
-  //     cout << "Could not open or find the image/video\n";
-  //     break;
-  //   }
-
-  //   objectAnalysis.filterImage(image);
-
-  //   int key = cv::waitKey(1);
-  //   if(key == 120){
-  //     cout<<"Bye"<<endl;
-  //     break;
-  //   }
-  // }
-
-=======
->>>>>>> 501a98ee3268dda090f6cf988f69c513dcf03e7a
   string mode = "default";
   if(argc > 2 && (string(argv[2]) == "calibrate" || string(argv[2]) == "train"))
     mode = string(argv[2]);
@@ -114,8 +90,8 @@ int main(int argc, char *argv[])
     }
     objectAnalysis.save_calibration_values();
   }
-  // else
-  //   objectAnalysis.findRegions(1,1000,2000);
+  else
+    objectAnalysis.findRegions(2,1000,2000);
   
   return 0;
 }
