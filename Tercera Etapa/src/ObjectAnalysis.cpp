@@ -1,9 +1,4 @@
 #include "ObjectAnalysis.h"
-#if WIN32
-#include <windows.h>
-#else
-#include <X11/Xlib.h>
-#endif
 
 ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
 {
@@ -36,7 +31,8 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     setNumThreads(1);
 
     //Mira
-    //displayResult(None, 0);
+    Mat mira_clean(SCREEN_WIDTH, SCREEN_HEIGHT, CV_8UC3, Scalar(255, 255, 255));
+    this->mira = mira_clean.clone();
 }
 
 void ObjectAnalysis::load_calibration_values()
@@ -126,53 +122,112 @@ void ObjectAnalysis::printImageInfo(int x, int y)
 }
 
 /////////////////////////////////////////////////////////////////////
-//////////////////////   DISPLAY RESULT   ///////////////////////////
+///////////////////////////   RESULT   //////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
-void ObjectAnalysis::displayResult(InformationOfRegionFound inf, int combination)
+void ObjectAnalysis::displayResult(double angle, int combination)
 {
     int width, height;
     getScreenResolution(width, height);
-    Mat mira(height, width, CV_8UC3, Scalar(255, 255, 255));
-    int qx, qy, x, y;
+    this->mira = mira_clean.clone();
 
-    switch (combination)
-    {
-    case 0:
-        qx = width;
-        qy = height / 2;
-        x = width / 2;
-        y = 0;
-        break;
-    case 1:
-        qx = width / 2;
-        qy = height / 2;
-        x = 0;
-        y = 0;
-        break;
-    case 2:
-        qx = width / 2;
-        qy = height;
-        x = 0;
-        y = height / 2;
-        break;
-    case 3:
-        qx = width;
-        qy = height;
-        x = width / 2;
-        y = height / 2;
-        break;
+    if(combination != 0){
+        int qx, qy, x, y;
+        switch (combination)
+        {
+            case 1:
+                qx = width;
+                qy = height / 2;
+                x = width / 2;
+                y = 0;
+                break;
+            case 2:
+                qx = width / 2;
+                qy = height / 2;
+                x = 0;
+                y = 0;
+                break;
+            case 3:
+                qx = width / 2;
+                qy = height;
+                x = 0;
+                y = height / 2;
+                break;
+            case 4:
+                qx = width;
+                qy = height;
+                x = width / 2;
+                y = height / 2;
+                break;
+        }
+        //Draw mira
+        rectangle(mira, Point(x, y), Point(qx, qy), Scalar(255, 107, 0), FILLED, LINE_8);
+
+        //Draw slope
+        if((angle < M_PI/4 && angle >= 0)||(angle < M_PI*3/4 && angle >= M_PI)){
+            line(mira, Point(width / 2, height/2), Point(width, 0), Scalar(0, 0, 255), 3);
+        }else{
+            line(mira, Point(width / 2, height/2), Point(width, height), Scalar(0, 0, 255), 3);
+        }
     }
-
-    //Draw mira
-    rectangle(mira, Point(x, y), Point(qx, qy), Scalar(255, 107, 0), FILLED, LINE_8);
     line(mira, Point(width / 2, 0), Point(width / 2, height), Scalar(0, 0, 0), 3);
     line(mira, Point(0, height / 2), Point(width, height / 2), Scalar(0, 0, 0), 3);
-
-    //TODO draw pendiente de figura
-
     imshow("Mira", mira);
     moveWindow("Mira", 0, 0);
+}
+
+void ObjectAnalysis::prepareResults(Mat image){
+    regionsFound.clear();
+    justFilter(image);
+    this->color_image = filteredImage.clone();
+    findRegions(2, 1000, 20000);
+    if(regionsFound.size() == 2){
+        string figure1 = match_shape(regionsFound[0]);
+        string figure2 = match_shape(regionsFound[1]);
+
+        if(figure1 == "" || figure2 == ""){
+            cout<<"No se encontraron figuras validas "<<figure1<<" "<<figure2<<endl;
+            displayResult(0,0);
+        }else{
+            cout<<"Figures found: "<<figure1<<" "<<figure2<<endl;
+            figures_found["F"] = false;
+            figures_found["B"] = false;
+            figures_found["L"] = false;
+            figures_found["R"] = false;
+            figures_found[figure1] = true;
+            figures_found[figure2] = true;
+            int large_figure = (figure1=="F"||figure1=="B")? 0:1;
+            
+            if(figures_found["F"] && figures_found["R"]){
+                displayResult(regionsFound[large_figure].angle,1);
+            }else if(figures_found["F"] && figures_found["L"]){
+                displayResult(regionsFound[large_figure].angle,2);
+            }else if(figures_found["B"] && figures_found["L"]){
+                displayResult(regionsFound[large_figure].angle,3);
+            }else if(figures_found["F"] && figures_found["R"]){
+                displayResult(regionsFound[large_figure].angle,4);
+            }else{
+                cout<<"Not a valid combination."<<endl;
+                displayResult(0,0);
+            }
+        }
+    }else if(regionsFound.size() < 2){
+        if(regionsFound.size() == 1)
+        {
+            string figure1 = match_shape(regionsFound[0]);
+            if(figure1 != ""){
+                cout<<"Figure "<<figure1<<" found."<<endl;
+            }else{
+                cout<<"Figure not identified"<<figure1<<" found."<<endl;
+            }
+        }else{
+            cout<<"No figures found."<<endl;
+        }
+        displayResult(0,0);   
+    }else{
+        cout<<"Multiple figures found!"<<endl;
+        displayResult(0,0);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -202,6 +257,13 @@ void finalizeFiltering()
 {
     destroyWindow("HSV filtered");
     destroyWindow("Final filtered");
+}
+
+void ObjectAnalysis::justFilter(Mat image){
+    hsvFilter();
+    erotion();
+    dilation();
+    threshold( filteredImage, filteredImage, 127, 255, CV_THRESH_BINARY );
 }
 
 Mat ObjectAnalysis::grayTobgr(Mat color_image)

@@ -11,6 +11,11 @@
 #include <vector>
 #include <cmath>
 #include <unordered_map>
+#if WIN32
+#include <windows.h>
+#else
+#include <X11/Xlib.h>
+#endif
 
 using namespace std;
 using namespace cv;
@@ -100,14 +105,19 @@ private:
     Mat *frame, filteredImage, hsvImage;
     Mat grayscaleImage;
     Mat color_image;
+    Mat mira_clean;
+    Mat mira;
     string screenName;
     Vec3b HSV_color;
     vector<InformationOfRegionFound> regionsFound;
     vector<ObjectInformation> objectModels;
+    unordered_map<string,bool> figures_found { {"A",false},{"B",false},{"C",false},{"D",false} };
     int hsvRange[3];
     Coord generateSeed();
     bool is_object_coord(Coord);
-    void displayResult(InformationOfRegionFound inf, int combination);
+    void prepareResults(Mat image);
+    void justFilter(Mat image);
+    void displayResult(double, int);
     void printImageInfo(int x, int y);
     void save_partial_results(time_t &last_time, time_t &curr_time, double seconds, int number_of_seed);
     void save_moments_to_dataset(string, int);
