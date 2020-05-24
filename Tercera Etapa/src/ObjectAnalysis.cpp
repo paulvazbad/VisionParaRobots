@@ -34,6 +34,14 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     line(mira_clean, Point(SCREEN_WIDTH / 2, 0), Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT), Scalar(0, 0, 0), 3);
     line(mira_clean, Point(0, SCREEN_HEIGHT / 2), Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2), Scalar(0, 0, 0), 3);
     this->mira = mira_clean.clone();
+    try{
+        this->ph1_ph2_plot =  imread("./ph1_ph2_plot.png", CV_LOAD_IMAGE_COLOR);
+
+    }
+    catch(...){
+        cout<<"No plot provided"<<endl;
+    }
+    
 }
 
 void ObjectAnalysis::load_calibration_values()
@@ -211,7 +219,7 @@ void ObjectAnalysis::prepareResults(Mat image){
             figures_found[figure1] = true;
             figures_found[figure2] = true;
             int large_figure = (figure1=="F"||figure1=="B")? 0:1;
-            
+            plot_ph1_ph2();
             if(figures_found["F"] && figures_found["R"]){
                 displayResult(regionsFound[large_figure].angle,1);
             }else if(figures_found["F"] && figures_found["L"]){
@@ -713,6 +721,22 @@ void ObjectAnalysis::update_median_variance(unordered_map<string, ObjectInformat
     cout << "Done saving! " << endl;
 }
 
+void ObjectAnalysis::plot_ph1_ph2(){
+    Mat plot_2_show = this->ph1_ph2_plot.clone();
+    //x,y of first point
+    for(auto region: regionsFound){
+        if(region.ph1<0.50 && region.ph1>0.10){
+            if(region.ph2<0.175 && region.ph2>0){
+                //can be plotted
+               double x = (786.42857*region.ph1) - 62.96429;
+               double y = (-1656.19048*region.ph2) + 303.16667;
+               circle(plot_2_show,Point(x,y), 3, Scalar(0, 0, 0),-1,4);
+            }
+        }
+    }
+    imshow("ph1 ph2 plot",plot_2_show);
+
+}
 ////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// DISPLAY //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
