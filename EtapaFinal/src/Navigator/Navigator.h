@@ -62,8 +62,6 @@ public:
 
     Grid()
     {
-        cout<<"U ok?"<<endl;
-        cout<<"About to go into loop "<<endl;
         for(int i1 = 0; i1<50; i1++){
             vector<GridNode> vector_grid_node;
             grid.push_back(vector_grid_node);
@@ -72,7 +70,6 @@ public:
                 grid[i1].push_back(grid_node);
             }
         }
-        cout<<"Outside loop"<<endl;
     }
 };
 
@@ -86,6 +83,7 @@ public:
 private:
     int path_step;
     vector<GridNode> path;
+    vector<GridNode> entrances;
     Mat map;
     Grid map_grid;
     void displayPath();
