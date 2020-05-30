@@ -26,11 +26,14 @@ class FindParkingSpace
 {
 public:
     FindParkingSpace(Mat parking_lot_image, string screenName);
-    void startTravel(Mat map_image);
+    void showRobotTravel(Mat &map_image);
     void findPath(Mat map_image);
     void calibrateMap(Mat map_image);
 private:
+    void paint_in_map_to_display(vector<Point> path, Mat &map_to_display);
+    void paint_in_map_to_display(double robot_radius, Point current_position, Mat &map_to_display);
     ObjectAnalysis objectAnalysis;
     Navigator nav;
     Mat map;
+    double robot;
 };
