@@ -2,6 +2,7 @@
 
 ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
 {
+    cout<<"<<<<<<<<<<<<<<<<<<TODOBIEN<<<<<<<<<<<<<<<<<"<<endl;
     this->frame = &image;
     this->screenName = screenName;
     cout << "HEIGHT " << frame->size().height << endl;

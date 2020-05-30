@@ -11,6 +11,7 @@
 #include <vector>
 #include <cmath>
 #include <unordered_map>
+#include "../common/common.h"
 #if WIN32
 #include <windows.h>
 #else
@@ -19,19 +20,6 @@
 
 using namespace std;
 using namespace cv;
-
-class Coord
-{
-public:
-    int x;
-    int y;
-    Coord(int x, int y)
-    {
-        this->x = x;
-        this->y = y;
-    }
-    Coord(){}
-};
 
 struct InformationOfRegionFound
 {
