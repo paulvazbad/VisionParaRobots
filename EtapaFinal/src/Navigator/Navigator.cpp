@@ -33,7 +33,7 @@ void Navigator::scanMap()
         for(int y = 0; y<5; y++){
             if(map_grid.grid[x][y].existent)
             {
-                entrances.push_back(map_grid.grid[x][y]);
+                entrances.push_back(Coo(x,y));
                 binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
                 found = true;
                 break;
@@ -45,7 +45,7 @@ void Navigator::scanMap()
         for(int y = 0; y<5; y++){
             if(map_grid.grid[x][y].existent)
             {
-                entrances.push_back(map_grid.grid[x][y]);
+                entrances.push_back(Coo(x,y));
                 binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
                 found = true;
                 break;
@@ -57,7 +57,7 @@ void Navigator::scanMap()
         for(int y = 45; y<50; y++){
             if(map_grid.grid[x][y].existent)
             {
-                entrances.push_back(map_grid.grid[x][y]);
+                entrances.push_back(Coo(x,y));
                 binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
                 found = true;
                 break;
@@ -69,7 +69,7 @@ void Navigator::scanMap()
         for(int y = 45; y<50; y++){
             if(map_grid.grid[x][y].existent)
             {
-                entrances.push_back(map_grid.grid[x][y]);
+                entrances.push_back(Coo(x,y));
                 binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
                 found = true;
                 break;
@@ -88,7 +88,29 @@ void Navigator::scanMap()
 }
 
 
-// void Navigator::findPath(int entrance, Coord finish, bool right);
+void Navigator::findPath(int entrance, Coo finish, bool right)
+{
+    Coo explorer;
+    //entrance tiene
+    explorer = entrances[entrance];
+    bool reached = false;
+
+    while(!reached)
+    {
+        if(right)
+        {
+            if(explorer.y < finish.y){
+                if(map_grid.grid[explorer.x][explorer.y + 1].existent){
+                    cout<<"in process"<<endl;
+                }
+            }
+        }
+    }
+}
+
+vector<Coo> Navigator::getPath(){
+    return this->path;
+}
 // void Navigator::startTravel();
 // void Navigator::displayCarPosition(Coord car_position, bool car_orientation);
 // void Navigator::nextStep();
