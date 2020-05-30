@@ -81,14 +81,14 @@ class Navigator
 public:
     Navigator(Mat map, string screenName);
     Navigator(){}
-    void findPath(int entrance, Coo finish);
+    void findPath(int entrance, Coo finish, bool right);
     void startTravel();
 private:
     int path_step;
     vector<GridNode> path;
     Mat map;
     Grid map_grid;
-    void generatePath(bool right);
+    void displayPath();
     void displayCarPosition(Coo car_position, bool car_orientation);
     void nextStep();
     void scanMap();
