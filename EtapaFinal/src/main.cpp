@@ -18,6 +18,7 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
     path = string(argv[1]);
     if (int(path.find(".jpg")) > -1)
     {
+      cout<<"Image read"<<endl;
       image = imread(path, CV_LOAD_IMAGE_COLOR);
       return true;
     }

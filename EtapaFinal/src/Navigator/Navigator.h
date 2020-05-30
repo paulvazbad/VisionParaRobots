@@ -60,16 +60,14 @@ public:
     int y;
     vector<vector<GridNode> > grid;
 
-    Grid(){}
-    void fillEmpty(int x, int y){
+    Grid()
+    {
         cout<<"U ok?"<<endl;
-        this->x = x;
-        this->y = y;
-        cout<<"About to go into loop"<<endl;
-        for(int i1 = 0; i1<x; i1++){
+        cout<<"About to go into loop "<<endl;
+        for(int i1 = 0; i1<50; i1++){
             vector<GridNode> vector_grid_node;
             grid.push_back(vector_grid_node);
-            for(int i2 = 0; i2<y; i2++){
+            for(int i2 = 0; i2<50; i2++){
                 GridNode grid_node;
                 grid[x].push_back(grid_node);
             }
