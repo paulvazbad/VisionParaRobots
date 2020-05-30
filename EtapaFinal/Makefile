@@ -18,7 +18,7 @@ dirs:
 
 .cpp.o:
 	@echo Compiling $<...
-	@g++ -c $<  -o $@  $(LXXLIBS) 
+	@g++ -g -c $<  -o $@  $(LXXLIBS) 
 
 clean:
 	@$(RM) -rf $(OBJS) bin
