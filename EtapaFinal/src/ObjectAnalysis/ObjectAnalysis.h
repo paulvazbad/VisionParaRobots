@@ -82,6 +82,7 @@ class ObjectAnalysis
 {
 public:
     ObjectAnalysis(Mat image, string screenName);
+    ObjectAnalysis(){}
     void findRegions(const int number_of_objects,const int SEED_LIMIT, const int MIN_SIZE_VALID_REGION);
     void train(string name_of_object);
     void captureTrainData(Mat image);

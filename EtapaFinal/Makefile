@@ -8,7 +8,6 @@ ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 all: dirs $(OBJS)
 	@echo Linking everything together...
 	@g++ $(OBJS) -o $(TARGETDIR)/main $(LCCLIBS) $(LXXLIBS)
-	@cp PlaceholderImage.jpg bin/
 	@echo Done
 
 dirs:

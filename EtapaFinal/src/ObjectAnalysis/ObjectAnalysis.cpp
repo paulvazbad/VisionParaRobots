@@ -2,39 +2,39 @@
 
 ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
 {
-    cout<<"<<<<<<<<<<<<<<<<<<TODOBIEN<<<<<<<<<<<<<<<<<"<<endl;
-    this->frame = &image;
-    this->screenName = screenName;
-    cout << "HEIGHT " << frame->size().height << endl;
-    cout << "WIDTH " << frame->size().width << endl;
-    grayscaleImage = bgrToGray();
-    this->color_image = grayTobgr(this->color_image);
-    IMAGE_HEIGHT = grayscaleImage.rows;
-    IMAGE_WIDTH = grayscaleImage.cols;
-    getScreenResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
-    printImageInfo(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
-    load_calibration_values();
-    read_model();
+    // cout<<"<<<<<<<<<<<<<<<<<<TODOBIEN<<<<<<<<<<<<<<<<<"<<endl;
+    // this->frame = &image;
+    // this->screenName = screenName;
+    // cout << "HEIGHT " << frame->size().height << endl;
+    // cout << "WIDTH " << frame->size().width << endl;
+    // grayscaleImage = bgrToGray();
+    // this->color_image = grayTobgr(this->color_image);
+    // IMAGE_HEIGHT = grayscaleImage.rows;
+    // IMAGE_WIDTH = grayscaleImage.cols;
+    // getScreenResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
+    // printImageInfo(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+    // load_calibration_values();
+    // read_model();
 
-    namedWindow("HSV Range");
-    createTrackbar("H", "HSV Range", &hsvRange[0], 255);
-    createTrackbar("S", "HSV Range", &hsvRange[1], 255);
-    createTrackbar("V", "HSV Range", &hsvRange[2], 255);
-    setTrackbarPos("H", "HSV Range", hsvRange[0]);
-    setTrackbarPos("S", "HSV Range", hsvRange[1]);
-    setTrackbarPos("V", "HSV Range", hsvRange[2]);
+    // namedWindow("HSV Range");
+    // createTrackbar("H", "HSV Range", &hsvRange[0], 255);
+    // createTrackbar("S", "HSV Range", &hsvRange[1], 255);
+    // createTrackbar("V", "HSV Range", &hsvRange[2], 255);
+    // setTrackbarPos("H", "HSV Range", hsvRange[0]);
+    // setTrackbarPos("S", "HSV Range", hsvRange[1]);
+    // setTrackbarPos("V", "HSV Range", hsvRange[2]);
 
-    //Click callback
-    namedWindow(screenName);
-    setMouseCallback(screenName, onMouse, this);
+    // //Click callback
+    // namedWindow(screenName);
+    // setMouseCallback(screenName, onMouse, this);
 
-    setNumThreads(1);
-    //Mira
-    Mat clean(SCREEN_HEIGHT, SCREEN_WIDTH, CV_8UC3, Scalar(255, 255, 255));
-    this->mira_clean = clean.clone();
-    line(mira_clean, Point(SCREEN_WIDTH / 2, 0), Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT), Scalar(0, 0, 0), 3);
-    line(mira_clean, Point(0, SCREEN_HEIGHT / 2), Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2), Scalar(0, 0, 0), 3);
-    this->mira = mira_clean.clone();
+    // setNumThreads(1);
+    // //Mira
+    // Mat clean(SCREEN_HEIGHT, SCREEN_WIDTH, CV_8UC3, Scalar(255, 255, 255));
+    // this->mira_clean = clean.clone();
+    // line(mira_clean, Point(SCREEN_WIDTH / 2, 0), Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT), Scalar(0, 0, 0), 3);
+    // line(mira_clean, Point(0, SCREEN_HEIGHT / 2), Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2), Scalar(0, 0, 0), 3);
+    // this->mira = mira_clean.clone();
 }
 
 void ObjectAnalysis::load_calibration_values()

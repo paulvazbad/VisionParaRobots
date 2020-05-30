@@ -4,6 +4,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <bits/stdc++.h> 
+#include "FindParkingSpace.h"
 using namespace std;
 using namespace cv;
 
@@ -34,6 +35,11 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
 }
 
 int main(int argc, char *argv[])
-{  
+{
+  Mat image;
+  VideoCapture cap;
+  bool isStatic = inputValidation(argc, argv, image, cap);
+  FindParkingSpace findParkingSpace = FindParkingSpace(image, "Original Image");
+  waitKey(0);
   return 0;
 }
