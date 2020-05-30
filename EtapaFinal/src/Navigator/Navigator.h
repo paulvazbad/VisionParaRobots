@@ -41,6 +41,7 @@ class GridNode
 public:
     Coo coord;
     bool existent;
+    bool passed;
     GridNode(Coo coo)
     {
         this->coord = coo;
@@ -50,6 +51,7 @@ public:
     {
         this->coord = Coo(-1,-1);
         this->existent = false;
+        this->passed = false;
     }
 };
 
@@ -82,10 +84,11 @@ public:
     void startTravel();
 private:
     int path_step;
-    vector<GridNode> path;
-    vector<GridNode> entrances;
+    vector<Coo> path;
+    vector<Coo> entrances;
     Mat map;
     Grid map_grid;
+    vector<Coo> getPath();
     void displayPath();
     void displayCarPosition(Coo car_position, bool car_orientation);
     void nextStep();
