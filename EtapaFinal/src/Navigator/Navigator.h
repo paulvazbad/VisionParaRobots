@@ -69,7 +69,7 @@ public:
             grid.push_back(vector_grid_node);
             for(int i2 = 0; i2<50; i2++){
                 GridNode grid_node;
-                grid[x].push_back(grid_node);
+                grid[i1].push_back(grid_node);
             }
         }
         cout<<"Outside loop"<<endl;
