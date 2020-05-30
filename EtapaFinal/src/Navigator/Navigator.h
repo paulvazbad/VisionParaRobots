@@ -60,21 +60,16 @@ public:
     int y;
     vector<vector<GridNode> > grid;
 
-    Grid(){}
-    void fillEmpty(int x, int y){
-        cout<<"U ok?"<<endl;
-        this->x = x;
-        this->y = y;
-        cout<<"About to go into loop"<<endl;
-        for(int i1 = 0; i1<x; i1++){
+    Grid()
+    {
+        for(int i1 = 0; i1<50; i1++){
             vector<GridNode> vector_grid_node;
             grid.push_back(vector_grid_node);
-            for(int i2 = 0; i2<y; i2++){
+            for(int i2 = 0; i2<50; i2++){
                 GridNode grid_node;
-                grid[x].push_back(grid_node);
+                grid[i1].push_back(grid_node);
             }
         }
-        cout<<"Outside loop"<<endl;
     }
 };
 
@@ -83,14 +78,15 @@ class Navigator
 public:
     Navigator(Mat map, string screenName);
     Navigator(){}
-    void findPath(int entrance, Coo finish);
+    void findPath(int entrance, Coo finish, bool right);
     void startTravel();
 private:
     int path_step;
     vector<GridNode> path;
+    vector<GridNode> entrances;
     Mat map;
     Grid map_grid;
-    void generatePath(bool right);
+    void displayPath();
     void displayCarPosition(Coo car_position, bool car_orientation);
     void nextStep();
     void scanMap();
