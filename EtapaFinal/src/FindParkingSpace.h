@@ -25,6 +25,11 @@ using namespace cv;
 class FindParkingSpace
 {
 public:
-
+    FindParkingSpace();
+    void startTravel();
+    void findPath();
+    void calibrateMap(Mat map_image, string screenName);
 private:
+    ObjectAnalysis objectAnalysis;
+    Navigator nav;
 };

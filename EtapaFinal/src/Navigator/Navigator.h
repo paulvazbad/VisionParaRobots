@@ -11,7 +11,6 @@
 #include <vector>
 #include <cmath>
 #include <unordered_map>
-#include "../common/common.h"
 #if WIN32
 #include <windows.h>
 #else
@@ -37,18 +36,24 @@ class Grid
 public:
     int x;
     int y;
-    GridNode *grid;
+    vector<vector<GridNode> > grid;
     //construct grid
     Grid (int x, int y){
         this->x = x;
         this->y = y;
-    } 
+    }
 };
 
 class Navigator
 {
 public:
-    Navigator(Mat image, string screenName);
-
+    Navigator(Mat map, string screenName);
+    void findPath(int entrance, Coord finish);
+    void startTravel();
 private:
-    };
+    int path_step;
+    vector<GridNode> path;
+    void generatePath(bool right);
+    void displayCarPosition(Coord car_position, bool car_orientation);
+    void nextStep();
+};
