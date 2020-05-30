@@ -171,15 +171,9 @@ void ObjectAnalysis::displayResult(double angle, int combination)
         rectangle(mira, Point(x, y), Point(qx, qy), Scalar(255, 107, 0), FILLED, LINE_8);
 
         //Draw slope
-        while(angle<0)
-        {
-            angle+=(M_PI*2);
-        }
-        if((angle < M_PI/2 && angle >= 0)||(angle < M_PI*3/2 && angle >= M_PI)){
-            line(mira, Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT/2), Point(SCREEN_WIDTH, SCREEN_HEIGHT), Scalar(0, 0, 255), 3);
-        }else{
-            line(mira, Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT/2), Point(SCREEN_WIDTH, 0), Scalar(0, 0, 255), 3);
-        }
+        int adj = cos(angle) * SCREEN_WIDTH/2;
+        int opp = sin(angle) * SCREEN_WIDTH/2;
+        line(mira, Point(SCREEN_WIDTH/2 - adj, SCREEN_HEIGHT/2 - opp), Point(SCREEN_WIDTH/2 + adj, SCREEN_HEIGHT/2 + opp), Scalar(0, 0, 255), 10);
     }
     resize(mira, mira, cv::Size(), 0.5, 1.0);
     imshow("Mira", mira);
