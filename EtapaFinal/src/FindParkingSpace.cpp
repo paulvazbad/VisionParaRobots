@@ -8,18 +8,18 @@ FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
     finalPoint = NULL;
     this->map = parking_lot_image.clone();
     this->original = parking_lot_image.clone();
-
     // generateBaseImages();
-
-    while(true){
+    while(finalPoint==NULL){
         imshow(screenName, map);
         waitKey(1);
+        
     }
-    
-    this->objectAnalysis = ObjectAnalysis(parking_lot_image, "Object Analysis");
-    // this->nav = Navigator(parking_lot_image, screenName);
+    destroyWindow(screenName);
     this->robot = 10;
     this->showRobotTravel(map);
+    this->objectAnalysis = ObjectAnalysis(parking_lot_image, "Object Analysis");
+    // this->nav = Navigator(parking_lot_image, screenName);
+   
 }
 
 void FindParkingSpace::showRobotTravel(Mat &map_image)
@@ -30,6 +30,7 @@ void FindParkingSpace::showRobotTravel(Mat &map_image)
 
     //dummy path
     vector<Point> path = {Point(855, 750), Point(897, 530),Point(897, 411), Point(804, 415)};
+    if(path.size() == 0) return;
     while (path.size() > 0)
     {
         cout << path.size() << endl;
@@ -40,7 +41,7 @@ void FindParkingSpace::showRobotTravel(Mat &map_image)
         //paith robot
         paint_in_map_to_display(this->robot, current_position, map_to_display);
         //remove the current_position from the vector
-        // imshow(screenName, map);
+        imshow(screenName, map_to_display);
         for (;;)
         {
             int x = waitKey(30);
