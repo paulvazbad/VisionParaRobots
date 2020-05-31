@@ -4,9 +4,9 @@ FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
 {
     this->map = parking_lot_image.clone();
     this->objectAnalysis = ObjectAnalysis(parking_lot_image, screenName);
-    //this->nav = Navigator(parking_lot_image, screenName);
-    this->robot = 10;
-    this->showRobotTravel(parking_lot_image);
+    this->nav = Navigator(parking_lot_image, screenName);
+    // this->robot = 10;
+    // this->showRobotTravel(parking_lot_image);
 }
 
 void FindParkingSpace::showRobotTravel(Mat &map_image)
