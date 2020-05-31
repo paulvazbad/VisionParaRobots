@@ -132,21 +132,23 @@ void FindParkingSpace::generateBaseImages(){
     // Write parking area image
     cv::imwrite("parking_area.jpg", drawing);
 
-    std::vector<std::vector<cv::Point>> approxContours = contourApproximation(contours);
     // Draw parking slots
+    std::vector<std::vector<cv::Point>> approxContours = contourApproximation(contours);
     drawing = cv::Mat::zeros(map.size(), map.type());
     for(int i = 0; i < contours.size(); i++){
         double area = cv::contourArea(contours[i]);
         if(area > 1250){
-            // cv::Point startP(approxContours[i][0].x, approxContours[i][0].y);
-            // cv::Point finalP(approxContours[i][2].x, approxContours[i][2].y);
-            // cv::rectangle(drawing, startP, finalP, cv::Scalar(255,255,255), CV_FILLED);
-            cv::drawContours(drawing, contours, i, cv::Scalar(255,255,255), -1, 8, hierarchy, 0, cv::Point(0,0)); 
+            // Uncomment the following 3 lines to save rectangled shapes
+            cv::Point startP(approxContours[i][0].x, approxContours[i][0].y);
+            cv::Point finalP(approxContours[i][2].x, approxContours[i][2].y);
+            cv::rectangle(drawing, startP, finalP, cv::Scalar(255,255,255), CV_FILLED);
+            // Uncomment thie following line to save raw shapes
+            // cv::drawContours(drawing, contours, i, cv::Scalar(255,255,255), -1, 8, hierarchy, 0, cv::Point(0,0)); 
         }
     }
 
     // Write car slots image
-    cv::imwrite("slots1.jpg", drawing);
+    cv::imwrite("slots2.jpg", drawing);
 }
 
 void FindParkingSpace::validateFinalPoint(Point p){
