@@ -9,7 +9,7 @@ Navigator::Navigator(Mat map, string screenName)
     cout<<"Scanning map"<<endl;
     scanMap();
     cout<<"Finding path"<<endl;
-    findPath(3,Coo(0,0),false);
+    findPath(3,Point(0,0),false);
 }
 
 void Navigator::scanMap()
@@ -37,7 +37,7 @@ void Navigator::scanMap()
         for(int y = 0; y<5; y++){
             if(map_grid.grid[x][y].existent)
             {
-                entrances.push_back(Coo(x,y));
+                entrances.push_back(Point(x,y));
                 binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
                 found = true;
                 break;
@@ -49,7 +49,7 @@ void Navigator::scanMap()
         for(int y = 0; y<5; y++){
             if(map_grid.grid[x][y].existent)
             {
-                entrances.push_back(Coo(x,y));
+                entrances.push_back(Point(x,y));
                 binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
                 found = true;
                 break;
@@ -61,7 +61,7 @@ void Navigator::scanMap()
         for(int y = 45; y<50; y++){
             if(map_grid.grid[x][y].existent)
             {
-                entrances.push_back(Coo(x,y));
+                entrances.push_back(Point(x,y));
                 binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
                 found = true;
                 break;
@@ -73,7 +73,7 @@ void Navigator::scanMap()
         for(int y = 45; y<50; y++){
             if(map_grid.grid[x][y].existent)
             {
-                entrances.push_back(Coo(x,y));
+                entrances.push_back(Point(x,y));
                 binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
                 found = true;
                 break;
@@ -91,10 +91,10 @@ void Navigator::scanMap()
 }
 
 
-void Navigator::findPath(int entrance, Coo finish, bool right)
+void Navigator::findPath(int entrance, Point finish, bool right)
 {
-    Coo explorer;
-    Coo finish_debug(22, 30);
+    Point explorer;
+    Point finish_debug(22, 30);
     //Se usan las coordenadas [indices] de los nodos
     explorer = entrances[entrance];
     bool reached = false;
@@ -198,5 +198,5 @@ vector<Point> Navigator::getPath(){
     return this->path;
 }
 // void Navigator::startTravel();
-// void Navigator::displayCarPosition(Coord car_position, bool car_orientation);
+// void Navigator::displayCarPosition(Pointrd car_position, bool car_orientation);
 // void Navigator::nextStep();

@@ -39,10 +39,10 @@ public:
 class GridNode
 {
 public:
-    Coo coord;
+    Point coord;
     bool existent;
     bool passed;
-    GridNode(Coo coo)
+    GridNode(Point coo)
     {
         this->coord = coo;
         existent = true;
@@ -50,7 +50,7 @@ public:
     }
     GridNode()
     {
-        this->coord = Coo(-1,-1);
+        this->coord = Point(-1,-1);
         this->existent = false;
         this->passed = true;
     }
@@ -81,17 +81,17 @@ class Navigator
 public:
     Navigator(Mat map, string screenName);
     Navigator(){}
-    void findPath(int entrance, Coo finish, bool right);
+    void findPath(int entrance, Point finish, bool right);
     void startTravel();
+    vector<Point> getPath();
 private:
     int path_step;
     vector<Point> path;
-    vector<Coo> entrances;
+    vector<Point> entrances;
     Mat map;
     Grid map_grid;
-    vector<Point> getPath();
     void displayPath();
-    void displayCarPosition(Coo car_position, bool car_orientation);
+    void displayCarPosition(Point car_position, bool car_orientation);
     void nextStep();
     void scanMap();
 };

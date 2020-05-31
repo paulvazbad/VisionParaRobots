@@ -15,10 +15,12 @@ FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
         
     }
     destroyWindow(screenName);
+    this->nav = Navigator(parking_lot_image, screenName);
+    this->nav.findPath(1,*finalPoint, true);
     this->robot = 10;
     this->showRobotTravel(map);
     this->objectAnalysis = ObjectAnalysis(parking_lot_image, "Object Analysis");
-    // this->nav = Navigator(parking_lot_image, screenName);
+    
    
 }
 
@@ -26,10 +28,10 @@ void FindParkingSpace::showRobotTravel(Mat &map_image)
 {
     cout << "Showing robot travel" << endl;
     //get path to destination
-    //vector<Point> path = this->nav.getPath();
+    vector<Point> path = this->nav.getPath();
 
     //dummy path
-    vector<Point> path = {Point(855, 750), Point(897, 530),Point(897, 411), Point(804, 415)};
+    //vector<Point> path = {Point(855, 750), Point(897, 530),Point(897, 411), Point(804, 415)};
     if(path.size() == 0) return;
     while (path.size() > 0)
     {

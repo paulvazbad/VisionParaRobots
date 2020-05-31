@@ -3,10 +3,19 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <bits/stdc++.h> 
+#include <bits/stdc++.h>
 #include "FindParkingSpace.h"
 using namespace std;
 using namespace cv;
+
+const short FIGURE_DETECTION = 0;
+const short FIGURE_CALIBRATION = 1;
+const short PARKING_SPOT_DEMO = 2;
+const short EXIT = 3;
+unordered_map<string, int> menu_values = {{"f", FIGURE_DETECTION},
+                                          {"c", FIGURE_CALIBRATION},
+                                          {"p", PARKING_SPOT_DEMO},
+                                          {"x", EXIT}};
 
 // Validates input. True if static media / False if not
 bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
@@ -18,14 +27,16 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
     path = string(argv[1]);
     if (int(path.find(".jpg")) > -1)
     {
-      cout<<"Image read"<<endl;
+      cout << "Image read" << endl;
       image = imread(path, CV_LOAD_IMAGE_COLOR);
       return true;
     }
   }
-  
-  if(cap.open("rtsp://192.168.0.8:8080/h264_pcm.sdp")) {
-    if(cap.read(image)) {
+
+  if (cap.open("rtsp://192.168.0.8:8080/h264_pcm.sdp"))
+  {
+    if (cap.read(image))
+    {
       return false;
     }
   }
@@ -40,6 +51,55 @@ int main(int argc, char *argv[])
   Mat image;
   VideoCapture cap;
   bool isStatic = inputValidation(argc, argv, image, cap);
-  FindParkingSpace findParkingSpace = FindParkingSpace(image, "Original Image");
+  ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Figures Image");
+  string mode = "p";
+  while (menu_values.at(mode) != EXIT)
+  {
+    cout << "Que modo quieres correr?" << endl;
+    cout << "f: deteccion de figuras" << endl;
+    cout << "c: calibracion de figuras" << endl;
+    cout << "p: resultados de parking spot" << endl;
+    cout << "x: exit" << endl;
+    cin >> mode;
+    switch (menu_values.at(mode))
+    {
+    case FIGURE_DETECTION:
+    {
+    }
+    break;
+
+    case FIGURE_CALIBRATION:
+    {
+      for (;;)
+      {
+        if (!isStatic)
+          cap >> image;
+        objectAnalysis.filterImage(image);
+        int x = waitKey(30);
+        if (x == 's')
+        {
+          break;
+        }
+      }
+      objectAnalysis.save_calibration_values();
+    }
+    break;
+    case PARKING_SPOT_DEMO:
+    {
+      FindParkingSpace findParkingSpace = FindParkingSpace(image, "Original Image");
+    }
+    break;
+    case EXIT:
+    {
+      break;
+    }
+    default:
+    {
+      mode = "x";
+      break;
+    }
+    }
+  }
+
   return 0;
 }
