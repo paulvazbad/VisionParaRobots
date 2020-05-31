@@ -119,3 +119,9 @@ void FindParkingSpace::paint_in_map_to_display(double robot_radius, Point curren
 {
     circle(map_to_display, current_position, robot_radius, Scalar(255, 0, 0), -1, 4);
 }
+
+bool FindParkingSpace::compareContourAreas ( std::vector<cv::Point> contour1, std::vector<cv::Point> contour2 ) {
+    double i = fabs( contourArea(cv::Mat(contour1)) );
+    double j = fabs( contourArea(cv::Mat(contour2)) );
+    return ( i < j );
+}

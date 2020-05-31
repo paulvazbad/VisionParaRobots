@@ -33,6 +33,7 @@ public:
 private:
     void paint_in_map_to_display(vector<Point> path, Mat &map_to_display);
     void paint_in_map_to_display(double robot_radius, Point current_position, Mat &map_to_display);
+    bool compareContourAreas ( std::vector<cv::Point> contour1, std::vector<cv::Point> contour2 ) 
     ObjectAnalysis objectAnalysis;
     Navigator nav;
     Mat map;
