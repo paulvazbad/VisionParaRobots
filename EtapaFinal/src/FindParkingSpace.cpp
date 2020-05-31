@@ -44,7 +44,7 @@ void FindParkingSpace::showRobotTravel(Mat &map_image)
 void FindParkingSpace::generateBaseImages(){
     // Convert to gray scale
     cv::Mat grayImg;
-    cv::cvtColor((*original), grayImg, CV_BGR2GRAY);
+    cv::cvtColor(map, grayImg, CV_BGR2GRAY);
 
     // Blur image
     cv::Mat blur;
@@ -74,7 +74,7 @@ void FindParkingSpace::generateBaseImages(){
     std::sort(contours.begin(), contours.end(), compareContourAreas);
 
     // Create empty matrix for drawing
-    cv::Mat drawing = cv::Mat::zeros((*original).size(), (*original).type());
+    cv::Mat drawing = cv::Mat::zeros(map.size(), map.type());
     
     // Draw parking area
     cv::drawContours(drawing, contours, contours.size()-1, cv::Scalar(255,255,255), -1, 8, hierarchy, 0, cv::Point(0,0)); 
@@ -90,7 +90,7 @@ void FindParkingSpace::generateBaseImages(){
     cv::imwrite("parking_area.jpg", drawing);
 
     // Draw parking slots
-    drawing = cv::Mat::zeros((*original).size(), (*original).type());
+    drawing = cv::Mat::zeros(map.size(), map.type());
     for(int i = 0; i < contours.size(); i++){
         double area = cv::contourArea(contours[i]);
         if(area > 1500)
