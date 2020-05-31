@@ -2,11 +2,24 @@
 
 FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
 {
+    //Click callback
+    namedWindow(screenName);
+    setMouseCallback(screenName, onMouse, this);
+    finalPoint = NULL;
     this->map = parking_lot_image.clone();
-    this->objectAnalysis = ObjectAnalysis(parking_lot_image, screenName);
-    //this->nav = Navigator(parking_lot_image, screenName);
+    this->original = parking_lot_image.clone();
+
+    // generateBaseImages();
+
+    while(true){
+        imshow(screenName, map);
+        waitKey(1);
+    }
+    
+    this->objectAnalysis = ObjectAnalysis(parking_lot_image, "Object Analysis");
+    // this->nav = Navigator(parking_lot_image, screenName);
     this->robot = 10;
-    this->showRobotTravel(parking_lot_image);
+    this->showRobotTravel(map);
 }
 
 void FindParkingSpace::showRobotTravel(Mat &map_image)
@@ -27,7 +40,7 @@ void FindParkingSpace::showRobotTravel(Mat &map_image)
         //paith robot
         paint_in_map_to_display(this->robot, current_position, map_to_display);
         //remove the current_position from the vector
-        imshow("Robot Demo", map_to_display);
+        // imshow(screenName, map);
         for (;;)
         {
             int x = waitKey(30);
@@ -39,6 +52,33 @@ void FindParkingSpace::showRobotTravel(Mat &map_image)
 
         path.erase(path.begin());
     }
+}
+
+std::vector<std::vector<cv::Point>> FindParkingSpace::contourApproximation(std::vector<std::vector<cv::Point>> contours){
+  int min_x, min_y, max_x, max_y;
+  std::vector<std::vector<cv::Point>> approx;
+
+  for(auto &vec: contours){
+    std::vector<cv::Point> tmp;
+    min_x = map.cols;
+    min_y = map.rows;
+    max_x = max_y = 0;
+
+    for(cv::Point &p : vec){
+      min_x = std::min(min_x, p.x);
+      max_x = std::max(max_x, p.x);
+      min_y = std::min(min_y, p.y);
+      max_y = std::max(max_y, p.y);
+    }
+
+    tmp.push_back(cv::Point(min_x, min_y));
+    tmp.push_back(cv::Point(max_x, min_y));
+    tmp.push_back(cv::Point(max_x, max_y));
+    tmp.push_back(cv::Point(min_x, max_y));
+    approx.push_back(tmp);
+  }
+
+  return approx;
 }
 
 void FindParkingSpace::generateBaseImages(){
@@ -62,9 +102,12 @@ void FindParkingSpace::generateBaseImages(){
     cv::threshold(result,result,1,255,CV_THRESH_BINARY);
 
     // Clean image
-    int dilation_type = cv::MORPH_RECT, dilation_size = 2;
+    int dilation_type = cv::MORPH_RECT, dilation_size = 2, dilation_size2 = 6;
     cv::Mat element = cv::getStructuringElement(dilation_type,cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),cv::Point( dilation_size, dilation_size ));
+    cv::Mat element2 = cv::getStructuringElement(dilation_type,cv::Size( 2*dilation_size2 + 1, 2*dilation_size2+1 ),cv::Point( dilation_size2, dilation_size2 ));
     erode(result, result, element);
+    erode(result, result, element2);
+    dilate(result, result, element2);
     medianBlur(result, result, 5);
     
     // Find and sort contours
@@ -89,16 +132,88 @@ void FindParkingSpace::generateBaseImages(){
     // Write parking area image
     cv::imwrite("parking_area.jpg", drawing);
 
+    std::vector<std::vector<cv::Point>> approxContours = contourApproximation(contours);
     // Draw parking slots
     drawing = cv::Mat::zeros(map.size(), map.type());
     for(int i = 0; i < contours.size(); i++){
         double area = cv::contourArea(contours[i]);
-        if(area > 1500)
+        if(area > 1250){
+            // cv::Point startP(approxContours[i][0].x, approxContours[i][0].y);
+            // cv::Point finalP(approxContours[i][2].x, approxContours[i][2].y);
+            // cv::rectangle(drawing, startP, finalP, cv::Scalar(255,255,255), CV_FILLED);
             cv::drawContours(drawing, contours, i, cv::Scalar(255,255,255), -1, 8, hierarchy, 0, cv::Point(0,0)); 
+        }
     }
 
     // Write car slots image
-    cv::imwrite("slots.jpg", drawing);
+    cv::imwrite("slots1.jpg", drawing);
+}
+
+void FindParkingSpace::validateFinalPoint(Point p){
+    cv::Mat slots = cv::imread("slots2.jpg", CV_LOAD_IMAGE_COLOR);
+
+    if(slots.at<Vec3b>(p.y, p.x)[0] == 255){
+        free(finalPoint);
+        finalPoint = (Point*) malloc(sizeof(Point));
+        (*finalPoint).x = p.x;
+        (*finalPoint).y = p.y;
+        colorFillSlot();
+    }
+}
+
+void FindParkingSpace::colorFillSlot(){
+    if(finalPoint == NULL)
+        return;
+
+    // Set image to original
+    map = original.clone();
+
+    // Get slots base image
+    cv::Mat slots = cv::imread("slots2.jpg", CV_LOAD_IMAGE_COLOR);
+
+    // Fix pixels
+    cv::cvtColor(slots, slots, CV_BGR2GRAY);
+    cv::threshold(slots,slots,127,255,CV_THRESH_BINARY);
+    cv::cvtColor(slots, slots, CV_GRAY2BGR);
+
+    // Color fill map image
+    queue<Point> mq;
+    mq.push(*finalPoint);
+
+    while (!mq.empty()){
+        Point coord_origen = mq.front();
+        mq.pop();
+
+        //Append neigbors if valid
+        Point north = Point(coord_origen.x, coord_origen.y + 1);
+        Point south = Point(coord_origen.x, coord_origen.y - 1);
+        Point east = Point(coord_origen.x + 1, coord_origen.y);
+        Point west = Point(coord_origen.x - 1, coord_origen.y);
+        if (slots.at<Vec3b>(north)[0] == 255)
+        {
+            slots.at<Vec3b>(north) = Vec3b(0,0,0);
+            map.at<Vec3b>(north) = Vec3b(0,0,255);
+            mq.push(north);
+        }
+        if (slots.at<Vec3b>(south)[0] == 255)
+        {
+            slots.at<Vec3b>(south) = Vec3b(0,0,0);
+            map.at<Vec3b>(south) = Vec3b(0,0,255);
+            mq.push(south);
+        }
+        if (slots.at<Vec3b>(east)[0] == 255)
+        {
+            slots.at<Vec3b>(east) = Vec3b(0,0,0);
+            map.at<Vec3b>(east) = Vec3b(0,0,255);
+            mq.push(east);
+        }
+        if (slots.at<Vec3b>(west)[0] == 255)
+        {
+            slots.at<Vec3b>(west) = Vec3b(0,0,0);
+            map.at<Vec3b>(west) = Vec3b(0,0,255);
+            mq.push(west);
+        }
+    }
 }
 
 void FindParkingSpace::paint_in_map_to_display(vector<Point> path, Mat &map_to_display)
@@ -118,6 +233,19 @@ void FindParkingSpace::paint_in_map_to_display(vector<Point> path, Mat &map_to_d
 void FindParkingSpace::paint_in_map_to_display(double robot_radius, Point current_position, Mat &map_to_display)
 {
     circle(map_to_display, current_position, robot_radius, Scalar(255, 0, 0), -1, 4);
+}
+
+void FindParkingSpace::onMouse(int event, int x, int y, int, void *userdata)
+{
+    FindParkingSpace *objectAnalysis = reinterpret_cast<FindParkingSpace *>(userdata);
+    objectAnalysis->onMouse(event, x, y);
+}
+
+void FindParkingSpace::onMouse(int event, int x, int y)
+{
+    if(event == CV_EVENT_LBUTTONDOWN){
+        validateFinalPoint(Point(x,y));
+    }
 }
 
 bool FindParkingSpace::compareContourAreas ( std::vector<cv::Point> contour1, std::vector<cv::Point> contour2 ) {
