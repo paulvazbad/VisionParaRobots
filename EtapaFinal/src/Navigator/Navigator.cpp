@@ -96,6 +96,10 @@ void Navigator::findPath(int entrance, Point finish, bool right)
     Point explorer;
     Point finish_debug(22, 30);
     //Se usan las coordenadas [indices] de los nodos
+    if(entrances.size()==0){
+        cout<<"Cant find path without a valid entrance"<<endl;
+        return;
+    }
     explorer = entrances[entrance];
     bool reached = false;
     bool changed = false;
