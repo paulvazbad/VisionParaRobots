@@ -46,12 +46,13 @@ public:
     {
         this->coord = coo;
         existent = true;
+        this->passed = false;
     }
     GridNode()
     {
         this->coord = Coo(-1,-1);
         this->existent = false;
-        this->passed = false;
+        this->passed = true;
     }
 };
 
