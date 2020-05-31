@@ -9,7 +9,7 @@ Navigator::Navigator(Mat map, string screenName)
     cout<<"Scanning map"<<endl;
     scanMap();
     cout<<"Finding path"<<endl;
-    findPath(1,Coo(0,0),false);
+    findPath(3,Coo(0,0),false);
 }
 
 void Navigator::scanMap()
@@ -33,7 +33,7 @@ void Navigator::scanMap()
     //Find entrances
     Vec3b color_entrance(255, 0, 0);
     bool found = false;
-    for(int x = 0; x<5 && found==false; x++){
+    for(int x = 5; x>=0 && found==false; x--){
         for(int y = 0; y<5; y++){
             if(map_grid.grid[x][y].existent)
             {
@@ -57,7 +57,7 @@ void Navigator::scanMap()
         }
     }
     found = false;
-    for(int x = 0; x<5 && found==false; x++){
+    for(int x = 6; x>=0 && found==false; x--){
         for(int y = 45; y<50; y++){
             if(map_grid.grid[x][y].existent)
             {
@@ -94,144 +94,107 @@ void Navigator::scanMap()
 void Navigator::findPath(int entrance, Coo finish, bool right)
 {
     Coo explorer;
-    Coo finish_debug(22, 5);
+    Coo finish_debug(22, 30);
     //Se usan las coordenadas [indices] de los nodos
     explorer = entrances[entrance];
     bool reached = false;
     bool changed = false;
-    Vec3b color_path(255, 0, 255);
-    Point previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
     map_grid.grid[explorer.x][explorer.y].passed = true;
     cout<<"Punto de partida: "<<explorer.x<<" "<<explorer.y<<endl;
     cout<<"Punto final: "<<finish_debug.x<<" "<<finish_debug.y<<endl;
+    array<int,5> priority_order;
+    if(right){
+        priority_order = {1,2,3,4,5};
+    }else{
+        priority_order = {3,4,1,2,6};
+    }
+    bool go_down = explorer.x < finish_debug.x;
+    bool go_left = explorer.y > finish_debug.y;
 
-    if(right)
+    while(!reached)
     {
-        bool go_down = explorer.x < finish_debug.x;
-        while(!reached)
-        {
-            changed=false;
-            while(explorer.x < finish_debug.x && !map_grid.grid[explorer.x+1][explorer.y].passed)
-            {    //go down
-                cout<<"Go down"<<endl;
-                explorer.x++;
-                changed = true;
-            }
-            path.push_back(explorer);
-            line(this->map, previous, Point(0+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50), Scalar(0, 0, 255), 2);
-            previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
-
-            while(explorer.x > finish_debug.x && !map_grid.grid[explorer.x-1][explorer.y].passed)
-            {    //go up
-                cout<<"Go up"<<endl;
-                explorer.x--;
-                changed = true;
-            }
-            path.push_back(explorer);
-            line(this->map, previous, Point(0+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50), Scalar(0, 0, 255), 2);
-            previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
-            while(explorer.y > finish_debug.y && !map_grid.grid[explorer.x][explorer.y-1].passed)
-            {   //got left
-                cout<<"Go left"<<endl;
-                explorer.y--;
-                changed = true;
-            }
-            path.push_back(explorer);
-            line(this->map, previous, Point(0+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50), Scalar(0, 0, 255), 2);
-            previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
-            while(explorer.y < finish_debug.y && !map_grid.grid[explorer.x][explorer.y+1].passed)
-            {   //got right
-                cout<<"Go right"<<endl;
-                explorer.y++;
-                changed = true;
-            }
-            path.push_back(explorer);
-            line(this->map, previous, Point(0+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50), Scalar(0, 0, 255), 2);
-            previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
-            if(!changed){
-                cout<<"Go up/down"<<endl;
-                (go_down)?explorer.x++:explorer.x--;
-            }
-            
-            map_grid.grid[explorer.x][explorer.y].passed = true;
-            previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
-            path.push_back(explorer);
-            line(this->map, previous, Point(0+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50), Scalar(0, 0, 255), 2);
-
-            if(explorer.x == finish_debug.x && explorer.y == finish_debug.y){
-                cout<<"Reached"<<endl;
-                reached = true;
+        changed=false;
+        for(int x : priority_order){
+            switch (x)
+            {
+            case 1:
+                while(explorer.x < finish_debug.x && !map_grid.grid[explorer.x+1][explorer.y].passed)
+                {    //go down
+                    cout<<"Go down"<<endl;
+                    explorer.x++;
+                    changed = true;
+                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
+                    map_grid.grid[explorer.x][explorer.y].passed = true;
+                }
+                break;
+            case 2:
+                while(explorer.x > finish_debug.x && !map_grid.grid[explorer.x-1][explorer.y].passed)
+                {    //go up
+                    cout<<"Go up"<<endl;
+                    explorer.x--;
+                    changed = true;
+                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
+                    map_grid.grid[explorer.x][explorer.y].passed = true;
+                }
+                break;
+            case 3:
+                while(explorer.y > finish_debug.y && !map_grid.grid[explorer.x][explorer.y-1].passed)
+                {   //got left
+                    cout<<"Go left"<<endl;
+                    explorer.y--;
+                    changed = true;
+                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
+                    map_grid.grid[explorer.x][explorer.y].passed = true;
+                }
+                break;
+            case 4:
+                while(explorer.y < finish_debug.y && !map_grid.grid[explorer.x][explorer.y+1].passed)
+                {   //got right
+                    cout<<"Go right"<<endl;
+                    explorer.y++;
+                    changed = true;
+                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
+                    map_grid.grid[explorer.x][explorer.y].passed = true;
+                }
+                break;
+            case 5:
+               if(!changed){
+                    cout<<"Go up/down"<<endl;
+                    (go_down)?explorer.x++:explorer.x--;
+                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
+                    map_grid.grid[explorer.x][explorer.y].passed = true;
+                }
+                break;
+            case 6:
+                if(!changed){
+                    cout<<"Go left/right"<<endl;
+                    (go_left)?explorer.y--:explorer.y++;
+                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
+                    map_grid.grid[explorer.x][explorer.y].passed = true;
+                }
+                break;
+            default:
                 break;
             }
         }
-    }
-    else
-    {
-        bool go_left = explorer.y > finish_debug.y;
-        while(!reached)
-        {
-            changed=false;
-            previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
-            while(explorer.y > finish_debug.y && !map_grid.grid[explorer.x][explorer.y-1].passed)
-            {   //got left
-                cout<<"Go left"<<endl;
-                explorer.y--;
-                changed = true;
-            }
-            path.push_back(explorer);
-            line(this->map, previous, Point(0+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50), Scalar(0, 0, 255), 2);
-            previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
-            while(explorer.y < finish_debug.y && !map_grid.grid[explorer.x][explorer.y+1].passed)
-            {   //got right
-                cout<<"Go right"<<endl;
-                explorer.y++;
-                changed = true;
-            }
-            path.push_back(explorer);
-            line(this->map, previous, Point(0+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50), Scalar(0, 0, 255), 2);
-            previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
-
-            while(explorer.x < finish_debug.x && !map_grid.grid[explorer.x+1][explorer.y].passed)
-            {    //go down
-                cout<<"Go down"<<endl;
-                explorer.x++;
-                changed = true;
-            }
-            path.push_back(explorer);
-            line(this->map, previous, Point(0+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50), Scalar(0, 0, 255), 2);
-            previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
-
-            while(explorer.x > finish_debug.x && !map_grid.grid[explorer.x-1][explorer.y].passed)
-            {    //go up
-                cout<<"Go up"<<endl;
-                explorer.x--;
-                changed = true;
-            }
-            path.push_back(explorer);
-            line(this->map, previous, Point(0+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50), Scalar(0, 0, 255), 2);
-            previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
-
-            if(!changed){
-                cout<<"Go left/right"<<endl;
-                (go_left)?explorer.y--:explorer.y++;
-            }
-            path.push_back(explorer);
-            map_grid.grid[explorer.x][explorer.y].passed = true;
-            line(this->map, previous, Point(0+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50), Scalar(0, 0, 255), 2);
-            previous = Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50);
-
-            if(explorer.x == finish_debug.x && explorer.y == finish_debug.y){
-                cout<<"Reached"<<endl;
-                reached = true;
-                break;
-            }
+        if(explorer.x == finish_debug.x && explorer.y == finish_debug.y){
+            cout<<"Reached"<<endl;
+            reached = true;
         }
     }
+
+    cout<<"Number of steps: "<<this->path.size()<<endl;
+    Point previous = path[0];
+    for(int i=1; i<path.size(); i++){
+        line(this->map, previous, path[i], Scalar(255, 0, 255), 2);
+        previous = path[i];
+    }
+
     imshow("Path",this->map);
     waitKey(0);
 }
 
-vector<Coo> Navigator::getPath(){
+vector<Point> Navigator::getPath(){
     return this->path;
 }
 // void Navigator::startTravel();

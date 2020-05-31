@@ -85,11 +85,11 @@ public:
     void startTravel();
 private:
     int path_step;
-    vector<Coo> path;
+    vector<Point> path;
     vector<Coo> entrances;
     Mat map;
     Grid map_grid;
-    vector<Coo> getPath();
+    vector<Point> getPath();
     void displayPath();
     void displayCarPosition(Coo car_position, bool car_orientation);
     void nextStep();

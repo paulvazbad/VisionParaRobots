@@ -41,6 +41,5 @@ int main(int argc, char *argv[])
   VideoCapture cap;
   bool isStatic = inputValidation(argc, argv, image, cap);
   FindParkingSpace findParkingSpace = FindParkingSpace(image, "Original Image");
-  waitKey(0);
   return 0;
 }
