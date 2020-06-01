@@ -46,12 +46,49 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
   return false;
 }
 
+void figureDetection(ObjectAnalysis &objectAnalysis, bool isStatic, VideoCapture cap, Mat figure_image){
+  bool analyzeOrCalibrate = false;
+    for(;;)
+    {
+      if(!isStatic)
+        cap >> figure_image;
+
+      if(!analyzeOrCalibrate){
+        objectAnalysis.filterImage(figure_image);
+      }else if(!isStatic){
+        objectAnalysis.prepareResults(figure_image);
+      }
+
+      int x = waitKey(30);
+      if (x == 'r')
+      {
+        objectAnalysis.prepareResults(figure_image);
+        objectAnalysis.save_calibration_values();
+        objectAnalysis.finalizeFiltering();
+        analyzeOrCalibrate = true;
+      }
+      else if (x == 'c')
+      {
+        objectAnalysis.closeResults();
+        analyzeOrCalibrate = false;
+        objectAnalysis.filterImage(figure_image);
+      }
+      else if (x == 'x')
+      {
+          break;
+      }
+    }
+}
+
+
+
 int main(int argc, char *argv[])
 {
   Mat image;
   VideoCapture cap;
   bool isStatic = inputValidation(argc, argv, image, cap);
   ObjectAnalysis objectAnalysis = ObjectAnalysis(image, "Figures Image");
+  Mat parking_image_clean = imread("./estacionamiento_clean.jpg", CV_LOAD_IMAGE_COLOR);
   string mode = "p";
   while (menu_values.at(mode) != EXIT)
   {
@@ -81,8 +118,8 @@ int main(int argc, char *argv[])
     break;
     case PARKING_SPOT_DEMO:
     {
-      
-      FindParkingSpace findParkingSpace = FindParkingSpace(image, "Original Image");
+      figureDetection(objectAnalysis,isStatic,cap,image);
+      FindParkingSpace findParkingSpace = FindParkingSpace(parking_image_clean, "Original Image");
     }
     break;
     case EXIT:
