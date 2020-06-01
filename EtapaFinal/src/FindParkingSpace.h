@@ -42,7 +42,7 @@ private:
     ObjectAnalysis objectAnalysis;
     string screenName;
     Navigator nav;
-    Mat map, original;
+    Mat map, original, navigator_map;
     double robot;
     Point *finalPoint;
 };

@@ -15,12 +15,13 @@ FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
         
     }
     destroyWindow(screenName);
-    this->nav = Navigator(parking_lot_image, screenName);
+    cout<<navigator_map.rows<<endl;
+    navigator_map = imread("parking_area.jpg", IMREAD_UNCHANGED);
+    this->nav = Navigator(navigator_map, screenName);
     this->nav.findPath(1,*finalPoint, true);
     this->robot = 10;
     this->showRobotTravel(map);
-    this->objectAnalysis = ObjectAnalysis(parking_lot_image, "Object Analysis");
-    
+    //this->objectAnalysis = ObjectAnalysis(parking_lot_image, "Object Analysis");
    
 }
 
@@ -134,7 +135,6 @@ void FindParkingSpace::generateBaseImages(){
 
     // Write parking area image
     cv::imwrite("parking_area.jpg", drawing);
-
     // Draw parking slots
     std::vector<std::vector<cv::Point>> approxContours = contourApproximation(contours);
     drawing = cv::Mat::zeros(map.size(), map.type());

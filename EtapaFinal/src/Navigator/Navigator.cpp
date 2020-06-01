@@ -9,7 +9,7 @@ Navigator::Navigator(Mat map, string screenName)
     cout<<"Scanning map"<<endl;
     scanMap();
     cout<<"Finding path"<<endl;
-    findPath(3,Point(0,0),false);
+    //findPath(3,Point(0,0),false);
 }
 
 void Navigator::scanMap()

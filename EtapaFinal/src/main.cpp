@@ -12,7 +12,7 @@ const short FIGURE_DETECTION = 0;
 const short FIGURE_CALIBRATION = 1;
 const short PARKING_SPOT_DEMO = 2;
 const short EXIT = 3;
-unordered_map<string, int> menu_values = {{"f", FIGURE_DETECTION},
+unordered_map<string, int> menu_values = {
                                           {"c", FIGURE_CALIBRATION},
                                           {"p", PARKING_SPOT_DEMO},
                                           {"x", EXIT}};
@@ -56,17 +56,12 @@ int main(int argc, char *argv[])
   while (menu_values.at(mode) != EXIT)
   {
     cout << "Que modo quieres correr?" << endl;
-    cout << "f: deteccion de figuras" << endl;
     cout << "c: calibracion de figuras" << endl;
     cout << "p: resultados de parking spot" << endl;
     cout << "x: exit" << endl;
     cin >> mode;
     switch (menu_values.at(mode))
     {
-    case FIGURE_DETECTION:
-    {
-    }
-    break;
 
     case FIGURE_CALIBRATION:
     {
@@ -86,6 +81,7 @@ int main(int argc, char *argv[])
     break;
     case PARKING_SPOT_DEMO:
     {
+      
       FindParkingSpace findParkingSpace = FindParkingSpace(image, "Original Image");
     }
     break;
