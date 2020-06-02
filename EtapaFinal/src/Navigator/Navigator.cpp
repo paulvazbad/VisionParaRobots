@@ -9,6 +9,60 @@ Navigator::Navigator(Mat map, string screenName)
     //findPath(3,Point(0,0),false);
 }
 
+void Navigator::generate_distance_map(Point finish){
+    distance_map = Mat(map.rows, map.cols,CV_32SC1,Scalar(-1));
+    cout<<distance_map.cols<<distance_map.rows<<endl;
+     // Color fill map image
+    queue<Point> mq;
+    mq.push(Point(5,5));
+    cout<<"Generating distances"<<endl;
+    while (!mq.empty()){
+        Point coord_origen = mq.front();
+        mq.pop();
+       
+        //Append neigbors if valid
+        Point north = Point(coord_origen.x, coord_origen.y + 1);
+        Point south = Point(coord_origen.x, coord_origen.y - 1);
+        Point east = Point(coord_origen.x + 1, coord_origen.y);
+        Point west = Point(coord_origen.x - 1, coord_origen.y);
+        int value_of_current_point = distance_map.at<int>(coord_origen);
+        if(value_of_current_point==-1)++value_of_current_point;
+        cout<<value_of_current_point<<endl;        
+        if (notVisited(north))
+        {
+            distance_map.at<int>(north) = value_of_current_point+1;
+            mq.push(north);
+        }
+        if (notVisited(south))
+        {
+            distance_map.at<int>(south) = value_of_current_point+1;
+            mq.push(south);
+        }
+        if (notVisited(east))
+        {
+            distance_map.at<int>(east) = value_of_current_point+1;
+            mq.push(east);
+        }
+        if (notVisited(west))
+        {
+            distance_map.at<int>(west) = value_of_current_point+1;
+            mq.push(west);
+        }
+    }
+    cout<<"Done calculating distances!"<<endl;
+    
+}
+
+bool Navigator::notVisited(Point point){
+    if(point.x>0 && point.x<map.cols){
+        if(point.x>0 && point.y<map.rows){
+            return distance_map.at<int>(point) == -1 && this->map.at<Vec3b>(point)[0]==255;
+        }
+        return false;
+    }
+    return false;
+}
+
 void Navigator::scanMap()
 {
     Mat binary_map = this->map.clone();
