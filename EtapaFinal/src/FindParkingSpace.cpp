@@ -4,6 +4,7 @@ FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
 {
     //Click callback
     namedWindow(screenName);
+    resize(parking_lot_image, parking_lot_image, cv::Size(), 0.8, 0.8);
     setMouseCallback(screenName, onMouse, this);
     finalPoint = NULL;
     this->map = parking_lot_image.clone();
@@ -17,12 +18,12 @@ FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
     destroyWindow(screenName);
     cout<<navigator_map.rows<<endl;
     navigator_map = imread("parking_area.jpg", IMREAD_UNCHANGED);
+    resize(navigator_map, navigator_map, cv::Size(), 0.8, 0.8);
     this->nav = Navigator(navigator_map, screenName);
-    this->nav.findPath(1,*finalPoint, true);
+    this->nav.findPath(2,*finalPoint, true);
     this->robot = 10;
-    this->showRobotTravel(map);
+    //this->showRobotTravel(map);
     //this->objectAnalysis = ObjectAnalysis(parking_lot_image, "Object Analysis");
-   
 }
 
 void FindParkingSpace::showRobotTravel(Mat &map_image)
@@ -156,6 +157,7 @@ void FindParkingSpace::generateBaseImages(){
 
 void FindParkingSpace::validateFinalPoint(Point p){
     cv::Mat slots = cv::imread("slots2.jpg", CV_LOAD_IMAGE_COLOR);
+    resize(slots, slots, cv::Size(), 0.8, 0.8);
 
     if(slots.at<Vec3b>(p.y, p.x)[0] == 255){
         free(finalPoint);

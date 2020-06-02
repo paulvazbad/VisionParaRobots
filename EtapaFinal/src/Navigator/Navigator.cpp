@@ -3,9 +3,6 @@
 Navigator::Navigator(Mat map, string screenName)
 {
     this-> map = map.clone();
-    resize(this->map, this->map, cv::Size(), 0.8, 0.8);
-    cout<<map.cols<<" "<<map.rows<<endl;
-    cout<<map.cols/50<<" "<<map.rows/50<<endl;
     cout<<"Scanning map"<<endl;
     scanMap();
     cout<<"Finding path"<<endl;
@@ -16,16 +13,19 @@ void Navigator::scanMap()
 {
     Mat binary_map = this->map.clone();
     Vec3b color_grid(0, 0, 255);
-    for(int x = 0; x<50; x++){
-        for(int y = 0; y<50; y++){
-            if((int)binary_map.at<Vec3b>(Point(10+y*map.cols/50,10+x*map.rows/50))[0] == 255)
+    for(int x = 0; x<20; x++){
+        for(int y = 0; y<20; y++){
+            if((int)binary_map.at<Vec3b>(Point(10+y*map.cols/20,10+x*map.rows/20))[0] == 255)
             {
                 //cout<<"Point found"<<x<<" "<<y<<endl;
                 map_grid.grid[x][y].existent = true;
                 map_grid.grid[x][y].passed = false;
                 // map_grid.grid[x][y].coord.x = y;
                 // map_grid.grid[x][y].coord.y = x;
-                binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_grid;
+                binary_map.at<Vec3b>(10+x*map.rows/20, 10+y*map.cols/20)=color_grid;
+            }else{
+                map_grid.grid[x][y].existent = false;
+                map_grid.grid[x][y].passed = true;
             }
         }
     }
@@ -33,48 +33,48 @@ void Navigator::scanMap()
     //Find entrances
     Vec3b color_entrance(255, 0, 0);
     bool found = false;
-    for(int x = 5; x>=0 && found==false; x--){
-        for(int y = 0; y<5; y++){
+    for(int x = 2; x>=0 && found==false; x--){
+        for(int y = 2; y>=0; y--){
             if(map_grid.grid[x][y].existent)
             {
                 entrances.push_back(Point(x,y));
-                binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
+                circle(binary_map, Point(10+y*map.cols/20, 10+x*map.rows/20), 1, Scalar(255, 255, 0), 2);
                 found = true;
                 break;
             }
         }
     }
     found = false;
-    for(int x = 45; x<50 && found==false; x++){
-        for(int y = 0; y<5; y++){
+    for(int x = 20-2; x<20 && found==false; x++){
+        for(int y = 2; y>=0; y--){
             if(map_grid.grid[x][y].existent)
             {
                 entrances.push_back(Point(x,y));
-                binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
+                circle(binary_map, Point(10+y*map.cols/20, 10+x*map.rows/20), 1, Scalar(255, 255, 0), 2);
                 found = true;
                 break;
             }
         }
     }
     found = false;
-    for(int x = 6; x>=0 && found==false; x--){
-        for(int y = 45; y<50; y++){
+    for(int x = 2; x>=0 && found==false; x--){
+        for(int y = 20-2; y<20; y++){
             if(map_grid.grid[x][y].existent)
             {
                 entrances.push_back(Point(x,y));
-                binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
+                circle(binary_map, Point(10+y*map.cols/20, 10+x*map.rows/20), 1, Scalar(255, 255, 0), 2);
                 found = true;
                 break;
             }
         }
     }
     found = false;
-    for(int x = 45; x<50 && found==false; x++){
-        for(int y = 45; y<50; y++){
+    for(int x = 20-2; x<20 && found==false; x++){
+        for(int y = 20-2; y<20; y++){
             if(map_grid.grid[x][y].existent)
             {
                 entrances.push_back(Point(x,y));
-                binary_map.at<Vec3b>(10+x*map.rows/50, 10+y*map.cols/50)=color_entrance;
+                circle(binary_map, Point(10+y*map.cols/20, 10+x*map.rows/20), 1, Scalar(255, 255, 0), 2);
                 found = true;
                 break;
             }
@@ -90,11 +90,35 @@ void Navigator::scanMap()
     }
 }
 
-
 void Navigator::findPath(int entrance, Point finish, bool right)
 {
     Point explorer;
-    Point finish_debug(22, 30);
+    Point finish_debug, closest_valid;
+    circle(this->map, finish, 1, Scalar(0, 255, 0), 2);
+    finish_debug.y = (int)((finish.x-10.0)*20/map.cols);
+    finish_debug.x = (int)((finish.y-10.0)*20/map.rows);
+    double distance = 3000.0;
+    if(!map_grid.grid[finish_debug.x][finish_debug.y].existent){
+        for(int x=0; x<20; x++){
+            for(int y=0; y<20; y++){
+                if(map_grid.grid[x][y].existent){
+                    double new_distance = sqrtf(pow(finish_debug.x - x, 2) + pow(finish_debug.y - y, 2));
+                    if(new_distance < distance){
+                        closest_valid.x=x;
+                        closest_valid.y=y;
+                        distance = new_distance;
+                    }
+                }
+            }
+        }
+    }
+    if(!map_grid.grid[closest_valid.x][closest_valid.y].existent){
+        cout<<"Finishing node not found"<<endl;
+        waitKey(0);   
+    }
+    finish_debug = closest_valid;
+    circle(this->map, Point(10+finish_debug.y*map.cols/20, 10+finish_debug.x*map.rows/20), 1, Scalar(255, 0, 0), 2);
+
     //Se usan las coordenadas [indices] de los nodos
     if(entrances.size()==0){
         cout<<"Cant find path without a valid entrance"<<endl;
@@ -104,16 +128,24 @@ void Navigator::findPath(int entrance, Point finish, bool right)
     bool reached = false;
     bool changed = false;
     map_grid.grid[explorer.x][explorer.y].passed = true;
-    cout<<"Punto de partida: "<<explorer.x<<" "<<explorer.y<<endl;
-    cout<<"Punto final: "<<finish_debug.x<<" "<<finish_debug.y<<endl;
-    array<int,5> priority_order;
-    if(right){
-        priority_order = {1,2,3,4,5};
-    }else{
-        priority_order = {3,4,1,2,6};
-    }
     bool go_down = explorer.x < finish_debug.x;
     bool go_left = explorer.y > finish_debug.y;
+    array<int,5> priority_order;
+
+    priority_order[4]=5;
+    if(right){
+        priority_order[0]=(go_down)?1:2;
+        priority_order[1]=(!go_down)?2:1;
+        priority_order[2]=(go_left)?3:4;
+        priority_order[3]=(!go_left)?4:3;
+        // priority_order = {1,2,3,4,5};
+    }else{
+        priority_order[0]=(go_left)?3:4;
+        priority_order[1]=(!go_left)?4:3;
+        priority_order[2]=(go_down)?1:2;
+        priority_order[3]=(!go_down)?2:1;
+        // priority_order = {3,4,1,2,6};
+    }
 
     while(!reached)
     {
@@ -127,7 +159,7 @@ void Navigator::findPath(int entrance, Point finish, bool right)
                     cout<<"Go down"<<endl;
                     explorer.x++;
                     changed = true;
-                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
+                    path.push_back(Point(10+(explorer.y)*map.cols/20, 10+(explorer.x)*map.rows/20));
                     map_grid.grid[explorer.x][explorer.y].passed = true;
                 }
                 break;
@@ -137,7 +169,7 @@ void Navigator::findPath(int entrance, Point finish, bool right)
                     cout<<"Go up"<<endl;
                     explorer.x--;
                     changed = true;
-                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
+                    path.push_back(Point(10+(explorer.y)*map.cols/20, 10+(explorer.x)*map.rows/20));
                     map_grid.grid[explorer.x][explorer.y].passed = true;
                 }
                 break;
@@ -147,7 +179,7 @@ void Navigator::findPath(int entrance, Point finish, bool right)
                     cout<<"Go left"<<endl;
                     explorer.y--;
                     changed = true;
-                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
+                    path.push_back(Point(10+(explorer.y)*map.cols/20, 10+(explorer.x)*map.rows/20));
                     map_grid.grid[explorer.x][explorer.y].passed = true;
                 }
                 break;
@@ -157,27 +189,58 @@ void Navigator::findPath(int entrance, Point finish, bool right)
                     cout<<"Go right"<<endl;
                     explorer.y++;
                     changed = true;
-                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
+                    path.push_back(Point(10+(explorer.y)*map.cols/20, 10+(explorer.x)*map.rows/20));
                     map_grid.grid[explorer.x][explorer.y].passed = true;
                 }
                 break;
+            ////////////////////////////////////////////////////////////////////////////////
             case 5:
-               if(!changed){
-                    cout<<"Go up/down"<<endl;
-                    (go_down)?explorer.x++:explorer.x--;
-                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
-                    map_grid.grid[explorer.x][explorer.y].passed = true;
-                }
-                break;
-            case 6:
                 if(!changed){
-                    cout<<"Go left/right"<<endl;
-                    (go_left)?explorer.y--:explorer.y++;
-                    path.push_back(Point(10+(explorer.y)*map.cols/50, 10+(explorer.x)*map.rows/50));
-                    map_grid.grid[explorer.x][explorer.y].passed = true;
+                    for(int x=0; x<priority_order.size()-1 && !changed; x++){
+                        switch (x)
+                        {
+                        case 1:
+                            if(!map_grid.grid[explorer.x+1][explorer.y].passed)
+                            {    //go down
+                                cout<<"Go down !"<<endl;
+                                explorer.x++;
+                                changed = true;
+                                path.push_back(Point(10+(explorer.y)*map.cols/20, 10+(explorer.x)*map.rows/20));
+                                map_grid.grid[explorer.x][explorer.y].passed = true;
+                            }
+                            break;
+                        case 2:
+                            if(!map_grid.grid[explorer.x-1][explorer.y].passed)
+                            {    //go up
+                                cout<<"Go up !"<<endl;
+                                explorer.x--;
+                                changed = true;
+                                path.push_back(Point(10+(explorer.y)*map.cols/20, 10+(explorer.x)*map.rows/20));
+                                map_grid.grid[explorer.x][explorer.y].passed = true;
+                            }
+                            break;
+                        case 3:
+                            if(!map_grid.grid[explorer.x][explorer.y-1].passed)
+                            {   //got left
+                                cout<<"Go left !"<<endl;
+                                explorer.y--;
+                                changed = true;
+                                path.push_back(Point(10+(explorer.y)*map.cols/20, 10+(explorer.x)*map.rows/20));
+                                map_grid.grid[explorer.x][explorer.y].passed = true;
+                            }
+                            break;
+                        case 4:
+                            if(!map_grid.grid[explorer.x][explorer.y+1].passed)
+                            {   //got right
+                                cout<<"Go right !"<<endl;
+                                explorer.y++;
+                                changed = true;
+                                path.push_back(Point(10+(explorer.y)*map.cols/20, 10+(explorer.x)*map.rows/20));
+                                map_grid.grid[explorer.x][explorer.y].passed = true;
+                            }
+                        }
+                    }
                 }
-                break;
-            default:
                 break;
             }
         }
@@ -185,6 +248,14 @@ void Navigator::findPath(int entrance, Point finish, bool right)
             cout<<"Reached"<<endl;
             reached = true;
         }
+
+        Point previous = path[0];
+        for(int i=1; i<path.size(); i++){
+            line(this->map, previous, path[i], Scalar(255, 0, 255), 2);
+            previous = path[i];
+        }
+        imshow("Path",this->map);
+        waitKey(0);
     }
 
     cout<<"Number of steps: "<<this->path.size()<<endl;
@@ -193,7 +264,6 @@ void Navigator::findPath(int entrance, Point finish, bool right)
         line(this->map, previous, path[i], Scalar(255, 0, 255), 2);
         previous = path[i];
     }
-
     imshow("Path",this->map);
     waitKey(0);
 }
