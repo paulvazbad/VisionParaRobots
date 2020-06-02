@@ -30,11 +30,12 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
 
     setNumThreads(1);
     // //Mira
-    Mat clean(SCREEN_HEIGHT, SCREEN_WIDTH, CV_8UC3, Scalar(255, 255, 255));
-    this->mira_clean = clean.clone();
-    line(mira_clean, Point(SCREEN_WIDTH / 2, 0), Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT), Scalar(0, 0, 0), 3);
-    line(mira_clean, Point(0, SCREEN_HEIGHT / 2), Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2), Scalar(0, 0, 0), 3);
-    this->mira = mira_clean.clone();
+    this->mira = imread("./mira.jpeg",IMREAD_COLOR);
+    SCREEN_HEIGHT = mira.rows;
+    SCREEN_WIDTH = mira.cols;
+    cout<<SCREEN_HEIGHT<<SCREEN_WIDTH<<endl;
+    //line(mira_clean, Point(SCREEN_WIDTH / 2, 0), Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT), Scalar(0, 0, 0), 3);
+    //line(mira_clean, Point(0, SCREEN_HEIGHT / 2), Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2), Scalar(0, 0, 0), 3);
 }
 
 void ObjectAnalysis::load_calibration_values()
@@ -129,44 +130,34 @@ void ObjectAnalysis::printImageInfo(int x, int y)
 
 void ObjectAnalysis::displayResult(double angle, int combination)
 {
-    mira = mira_clean.clone();
     if(combination != 0){
         cout<<"Combination detected."<<endl;
-        int qx, qy, x, y;
+        int x, y;
         switch (combination)
         {
             case 1:
-                qx = SCREEN_WIDTH;
-                qy = SCREEN_HEIGHT / 2;
-                x = SCREEN_WIDTH / 2;
-                y = 0;
+                x = SCREEN_WIDTH * 0.75;
+                y = SCREEN_HEIGHT * 0.25;
                 break;
             case 2:
-                qx = SCREEN_WIDTH / 2;
-                qy = SCREEN_HEIGHT / 2;
-                x = 0;
-                y = 0;
+                x = SCREEN_WIDTH * 0.25;
+                y = SCREEN_HEIGHT * 0.25;
                 break;
             case 3:
-                qx = SCREEN_WIDTH / 2;
-                qy = SCREEN_HEIGHT;
-                x = 0;
-                y = SCREEN_HEIGHT / 2;
+                x = SCREEN_WIDTH * 0.25;
+                y = SCREEN_HEIGHT * 0.75;
                 break;
             case 4:
-                qx = SCREEN_WIDTH;
-                qy = SCREEN_HEIGHT;
-                x = SCREEN_WIDTH / 2;
-                y = SCREEN_HEIGHT / 2;
+                x = SCREEN_WIDTH * 0.75;
+                y = SCREEN_HEIGHT * 0.75;
                 break;
         }
         //Draw mira
-        rectangle(mira, Point(x, y), Point(qx, qy), Scalar(255, 107, 0), FILLED, LINE_8);
-
+        circle(mira, Point(x, y), 30, Scalar(0, 255, 0), -1);
         //Draw slope
         int adj = cos(angle) * SCREEN_WIDTH/2;
         int opp = sin(angle) * SCREEN_WIDTH/2;
-        line(mira, Point(SCREEN_WIDTH/2 - adj, SCREEN_HEIGHT/2 - opp), Point(SCREEN_WIDTH/2 + adj, SCREEN_HEIGHT/2 + opp), Scalar(0, 0, 255), 10);
+        line(mira, Point(SCREEN_WIDTH/2 - adj, SCREEN_HEIGHT/2 - opp), Point(SCREEN_WIDTH/2 + adj, SCREEN_HEIGHT/2 + opp), Scalar(0, 0, 255), 5);
 
         // while(angle<0)
         // {
@@ -178,7 +169,7 @@ void ObjectAnalysis::displayResult(double angle, int combination)
         //     line(mira, Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT/2), Point(SCREEN_WIDTH, 0), Scalar(0, 0, 255), 3);
         // }
     }
-    resize(mira, mira, cv::Size(), 0.5, 1.0);
+    //resize(mira, mira, cv::Size(), 0.5, 1.0);
     imshow("Mira", mira);
     moveWindow("Mira", 50, 0);
 }
@@ -194,8 +185,8 @@ void ObjectAnalysis::print_descriptive_table(){
 void ObjectAnalysis::prepareResults(Mat image){
     Mat helper = image.clone();
     resize(image, helper, cv::Size(), 0.5, 0.6);
-    imshow("Original", helper);
-    moveWindow("Original", SCREEN_WIDTH * 3 / 4 + 50, SCREEN_HEIGHT / 2 + 50);
+    //imshow("Original", helper);
+    //moveWindow("Original", SCREEN_WIDTH * 3 / 4 + 50, SCREEN_HEIGHT / 2 + 50);
     regionsFound.clear();
     justFilter(image);
     cvtColor(filteredImage, this->color_image, COLOR_GRAY2RGB);
@@ -280,10 +271,11 @@ void ObjectAnalysis::filterImage(Mat image)
 
 void ObjectAnalysis::finalizeFiltering()
 {
+    destroyWindow("HSV Range");
     destroyWindow("HSV filtered");
     destroyWindow("Final filtered");
     destroyWindow(screenName);
-    save_calibration_values();    
+ 
 }
 
 void ObjectAnalysis::justFilter(Mat image){
@@ -456,7 +448,7 @@ InformationOfRegionFound ObjectAnalysis::grow_region_found(queue<Coord> &mq)
 
     calculate_moments(informationOfRegionFound);
     draw_moments(informationOfRegionFound, 130);
-    waitKey(0);
+    //waitKey(0);
     // cout << "MATCH SHAPE = " << match_shape(informationOfRegionFound) << endl;
     return informationOfRegionFound;
 }

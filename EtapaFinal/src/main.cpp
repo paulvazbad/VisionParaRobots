@@ -13,9 +13,9 @@ const short FIGURE_CALIBRATION = 1;
 const short PARKING_SPOT_DEMO = 2;
 const short EXIT = 3;
 unordered_map<string, int> menu_values = {
-                                          {"c", FIGURE_CALIBRATION},
-                                          {"p", PARKING_SPOT_DEMO},
-                                          {"x", EXIT}};
+    {"c", FIGURE_CALIBRATION},
+    {"p", PARKING_SPOT_DEMO},
+    {"x", EXIT}};
 
 // Validates input. True if static media / False if not
 bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
@@ -46,41 +46,22 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
   return false;
 }
 
-void figureDetection(ObjectAnalysis &objectAnalysis, bool isStatic, VideoCapture cap, Mat figure_image){
-  bool analyzeOrCalibrate = false;
-    for(;;)
+void figureDetection(ObjectAnalysis &objectAnalysis, bool isStatic, VideoCapture cap, Mat figure_image)
+{
+  for (;;)
+  {
+    if (!isStatic)
+      cap >> figure_image;
+
+    objectAnalysis.prepareResults(figure_image);
+    objectAnalysis.finalizeFiltering();
+    int x = waitKey(30);
+    if (x == 'x')
     {
-      if(!isStatic)
-        cap >> figure_image;
-
-      if(!analyzeOrCalibrate){
-        objectAnalysis.filterImage(figure_image);
-      }else if(!isStatic){
-        objectAnalysis.prepareResults(figure_image);
-      }
-
-      int x = waitKey(30);
-      if (x == 'r')
-      {
-        objectAnalysis.prepareResults(figure_image);
-        objectAnalysis.save_calibration_values();
-        objectAnalysis.finalizeFiltering();
-        analyzeOrCalibrate = true;
-      }
-      else if (x == 'c')
-      {
-        objectAnalysis.closeResults();
-        analyzeOrCalibrate = false;
-        objectAnalysis.filterImage(figure_image);
-      }
-      else if (x == 'x')
-      {
-          break;
-      }
+      break;
     }
+  }
 }
-
-
 
 int main(int argc, char *argv[])
 {
@@ -108,8 +89,9 @@ int main(int argc, char *argv[])
           cap >> image;
         objectAnalysis.filterImage(image);
         int x = waitKey(30);
-        if (x == 's')
+        if (x == 'x')
         {
+          objectAnalysis.finalizeFiltering();
           break;
         }
       }
@@ -118,7 +100,7 @@ int main(int argc, char *argv[])
     break;
     case PARKING_SPOT_DEMO:
     {
-      figureDetection(objectAnalysis,isStatic,cap,image);
+      figureDetection(objectAnalysis, isStatic, cap, image);
       FindParkingSpace findParkingSpace = FindParkingSpace(parking_image_clean, "Original Image");
     }
     break;
