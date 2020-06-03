@@ -26,8 +26,8 @@ class FindParkingSpace
 {
 public:
     FindParkingSpace(Mat parking_lot_image, string screenName);
-    void showRobotTravel(Mat &map_image);
-    void findPath(Mat map_image);
+    void showRobotTravel();
+    void findPath(int entrance, bool direction);
     void calibrateMap(Mat map_image);
     void generateBaseImages();
 private:

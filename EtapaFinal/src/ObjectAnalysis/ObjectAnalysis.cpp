@@ -134,9 +134,9 @@ void ObjectAnalysis::getObjectAnalysisResults(Mat image, bool &path, int &entran
     path = direction;
     entrance = combination;
     Mat outImageHelper;
-    resize(mira, outImageHelper, cv::Size(), 0.95, 1.0);
+    resize(mira, outImageHelper, cv::Size(), 0.7, 0.7);
     imshow("Mira", outImageHelper);
-    moveWindow("Mira", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 5);
+    moveWindow("Mira", SCREEN_WIDTH / 4 * 3 * 0.90, SCREEN_HEIGHT / 5);
 }
 
 void ObjectAnalysis::displayResult(double angle, int combination)
@@ -145,6 +145,8 @@ void ObjectAnalysis::displayResult(double angle, int combination)
     if(combination != -1){
         cout<<SCREEN_HEIGHT<<SCREEN_WIDTH<<endl;
         cout<<"Combination detected."<<endl;
+        this->combination = combination;
+        direction = (cos(angle) > 0);
         int x, y;
         switch (combination)
         {
@@ -204,23 +206,15 @@ void ObjectAnalysis::prepareResults(){
             int large_figure = (figure1=="F"||figure1=="B")? 0:1;
             
             if(figures_found["F"] && figures_found["R"]){
-                combination = 0;
-                direction = (cos(regionsFound[large_figure].angle) > 0);
                 cout<<"FR"<<endl;
                 displayResult(regionsFound[large_figure].angle,0);
             }else if(figures_found["F"] && figures_found["L"]){
-                combination = 1;
-                direction = (cos(regionsFound[large_figure].angle) > 0);
                 cout<<"FL"<<endl;
                 displayResult(regionsFound[large_figure].angle,1);
             }else if(figures_found["B"] && figures_found["L"]){
-                combination = 2;
-                direction = (cos(regionsFound[large_figure].angle) > 0);
                 cout<<"BL"<<endl;
                 displayResult(regionsFound[large_figure].angle,2);
             }else if(figures_found["B"] && figures_found["R"]){
-                combination = 3;
-                direction = (cos(regionsFound[large_figure].angle) > 0);
                 cout<<"BR"<<endl;
                 displayResult(regionsFound[large_figure].angle,3);
             }else{

@@ -103,8 +103,34 @@ int main(int argc, char *argv[])
     break;
     case PARKING_SPOT_DEMO:
     {
-      figureDetection(objectAnalysis, isStatic, cap, image);
-      FindParkingSpace findParkingSpace = FindParkingSpace(parking_image_clean, "Original Image");
+      bool path = false;
+      int entrance = -1;
+      objectAnalysis.getObjectAnalysisResults(image, path, entrance);
+      if(entrance == -1)
+      {
+        cout<<"Entrance not found, please calibrate!"<<endl;
+        break;
+      }
+      FindParkingSpace findParkingSpace = FindParkingSpace(parking_image_clean, "Parking Lot Image");
+      for (;;)
+      {
+        if (!isStatic)
+        {
+          cap >> image;
+          objectAnalysis.getObjectAnalysisResults(image, path, entrance);
+        }
+        findParkingSpace.findPath(entrance, path);
+        int x = waitKey(30);
+        if (x == 'x')
+        {
+          destroyAllWindows();
+          break;
+        }
+        if( x == 'p')
+        {
+          findParkingSpace.showRobotTravel();
+        }
+      }
     }
     break;
     case CAPTURE_DATA:

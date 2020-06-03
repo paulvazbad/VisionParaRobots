@@ -3,51 +3,57 @@
 FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
 {
     //Click callback
+    this->screenName = screenName;
     namedWindow(screenName);
-    resize(parking_lot_image, parking_lot_image, cv::Size(), 0.8, 0.8);
     setMouseCallback(screenName, onMouse, this);
+    resize(parking_lot_image, parking_lot_image, cv::Size(), 0.8, 0.8);
     finalPoint = NULL;
     this->map = parking_lot_image.clone();
     this->original = parking_lot_image.clone();
-    generateBaseImages();
-    while(finalPoint==NULL){
-        imshow(screenName, map);
-        waitKey(1);
-        
-    }
-    destroyWindow(screenName);
-    cout<<navigator_map.rows<<endl;
     navigator_map = imread("parking_area.jpg", IMREAD_UNCHANGED);
-    resize(navigator_map, navigator_map, cv::Size(), 0.8, 0.8);
     this->nav = Navigator(navigator_map, screenName);
-    this->nav.generate_distance_map(*finalPoint);
-    this->nav.findPath(2,*finalPoint, true);
-    this->robot = 10;
+    this->robot = 15;
+    //generateBaseImages();
+    // while(finalPoint==NULL){
+    //     imshow(screenName, map);
+    //     waitKey(1);
+        
+    // }
+    // destroyWindow(screenName);
+    // cout<<"Navigator map: "<<navigator_map.rows<<endl;
+    
+    // testPathAlgorithm();
+    //this->nav.generate_distance_map(*finalPoint);
+    // this->nav.findPath(2,*finalPoint, true);
+    
     //this->showRobotTravel(map);
     //this->objectAnalysis = ObjectAnalysis(parking_lot_image, "Object Analysis");
 }
 
-void FindParkingSpace::testPathAlgorithm()
+void FindParkingSpace::findPath(int entrance, bool direction)
 {
-    for(int i = 0; i<2; i++){
-        for(int x=0;x<4;x++){
-            for(int y=0; y<10; y++){
-                cout<<"Entrance "<<x<<endl;
-                finalPoint=NULL;
-                namedWindow(screenName);
-                setMouseCallback(screenName, onMouse, this);
-                while(finalPoint==NULL){
-                    imshow(screenName, map);
-                    waitKey(1);    
-                }
-                destroyWindow(screenName);
-                this->nav.findPathTesting(x,*finalPoint, i);
-            }   
+    Mat map_helper = this->original.clone();
+    if(finalPoint!=NULL){
+        cout<<"Destiny clicked, here we go!"<<endl;
+        cout<<entrance<<" "<<direction<<endl;
+        cout<<*finalPoint<<endl;
+        
+        this->nav.findPath(entrance, *finalPoint, direction);
+        vector<Point> path = this->nav.getPath();
+        if(path.size() == 0) return;
+        if (path.size() > 0)
+        {
+            //paint path
+            cout<<"Path found!"<<endl;
+            paint_in_map_to_display(path, map_helper);
         }
+        
     }
+    imshow(screenName, map_helper);
+    moveWindow(screenName, 0, 0);
 }
 
-void FindParkingSpace::showRobotTravel(Mat &map_image)
+void FindParkingSpace::showRobotTravel()
 {
     cout << "Showing robot travel" << endl;
     //get path to destination
@@ -56,26 +62,19 @@ void FindParkingSpace::showRobotTravel(Mat &map_image)
     //dummy path
     //vector<Point> path = {Point(855, 750), Point(897, 530),Point(897, 411), Point(804, 415)};
     if(path.size() == 0) return;
+    path.push_back(*finalPoint);
     while (path.size() > 0)
     {
         cout << path.size() << endl;
         Point current_position = path.front();
-        Mat map_to_display = map_image.clone();
+        Mat map_to_display = this->original.clone();
         //paint path
         paint_in_map_to_display(path, map_to_display);
         //paith robot
         paint_in_map_to_display(this->robot, current_position, map_to_display);
         //remove the current_position from the vector
         imshow(screenName, map_to_display);
-        for (;;)
-        {
-            int x = waitKey(30);
-            if (x == 'x')
-            {
-                break;
-            }
-        }
-
+        waitKey(0);
         path.erase(path.begin());
     }
 }
@@ -180,7 +179,6 @@ void FindParkingSpace::validateFinalPoint(Point p){
     cv::Mat slots = cv::imread("slots2.jpg", CV_LOAD_IMAGE_COLOR);
 
     if(slots.at<Vec3b>(p.y, p.x)[0] == 255){
-        cout<<"Space chosen"<<endl;
         free(finalPoint);
         finalPoint = (Point*) malloc(sizeof(Point));
         (*finalPoint).x = p.x;
@@ -250,7 +248,7 @@ void FindParkingSpace::paint_in_map_to_display(vector<Point> path, Mat &map_to_d
     {
         try
         {
-            line(map_to_display, path[i], path[i + 1], Scalar(0, 255, 0), 1, LINE_8, 0);
+            line(map_to_display, path[i], path[i + 1], Scalar(0, 255, 0), 2, LINE_8, 0);
         }
         catch (...)
         {
@@ -258,9 +256,10 @@ void FindParkingSpace::paint_in_map_to_display(vector<Point> path, Mat &map_to_d
         }
     }
 }
+
 void FindParkingSpace::paint_in_map_to_display(double robot_radius, Point current_position, Mat &map_to_display)
 {
-    circle(map_to_display, current_position, robot_radius, Scalar(255, 0, 0), -1, 4);
+    circle(map_to_display, current_position, robot_radius, Scalar(255, 0, 0),CV_FILLED);
 }
 
 void FindParkingSpace::onMouse(int event, int x, int y, int, void *userdata)
@@ -280,4 +279,24 @@ bool FindParkingSpace::compareContourAreas ( std::vector<cv::Point> contour1, st
     double i = fabs( contourArea(cv::Mat(contour1)) );
     double j = fabs( contourArea(cv::Mat(contour2)) );
     return ( i < j );
+}
+
+void FindParkingSpace::testPathAlgorithm()
+{
+    for(int i = 0; i<2; i++){
+        for(int x=0;x<4;x++){
+            for(int y=0; y<10; y++){
+                cout<<"Entrance "<<x<<endl;
+                finalPoint=NULL;
+                namedWindow(screenName);
+                setMouseCallback(screenName, onMouse, this);
+                while(finalPoint==NULL){
+                    imshow(screenName, map);
+                    waitKey(1);    
+                }
+                destroyWindow(screenName);
+                this->nav.findPathTesting(x,*finalPoint, i);
+            }   
+        }
+    }
 }
