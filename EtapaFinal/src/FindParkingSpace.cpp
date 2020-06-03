@@ -45,6 +45,7 @@ void FindParkingSpace::findPath(int entrance, bool direction)
         {
             //paint path
             cout<<"Path found!"<<endl;
+            path.push_back(*finalPoint);
             paint_in_map_to_display(path, map_helper);
         }
         
