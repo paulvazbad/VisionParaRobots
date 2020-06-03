@@ -35,6 +35,7 @@ private:
     void paint_in_map_to_display(double robot_radius, Point current_position, Mat &map_to_display);
     void validateFinalPoint(Point p);
     void colorFillSlot();
+    void testPathAlgorithm();
     static bool compareContourAreas ( vector<Point> contour1, vector<Point> contour2 );
     vector<vector<Point>> contourApproximation(vector<vector<Point>> contours);
     void onMouse(int event, int x, int y);

@@ -83,6 +83,7 @@ public:
     Navigator(){}
     void findPath(int entrance, Point finish, bool right);
     void startTravel();
+    void findPathTesting(int entrance, Point finish, bool right);
     vector<Point> getPath();
 private:
     int path_step;

@@ -9,7 +9,7 @@ FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
     finalPoint = NULL;
     this->map = parking_lot_image.clone();
     this->original = parking_lot_image.clone();
-    // generateBaseImages();
+    generateBaseImages();
     while(finalPoint==NULL){
         imshow(screenName, map);
         waitKey(1);
@@ -20,10 +20,30 @@ FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
     navigator_map = imread("parking_area.jpg", IMREAD_UNCHANGED);
     resize(navigator_map, navigator_map, cv::Size(), 0.8, 0.8);
     this->nav = Navigator(navigator_map, screenName);
-    this->nav.findPath(2,*finalPoint, true);
+    
     this->robot = 10;
     //this->showRobotTravel(map);
     //this->objectAnalysis = ObjectAnalysis(parking_lot_image, "Object Analysis");
+}
+
+void FindParkingSpace::testPathAlgorithm()
+{
+    for(int i = 0; i<2; i++){
+        for(int x=0;x<4;x++){
+            for(int y=0; y<10; y++){
+                cout<<"Entrance "<<x<<endl;
+                finalPoint=NULL;
+                namedWindow(screenName);
+                setMouseCallback(screenName, onMouse, this);
+                while(finalPoint==NULL){
+                    imshow(screenName, map);
+                    waitKey(1);    
+                }
+                destroyWindow(screenName);
+                this->nav.findPathTesting(x,*finalPoint, i);
+            }   
+        }
+    }
 }
 
 void FindParkingSpace::showRobotTravel(Mat &map_image)
@@ -160,6 +180,7 @@ void FindParkingSpace::validateFinalPoint(Point p){
     resize(slots, slots, cv::Size(), 0.8, 0.8);
 
     if(slots.at<Vec3b>(p.y, p.x)[0] == 255){
+        cout<<"Space chosen"<<endl;
         free(finalPoint);
         finalPoint = (Point*) malloc(sizeof(Point));
         (*finalPoint).x = p.x;
