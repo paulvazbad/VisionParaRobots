@@ -2,7 +2,6 @@
 
 ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
 {
-    // cout<<"<<<<<<<<<<<<<<<<<<TODOBIEN<<<<<<<<<<<<<<<<<"<<endl;
     this->frame = &image;
     this->screenName = screenName;
     cout << "HEIGHT " << frame->size().height << endl;
@@ -13,6 +12,7 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     IMAGE_WIDTH = grayscaleImage.cols;
     getScreenResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
     printImageInfo(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+    this->mira_clean = imread("./mira.jpeg",IMREAD_COLOR);
 }
 
 void ObjectAnalysis::initCalibration(){
@@ -32,8 +32,7 @@ void ObjectAnalysis::initCalibration(){
     setMouseCallback(screenName, onMouse, this);
 
     setNumThreads(1);
-    // //Mira
-    this->mira = imread("./mira.jpeg",IMREAD_COLOR);
+    // //Mira (clean)
 }
 
 void ObjectAnalysis::load_calibration_values()
@@ -126,27 +125,42 @@ void ObjectAnalysis::printImageInfo(int x, int y)
 ///////////////////////////   RESULT   //////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
+void ObjectAnalysis::getObjectAnalysisResults(Mat image, bool &path, int &entrance)
+{
+    load_calibration_values();
+    read_model();
+    justFilter(image);
+    prepareResults();
+    path = direction;
+    entrance = combination;
+    Mat outImageHelper;
+    resize(mira, outImageHelper, cv::Size(), 0.95, 1.0);
+    imshow("Mira", outImageHelper);
+    moveWindow("Mira", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 5);
+}
+
 void ObjectAnalysis::displayResult(double angle, int combination)
 {
-    if(combination != 0){
+    this->mira = mira_clean.clone();
+    if(combination != -1){
         cout<<SCREEN_HEIGHT<<SCREEN_WIDTH<<endl;
         cout<<"Combination detected."<<endl;
         int x, y;
         switch (combination)
         {
-            case 1:
+            case 0:
                 x = mira.cols * 0.75;
+                y = mira.rows * 0.25;
+                break;
+            case 1:
+                x = mira.cols * 0.25;
                 y = mira.rows * 0.25;
                 break;
             case 2:
                 x = mira.cols * 0.25;
-                y = mira.rows * 0.25;
-                break;
-            case 3:
-                x = mira.cols * 0.25;
                 y = mira.rows * 0.75;
                 break;
-            case 4:
+            case 3:
                 x = mira.cols * 0.75;
                 y = mira.rows * 0.75;
                 break;
@@ -170,13 +184,14 @@ void ObjectAnalysis::print_descriptive_table(){
 
 void ObjectAnalysis::prepareResults(){
     cvtColor(filteredImage, this->color_image, COLOR_GRAY2RGB);
+    regionsFound.clear();
     findRegions(4, 1000, 2000);
 
     if(regionsFound.size() == 2){
         string figure1 = match_shape(regionsFound[0]);
         string figure2 = match_shape(regionsFound[1]);
         if(figure1 == "" || figure2 == ""){
-            displayResult(0,0);
+            displayResult(-1,-1);
             cout<<"Non-identified figures found: "<<figure1<<" "<<figure2<<endl;
         }else{
             cout<<"Figures found: "<<figure1<<" "<<figure2<<endl;
@@ -189,19 +204,32 @@ void ObjectAnalysis::prepareResults(){
             int large_figure = (figure1=="F"||figure1=="B")? 0:1;
             
             if(figures_found["F"] && figures_found["R"]){
-                displayResult(regionsFound[large_figure].angle,1);
+                combination = 0;
+                direction = (cos(regionsFound[large_figure].angle) > 0);
+                cout<<"FR"<<endl;
+                displayResult(regionsFound[large_figure].angle,0);
             }else if(figures_found["F"] && figures_found["L"]){
-                displayResult(regionsFound[large_figure].angle,2);
+                combination = 1;
+                direction = (cos(regionsFound[large_figure].angle) > 0);
+                cout<<"FL"<<endl;
+                displayResult(regionsFound[large_figure].angle,1);
             }else if(figures_found["B"] && figures_found["L"]){
-                displayResult(regionsFound[large_figure].angle,3);
+                combination = 2;
+                direction = (cos(regionsFound[large_figure].angle) > 0);
+                cout<<"BL"<<endl;
+                displayResult(regionsFound[large_figure].angle,2);
             }else if(figures_found["B"] && figures_found["R"]){
-                displayResult(regionsFound[large_figure].angle,4);
+                combination = 3;
+                direction = (cos(regionsFound[large_figure].angle) > 0);
+                cout<<"BR"<<endl;
+                displayResult(regionsFound[large_figure].angle,3);
             }else{
                 cout<<"Not a valid combination."<<endl;
-                displayResult(0,0);
+                displayResult(-1,-1);
             }
         }
     }else if(regionsFound.size() < 2){
+        combination = -1;
         if(regionsFound.size() == 1)
         {
             string figure1 = match_shape(regionsFound[0]);
@@ -213,10 +241,11 @@ void ObjectAnalysis::prepareResults(){
         }else{
             cout<<"No figures found."<<endl;
         }
-        displayResult(0,0);   
+        displayResult(-1,-1);   
     }else{
-        cout<<"Multiple figures found! ";
-        displayResult(0,0);
+        combination = -1;
+        cout<<"Multiple figures found! "<<endl;
+        displayResult(-1,-1);
     }
 }
 
@@ -384,7 +413,7 @@ void ObjectAnalysis::findRegions(const int number_of_objects, const int SEED_LIM
     double seconds;
     last_time = time(NULL);
     start_time = last_time;
-    cout << "----------IMAGE: " << IMAGE_WIDTH << "x" << IMAGE_HEIGHT << endl;
+    //cout << "----------IMAGE: " << IMAGE_WIDTH << "x" << IMAGE_HEIGHT << endl;
     int number_regions_found = 0, seeds_deposited = 0;
     while (number_regions_found < number_of_objects && seeds_deposited < SEED_LIMIT)
     {
@@ -405,7 +434,7 @@ void ObjectAnalysis::findRegions(const int number_of_objects, const int SEED_LIM
     }
     seconds = difftime(time(NULL), start_time);
     //cout << "EXECUTION TIME: " << seconds << endl;
-    print_descriptive_table();
+    //print_descriptive_table();
     //waitKey(0);
     //imwrite("./results/result.jpg", color_image);
 }

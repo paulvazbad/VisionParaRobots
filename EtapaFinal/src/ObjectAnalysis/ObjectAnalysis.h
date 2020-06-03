@@ -89,12 +89,15 @@ public:
     void filterImage(Mat image);
     void save_calibration_values();
     void trainDataset();
+    void getObjectAnalysisResults(Mat image, bool &path, int &entrance);
     
     void closeResults();
     void finalizeFiltering();
     void initCalibration();
 
 private:
+    int combination;
+    bool direction; 
     Mat *frame, filteredImage, hsvImage;
     Mat grayscaleImage;
     Mat color_image;
