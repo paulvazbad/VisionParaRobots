@@ -20,7 +20,8 @@ FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
     navigator_map = imread("parking_area.jpg", IMREAD_UNCHANGED);
     resize(navigator_map, navigator_map, cv::Size(), 0.8, 0.8);
     this->nav = Navigator(navigator_map, screenName);
-    
+    this->nav.generate_distance_map(*finalPoint);
+    this->nav.findPath(2,*finalPoint, true);
     this->robot = 10;
     //this->showRobotTravel(map);
     //this->objectAnalysis = ObjectAnalysis(parking_lot_image, "Object Analysis");

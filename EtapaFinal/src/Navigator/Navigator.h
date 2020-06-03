@@ -85,14 +85,18 @@ public:
     void startTravel();
     void findPathTesting(int entrance, Point finish, bool right);
     vector<Point> getPath();
+    void generate_distance_map(Point finish);
 private:
     int path_step;
     vector<Point> path;
     vector<Point> entrances;
     Mat map;
     Grid map_grid;
+    Mat distance_map;
     void displayPath();
     void displayCarPosition(Point car_position, bool car_orientation);
     void nextStep();
     void scanMap();
+    bool notVisited(Point point);
+    
 };
