@@ -65,7 +65,7 @@ public:
 
     Grid()
     {
-        for(int i1 = 0; i1<20; i1++){
+        for(int i1 = 0; i1<30; i1++){
             vector<GridNode> vector_grid_node;
             grid.push_back(vector_grid_node);
             for(int i2 = 0; i2<20; i2++){
@@ -90,13 +90,14 @@ private:
     int path_step;
     vector<Point> path;
     vector<Point> entrances;
-    Mat map;
+    Mat map, grid_map;
     Grid map_grid;
     Mat distance_map;
     void displayPath();
     void displayCarPosition(Point car_position, bool car_orientation);
     void nextStep();
     void scanMap();
+    void findEntrances();
     bool notVisited(Point point);
     
 };
