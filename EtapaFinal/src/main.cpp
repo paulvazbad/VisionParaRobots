@@ -12,10 +12,13 @@ const short FIGURE_DETECTION = 0;
 const short FIGURE_CALIBRATION = 1;
 const short PARKING_SPOT_DEMO = 2;
 const short EXIT = 3;
+const short CAPTURE_DATA = 4;
+int image_counter = 0;
 unordered_map<string, int> menu_values = {
     {"c", FIGURE_CALIBRATION},
     {"p", PARKING_SPOT_DEMO},
-    {"x", EXIT}};
+    {"x", EXIT},
+    {"k", CAPTURE_DATA}};
 
 // Validates input. True if static media / False if not
 bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
@@ -29,6 +32,12 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
     {
       cout << "Image read" << endl;
       image = imread(path, CV_LOAD_IMAGE_COLOR);
+      return true;
+    }
+    else if(path == "saved")
+    {
+      image = imread("./egypt/0.jpg", CV_LOAD_IMAGE_COLOR);
+      image_counter++;
       return true;
     }
   }
@@ -48,19 +57,12 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
 
 void figureDetection(ObjectAnalysis &objectAnalysis, bool isStatic, VideoCapture cap, Mat figure_image)
 {
-  for (;;)
-  {
     if (!isStatic)
       cap >> figure_image;
 
-    objectAnalysis.prepareResults(figure_image);
+    //objectAnalysis.prepareResults(figure_image);
     objectAnalysis.finalizeFiltering();
-    int x = waitKey(30);
-    if (x == 'x')
-    {
-      break;
-    }
-  }
+    waitKey(0);
 }
 
 int main(int argc, char *argv[])
@@ -83,6 +85,7 @@ int main(int argc, char *argv[])
 
     case FIGURE_CALIBRATION:
     {
+      objectAnalysis.initCalibration();
       for (;;)
       {
         if (!isStatic)
@@ -91,11 +94,11 @@ int main(int argc, char *argv[])
         int x = waitKey(30);
         if (x == 'x')
         {
-          objectAnalysis.finalizeFiltering();
+          objectAnalysis.save_calibration_values();
+          destroyAllWindows();
           break;
         }
       }
-      objectAnalysis.save_calibration_values();
     }
     break;
     case PARKING_SPOT_DEMO:
@@ -104,6 +107,23 @@ int main(int argc, char *argv[])
       FindParkingSpace findParkingSpace = FindParkingSpace(parking_image_clean, "Original Image");
     }
     break;
+    case CAPTURE_DATA:
+    {
+      cout<<"Running capture data mode"<<endl;
+      for (;;)
+      {
+        if (!isStatic)
+          cap >> image;
+        imshow("Image captured",image);
+        int x = waitKey(30);
+        if (x == 'x')
+        {
+          break;
+        }else if(x == 'k'){
+          objectAnalysis.captureTrainData(image);
+        }
+      }
+    }
     case EXIT:
     {
       break;

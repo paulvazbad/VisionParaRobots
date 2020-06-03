@@ -89,9 +89,10 @@ public:
     void filterImage(Mat image);
     void save_calibration_values();
     void trainDataset();
-    void prepareResults(Mat image);
+    
     void closeResults();
     void finalizeFiltering();
+    void initCalibration();
 
 private:
     Mat *frame, filteredImage, hsvImage;
@@ -107,6 +108,7 @@ private:
     int hsvRange[3];
     Coord generateSeed();
     bool is_object_coord(Coord);
+    void prepareResults();
     void justFilter(Mat image);
     void displayResult(double, int);
     void printImageInfo(int x, int y);

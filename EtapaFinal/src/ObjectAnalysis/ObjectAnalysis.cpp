@@ -13,6 +13,9 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     IMAGE_WIDTH = grayscaleImage.cols;
     getScreenResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
     printImageInfo(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+}
+
+void ObjectAnalysis::initCalibration(){
     load_calibration_values();
     read_model();
 
@@ -31,11 +34,6 @@ ObjectAnalysis::ObjectAnalysis(Mat image, string screenName)
     setNumThreads(1);
     // //Mira
     this->mira = imread("./mira.jpeg",IMREAD_COLOR);
-    SCREEN_HEIGHT = mira.rows;
-    SCREEN_WIDTH = mira.cols;
-    cout<<SCREEN_HEIGHT<<SCREEN_WIDTH<<endl;
-    //line(mira_clean, Point(SCREEN_WIDTH / 2, 0), Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT), Scalar(0, 0, 0), 3);
-    //line(mira_clean, Point(0, SCREEN_HEIGHT / 2), Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2), Scalar(0, 0, 0), 3);
 }
 
 void ObjectAnalysis::load_calibration_values()
@@ -131,47 +129,35 @@ void ObjectAnalysis::printImageInfo(int x, int y)
 void ObjectAnalysis::displayResult(double angle, int combination)
 {
     if(combination != 0){
+        cout<<SCREEN_HEIGHT<<SCREEN_WIDTH<<endl;
         cout<<"Combination detected."<<endl;
         int x, y;
         switch (combination)
         {
             case 1:
-                x = SCREEN_WIDTH * 0.75;
-                y = SCREEN_HEIGHT * 0.25;
+                x = mira.cols * 0.75;
+                y = mira.rows * 0.25;
                 break;
             case 2:
-                x = SCREEN_WIDTH * 0.25;
-                y = SCREEN_HEIGHT * 0.25;
+                x = mira.cols * 0.25;
+                y = mira.rows * 0.25;
                 break;
             case 3:
-                x = SCREEN_WIDTH * 0.25;
-                y = SCREEN_HEIGHT * 0.75;
+                x = mira.cols * 0.25;
+                y = mira.rows * 0.75;
                 break;
             case 4:
-                x = SCREEN_WIDTH * 0.75;
-                y = SCREEN_HEIGHT * 0.75;
+                x = mira.cols * 0.75;
+                y = mira.rows * 0.75;
                 break;
         }
         //Draw mira
         circle(mira, Point(x, y), 30, Scalar(0, 255, 0), -1);
         //Draw slope
-        int adj = cos(angle) * SCREEN_WIDTH/2;
-        int opp = sin(angle) * SCREEN_WIDTH/2;
-        line(mira, Point(SCREEN_WIDTH/2 - adj, SCREEN_HEIGHT/2 - opp), Point(SCREEN_WIDTH/2 + adj, SCREEN_HEIGHT/2 + opp), Scalar(0, 0, 255), 5);
-
-        // while(angle<0)
-        // {
-        //     angle+=(M_PI*2);
-        // }
-        // if((angle < M_PI/2 && angle >= 0)||(angle < M_PI*3/2 && angle >= M_PI)){
-        //     line(mira, Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT/2), Point(SCREEN_WIDTH, SCREEN_HEIGHT), Scalar(0, 0, 255), 3);
-        // }else{
-        //     line(mira, Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT/2), Point(SCREEN_WIDTH, 0), Scalar(0, 0, 255), 3);
-        // }
+        int adj = cos(angle) * mira.cols/2;
+        int opp = sin(angle) * mira.cols/2;
+        line(mira, Point(mira.cols/2 - adj, mira.rows/2 - opp), Point(mira.cols/2 + adj, mira.rows/2 + opp), Scalar(0, 0, 255), 5);
     }
-    //resize(mira, mira, cv::Size(), 0.5, 1.0);
-    imshow("Mira", mira);
-    moveWindow("Mira", 50, 0);
 }
 
 void ObjectAnalysis::print_descriptive_table(){
@@ -182,13 +168,7 @@ void ObjectAnalysis::print_descriptive_table(){
     }
 }
 
-void ObjectAnalysis::prepareResults(Mat image){
-    Mat helper = image.clone();
-    resize(image, helper, cv::Size(), 0.5, 0.6);
-    //imshow("Original", helper);
-    //moveWindow("Original", SCREEN_WIDTH * 3 / 4 + 50, SCREEN_HEIGHT / 2 + 50);
-    regionsFound.clear();
-    justFilter(image);
+void ObjectAnalysis::prepareResults(){
     cvtColor(filteredImage, this->color_image, COLOR_GRAY2RGB);
     findRegions(4, 1000, 2000);
 
@@ -253,8 +233,8 @@ void ObjectAnalysis::closeResults(){
 void ObjectAnalysis::filterImage(Mat image)
 {
     Mat outImageHelper;
-
-    imshow(screenName, image);
+    resize(image, outImageHelper, cv::Size(), 0.5, 0.5);
+    imshow(screenName, outImageHelper);
     cvtColor(image, hsvImage, CV_BGR2HSV);
     hsvFilter();
     resize(filteredImage, outImageHelper, cv::Size(), 0.5, 0.5);
@@ -262,11 +242,19 @@ void ObjectAnalysis::filterImage(Mat image)
     erotion();
     dilation();
     threshold(filteredImage, filteredImage, 127, 255, CV_THRESH_BINARY);
+    prepareResults();
+
+    resize(mira, outImageHelper, cv::Size(), 0.95, 1.0);
+    imshow("Mira", outImageHelper);
     resize(filteredImage, outImageHelper, cv::Size(), 0.5, 0.5);
     imshow("Final filtered", outImageHelper);
-    moveWindow("HSV filtered", SCREEN_WIDTH / 2 + 50, SCREEN_HEIGHT / 2 + 50);
-    moveWindow("Final filtered", SCREEN_WIDTH / 4 * 3 + 50, SCREEN_HEIGHT / 2 + 50);
-    moveWindow(screenName, 0, SCREEN_HEIGHT / 3);
+    resize(color_image, outImageHelper, cv::Size(), 0.5, 0.5);
+    imshow("Regions found", outImageHelper);
+    moveWindow("HSV filtered", SCREEN_WIDTH / 2 + SCREEN_WIDTH*0.03, SCREEN_HEIGHT / 5);
+    moveWindow("Final filtered", SCREEN_WIDTH / 4 * 3 + SCREEN_WIDTH*0.03, SCREEN_HEIGHT / 5);
+    moveWindow(screenName, SCREEN_WIDTH / 4 * 3 + SCREEN_WIDTH*0.03, SCREEN_HEIGHT / 5 + outImageHelper.rows*1.2);
+    moveWindow("Regions found", SCREEN_WIDTH / 2 + SCREEN_WIDTH*0.03, SCREEN_HEIGHT / 5 + outImageHelper.rows*1.2);
+    moveWindow("Mira", 0, SCREEN_HEIGHT / 5);
 }
 
 void ObjectAnalysis::finalizeFiltering()
@@ -275,7 +263,6 @@ void ObjectAnalysis::finalizeFiltering()
     destroyWindow("HSV filtered");
     destroyWindow("Final filtered");
     destroyWindow(screenName);
- 
 }
 
 void ObjectAnalysis::justFilter(Mat image){
@@ -419,9 +406,6 @@ void ObjectAnalysis::findRegions(const int number_of_objects, const int SEED_LIM
     seconds = difftime(time(NULL), start_time);
     //cout << "EXECUTION TIME: " << seconds << endl;
     print_descriptive_table();
-    resize(color_image, color_image, cv::Size(), 0.5, 0.6);
-    imshow("Regions found", color_image);
-    moveWindow("Regions found", SCREEN_WIDTH / 2 + 50, SCREEN_HEIGHT / 2 + 50);
     //waitKey(0);
     //imwrite("./results/result.jpg", color_image);
 }
