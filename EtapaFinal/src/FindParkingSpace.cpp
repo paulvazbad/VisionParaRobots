@@ -178,7 +178,6 @@ void FindParkingSpace::generateBaseImages(){
 
 void FindParkingSpace::validateFinalPoint(Point p){
     cv::Mat slots = cv::imread("slots2.jpg", CV_LOAD_IMAGE_COLOR);
-    resize(slots, slots, cv::Size(), 0.8, 0.8);
 
     if(slots.at<Vec3b>(p.y, p.x)[0] == 255){
         cout<<"Space chosen"<<endl;
