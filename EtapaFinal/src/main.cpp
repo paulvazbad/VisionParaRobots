@@ -4,6 +4,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <bits/stdc++.h>
+#include <regex> 
 #include "FindParkingSpace.h"
 using namespace std;
 using namespace cv;
@@ -36,8 +37,9 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
     }
     else if(path == "saved")
     {
-      image = imread("./egypt/0.jpg", CV_LOAD_IMAGE_COLOR);
-      image_counter++;
+      cout<<"Opening..."<<"./egypt/"+ to_string(image_counter)+".jpg"<<endl;
+      image = imread("./egypt/"+ to_string(image_counter)+".jpg", CV_LOAD_IMAGE_COLOR);
+      image_counter = (image_counter+1)%9;
       return true;
     }
   }
@@ -131,6 +133,7 @@ int main(int argc, char *argv[])
           findParkingSpace.showRobotTravel();
         }
       }
+      bool isStatic = inputValidation(argc, argv, image, cap);
     }
     break;
     case CAPTURE_DATA:
