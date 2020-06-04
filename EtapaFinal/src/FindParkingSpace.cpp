@@ -3,8 +3,8 @@
 FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
 {
     //Uncomment below to generate base image
-    this->map = parking_lot_image.clone();
-    generateBaseImages();
+    // this->map = parking_lot_image.clone();
+    // generateBaseImages();
 
     //Click callback
     this->screenName = screenName;
@@ -175,6 +175,7 @@ void FindParkingSpace::generateBaseImages(){
         }
     }
     // Write car slots image
+    cv::imwrite("slots2.jpg", drawing);
 }
 
 void FindParkingSpace::validateFinalPoint(Point p){
