@@ -2,42 +2,36 @@
 
 FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
 {
+    //Uncomment below to generate base image
+    // this->map = parking_lot_image.clone();
+    // generateBaseImages();
+
     //Click callback
     this->screenName = screenName;
     namedWindow(screenName);
     setMouseCallback(screenName, onMouse, this);
+    
+
+    //Initialize objects and Mats
     resize(parking_lot_image, parking_lot_image, cv::Size(), 0.8, 0.8);
     finalPoint = NULL;
     this->map = parking_lot_image.clone();
     this->original = parking_lot_image.clone();
+    this->slots = imread("slots2.jpg", CV_LOAD_IMAGE_COLOR);
+    resize(this->slots, this->slots, cv::Size(), 0.8, 0.8);
     navigator_map = imread("parking_area.jpg", IMREAD_UNCHANGED);
+    resize(navigator_map, navigator_map, cv::Size(), 0.8, 0.8);
     this->nav = Navigator(navigator_map, screenName);
-    this->robot = 15;
-    //generateBaseImages();
-    // while(finalPoint==NULL){
-    //     imshow(screenName, map);
-    //     waitKey(1);
-        
-    // }
-    // destroyWindow(screenName);
-    // cout<<"Navigator map: "<<navigator_map.rows<<endl;
-    
-    // testPathAlgorithm();
-    //this->nav.generate_distance_map(*finalPoint);
-    // this->nav.findPath(2,*finalPoint, true);
-    
-    //this->showRobotTravel(map);
-    //this->objectAnalysis = ObjectAnalysis(parking_lot_image, "Object Analysis");
+    this->robot = 10;
 }
 
 void FindParkingSpace::findPath(int entrance, bool direction)
 {
-    Mat map_helper = this->original.clone();
+    map_helper = this->original.clone();
     if(finalPoint!=NULL){
         cout<<"Destiny clicked, here we go!"<<endl;
         cout<<entrance<<" "<<direction<<endl;
         cout<<*finalPoint<<endl;
-        
         this->nav.findPath(entrance, *finalPoint, direction);
         vector<Point> path = this->nav.getPath();
         if(path.size() == 0) return;
@@ -46,9 +40,9 @@ void FindParkingSpace::findPath(int entrance, bool direction)
             //paint path
             cout<<"Path found!"<<endl;
             path.push_back(*finalPoint);
+            colorFillSlot(map_helper);
             paint_in_map_to_display(path, map_helper);
         }
-        
     }
     imshow(screenName, map_helper);
     moveWindow(screenName, 0, 0);
@@ -69,6 +63,8 @@ void FindParkingSpace::showRobotTravel()
         cout << path.size() << endl;
         Point current_position = path.front();
         Mat map_to_display = this->original.clone();
+        //paint path
+        colorFillSlot(map_to_display);
         //paint path
         paint_in_map_to_display(path, map_to_display);
         //paith robot
@@ -156,6 +152,13 @@ void FindParkingSpace::generateBaseImages(){
     }
 
     // Write parking area image
+    dilate(drawing, drawing, element2);
+    dilate(drawing, drawing, element2);
+    erode(drawing, drawing, element);
+    erode(drawing, drawing, element2);
+    erode(drawing, drawing, element2);
+    erode(drawing, drawing, element2);
+    erode(drawing, drawing, element2);
     cv::imwrite("parking_area.jpg", drawing);
     // Draw parking slots
     std::vector<std::vector<cv::Point>> approxContours = contourApproximation(contours);
@@ -171,46 +174,33 @@ void FindParkingSpace::generateBaseImages(){
             // cv::drawContours(drawing, contours, i, cv::Scalar(255,255,255), -1, 8, hierarchy, 0, cv::Point(0,0)); 
         }
     }
-
     // Write car slots image
     cv::imwrite("slots2.jpg", drawing);
 }
 
 void FindParkingSpace::validateFinalPoint(Point p){
-    cv::Mat slots = cv::imread("slots2.jpg", CV_LOAD_IMAGE_COLOR);
-
-    if(slots.at<Vec3b>(p.y, p.x)[0] == 255){
+    if(this->slots.at<Vec3b>(p.y, p.x)[0] == 255){
         free(finalPoint);
         finalPoint = (Point*) malloc(sizeof(Point));
         (*finalPoint).x = p.x;
         (*finalPoint).y = p.y;
-        colorFillSlot();
     }
 }
 
-void FindParkingSpace::colorFillSlot(){
-    if(finalPoint == NULL)
-        return;
-
-    // Set image to original
-    map = original.clone();
-
-    // Get slots base image
-    cv::Mat slots = cv::imread("slots2.jpg", CV_LOAD_IMAGE_COLOR);
-
+void FindParkingSpace::colorFillSlot(Mat &map_to_display){
     // Fix pixels
-    cv::cvtColor(slots, slots, CV_BGR2GRAY);
-    cv::threshold(slots,slots,127,255,CV_THRESH_BINARY);
-    cv::cvtColor(slots, slots, CV_GRAY2BGR);
-
+    cv::cvtColor(this->slots, this->slots, CV_BGR2GRAY);
+    cv::threshold(this->slots,this->slots,127,255,CV_THRESH_BINARY);
+    cv::cvtColor(this->slots, this->slots, CV_GRAY2BGR);
     // Color fill map image
+    this->slots = imread("slots2.jpg", CV_LOAD_IMAGE_COLOR);
+    resize(this->slots, this->slots, cv::Size(), 0.8, 0.8);
     queue<Point> mq;
     mq.push(*finalPoint);
-
+    cout<<"MQ size: "<<mq.size()<<endl;
     while (!mq.empty()){
         Point coord_origen = mq.front();
         mq.pop();
-
         //Append neigbors if valid
         Point north = Point(coord_origen.x, coord_origen.y + 1);
         Point south = Point(coord_origen.x, coord_origen.y - 1);
@@ -219,25 +209,25 @@ void FindParkingSpace::colorFillSlot(){
         if (slots.at<Vec3b>(north)[0] == 255)
         {
             slots.at<Vec3b>(north) = Vec3b(0,0,0);
-            map.at<Vec3b>(north) = Vec3b(0,0,255);
+            map_to_display.at<Vec3b>(north) = Vec3b(0,0,255);
             mq.push(north);
         }
         if (slots.at<Vec3b>(south)[0] == 255)
         {
             slots.at<Vec3b>(south) = Vec3b(0,0,0);
-            map.at<Vec3b>(south) = Vec3b(0,0,255);
+            map_to_display.at<Vec3b>(south) = Vec3b(0,0,255);
             mq.push(south);
         }
         if (slots.at<Vec3b>(east)[0] == 255)
         {
             slots.at<Vec3b>(east) = Vec3b(0,0,0);
-            map.at<Vec3b>(east) = Vec3b(0,0,255);
+            map_to_display.at<Vec3b>(east) = Vec3b(0,0,255);
             mq.push(east);
         }
         if (slots.at<Vec3b>(west)[0] == 255)
         {
             slots.at<Vec3b>(west) = Vec3b(0,0,0);
-            map.at<Vec3b>(west) = Vec3b(0,0,255);
+            map_to_display.at<Vec3b>(west) = Vec3b(0,0,255);
             mq.push(west);
         }
     }

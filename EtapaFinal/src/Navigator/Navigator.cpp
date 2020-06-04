@@ -318,7 +318,7 @@ void Navigator::findPath(int entrance, Point finish, bool right)
             reached = true;
         }
     }
-    // // cout<<"Number of steps: "<<this->path.size()<<endl;
+    // cout<<"Number of steps: "<<this->path.size()<<endl;
     // Point previous = path[0];
     // for(int i=1; i<path.size(); i++){
     //     line(path_map, previous, path[i], Scalar(255, 0, 255), 2);
