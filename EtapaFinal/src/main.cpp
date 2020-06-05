@@ -37,9 +37,7 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
     }
     else if(path == "saved")
     {
-      cout<<"Opening..."<<"./egypt/"+ to_string(image_counter)+".jpg"<<endl;
-      image = imread("./egypt/"+ to_string(image_counter)+".jpg", CV_LOAD_IMAGE_COLOR);
-      image_counter = (image_counter+1)%9;
+      image = imread("./egypt/1.jpg", CV_LOAD_IMAGE_COLOR);
       return true;
     }
   }
@@ -55,16 +53,6 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
   argc > 1 && string(argv[1]).find(".mp4") ? cap.open(path) : cap.open(0);
   cap >> image;
   return false;
-}
-
-void figureDetection(ObjectAnalysis &objectAnalysis, bool isStatic, VideoCapture cap, Mat figure_image)
-{
-    if (!isStatic)
-      cap >> figure_image;
-
-    //objectAnalysis.prepareResults(figure_image);
-    objectAnalysis.finalizeFiltering();
-    waitKey(0);
 }
 
 int main(int argc, char *argv[])
@@ -100,6 +88,20 @@ int main(int argc, char *argv[])
           destroyAllWindows();
           break;
         }
+        if( x == 'd')
+        {
+          image_counter = (image_counter+1)%9;
+          cout<<"Opening... "<<"./egypt/"+ to_string(image_counter)+".jpg"<<endl;
+          image = imread("./egypt/"+ to_string(image_counter)+".jpg", CV_LOAD_IMAGE_COLOR);
+        }
+        if( x == 'a')
+        {
+          image_counter = (image_counter-1)%9;
+          if(image_counter<0)
+            image_counter = 8;
+          cout<<"Opening... "<<"./egypt/"+ to_string(image_counter)+".jpg"<<endl;
+          image = imread("./egypt/"+ to_string(image_counter)+".jpg", CV_LOAD_IMAGE_COLOR);
+        }
       }
     }
     break;
@@ -132,8 +134,23 @@ int main(int argc, char *argv[])
         {
           findParkingSpace.showRobotTravel();
         }
+        if( x == 'd')
+        {
+          image_counter = (image_counter+1)%9;
+          cout<<"Opening... "<<"./egypt/"+ to_string(image_counter)+".jpg"<<endl;
+          image = imread("./egypt/"+ to_string(image_counter)+".jpg", CV_LOAD_IMAGE_COLOR);
+          objectAnalysis.getObjectAnalysisResults(image, path, entrance);
+        }
+        if( x == 'a')
+        {
+          image_counter = (image_counter-1)%9;
+          if(image_counter<0)
+            image_counter = 8;
+          cout<<"Opening... "<<"./egypt/"+ to_string(image_counter)+".jpg"<<endl;
+          image = imread("./egypt/"+ to_string(image_counter)+".jpg", CV_LOAD_IMAGE_COLOR);
+          objectAnalysis.getObjectAnalysisResults(image, path, entrance);
+        }
       }
-      bool isStatic = inputValidation(argc, argv, image, cap);
     }
     break;
     case CAPTURE_DATA:

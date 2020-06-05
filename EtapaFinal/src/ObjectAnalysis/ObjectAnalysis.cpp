@@ -141,30 +141,33 @@ void ObjectAnalysis::getObjectAnalysisResults(Mat image, bool &path, int &entran
 
 void ObjectAnalysis::displayResult(double angle, int combination)
 {
+    this->combination = combination;
     this->mira = mira_clean.clone();
     if(combination != -1){
         cout<<SCREEN_HEIGHT<<SCREEN_WIDTH<<endl;
-        cout<<"Combination detected."<<endl;
-        this->combination = combination;
-        direction = (cos(angle) > 0);
+        cout<<"Combination detected "<<combination<<" "<<angle<<endl;
         int x, y;
         switch (combination)
         {
             case 0:
                 x = mira.cols * 0.75;
                 y = mira.rows * 0.25;
+                direction = (angle < 0);
                 break;
             case 1:
                 x = mira.cols * 0.25;
                 y = mira.rows * 0.25;
+                direction = (angle > 0);
                 break;
             case 2:
                 x = mira.cols * 0.25;
                 y = mira.rows * 0.75;
+                direction = (angle > 0);
                 break;
             case 3:
                 x = mira.cols * 0.75;
                 y = mira.rows * 0.75;
+                direction = (angle < 0);
                 break;
         }
         //Draw mira
@@ -290,6 +293,7 @@ void ObjectAnalysis::finalizeFiltering()
 
 void ObjectAnalysis::justFilter(Mat image){
     cvtColor(image, hsvImage, CV_BGR2HSV);
+    cout<<hsvImage.cols<<endl;
     hsvFilter();
     erotion();
     dilation();
@@ -315,7 +319,6 @@ Mat ObjectAnalysis::bgrToGray()
 
 void ObjectAnalysis::hsvFilter()
 {
-    Mat result = Mat::zeros((*frame).size(), (*frame).type()), mask;
     int hMin, hMax, sMin, sMax, vMin, vMax;
     calculateMaxMinChannels(HSV_color, hMin, sMin, vMin, hMax, sMax, vMax);
     // Updates mask values with the corresponding H,S,V limits

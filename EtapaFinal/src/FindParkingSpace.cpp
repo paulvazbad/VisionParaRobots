@@ -29,19 +29,18 @@ void FindParkingSpace::findPath(int entrance, bool direction)
 {
     map_helper = this->original.clone();
     if(finalPoint!=NULL){
-        cout<<"Destiny clicked, here we go!"<<endl;
         cout<<entrance<<" "<<direction<<endl;
-        cout<<*finalPoint<<endl;
         this->nav.findPath(entrance, *finalPoint, direction);
         vector<Point> path = this->nav.getPath();
-        if(path.size() == 0) return;
         if (path.size() > 0)
         {
             //paint path
-            cout<<"Path found!"<<endl;
+            cout<<"Path found"<<endl;
             path.push_back(*finalPoint);
             colorFillSlot(map_helper);
             paint_in_map_to_display(path, map_helper);
+        }else{
+            cout<<"Path not found"<<endl;
         }
     }
     imshow(screenName, map_helper);
@@ -160,6 +159,7 @@ void FindParkingSpace::generateBaseImages(){
     erode(drawing, drawing, element2);
     erode(drawing, drawing, element2);
     cv::imwrite("parking_area.jpg", drawing);
+
     // Draw parking slots
     std::vector<std::vector<cv::Point>> approxContours = contourApproximation(contours);
     drawing = cv::Mat::zeros(map.size(), map.type());
@@ -171,7 +171,7 @@ void FindParkingSpace::generateBaseImages(){
             cv::Point finalP(approxContours[i][2].x, approxContours[i][2].y);
             cv::rectangle(drawing, startP, finalP, cv::Scalar(255,255,255), CV_FILLED);
             // Uncomment thie following line to save raw shapes
-            // cv::drawContours(drawing, contours, i, cv::Scalar(255,255,255), -1, 8, hierarchy, 0, cv::Point(0,0)); 
+            //cv::drawContours(drawing, contours, i, cv::Scalar(255,255,255), -1, 8, hierarchy, 0, cv::Point(0,0)); 
         }
     }
     // Write car slots image
@@ -197,7 +197,6 @@ void FindParkingSpace::colorFillSlot(Mat &map_to_display){
     resize(this->slots, this->slots, cv::Size(), 0.8, 0.8);
     queue<Point> mq;
     mq.push(*finalPoint);
-    cout<<"MQ size: "<<mq.size()<<endl;
     while (!mq.empty()){
         Point coord_origen = mq.front();
         mq.pop();

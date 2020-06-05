@@ -3,18 +3,18 @@
 Navigator::Navigator(Mat map, string screenName)
 {
     this-> map = map.clone();
-    // cout<<"Map provided: "<<this->map.cols<<endl;
-    // cout<<"Scanning map"<<endl;
+    // // cout<<"Map provided: "<<this->map.cols<<endl;
+    // // cout<<"Scanning map"<<endl;
     scanMap();
 }
 
 void Navigator::generate_distance_map(Point finish){
     distance_map = Mat(map.rows, map.cols,CV_32SC1,Scalar(-1));
-    // cout<<distance_map.cols<<distance_map.rows<<endl;
+    // // cout<<distance_map.cols<<distance_map.rows<<endl;
      // Color fill map image
     queue<Point> mq;
     mq.push(Point(5,5));
-    // cout<<"Generating distances"<<endl;
+    // // cout<<"Generating distances"<<endl;
     while (!mq.empty()){
         Point coord_origen = mq.front();
         mq.pop();
@@ -26,7 +26,7 @@ void Navigator::generate_distance_map(Point finish){
         Point west = Point(coord_origen.x - 1, coord_origen.y);
         int value_of_current_point = distance_map.at<int>(coord_origen);
         if(value_of_current_point==-1)++value_of_current_point;
-        // cout<<value_of_current_point<<endl;        
+        // // cout<<value_of_current_point<<endl;        
         if (notVisited(north))
         {
             distance_map.at<int>(north) = value_of_current_point+1;
@@ -48,8 +48,7 @@ void Navigator::generate_distance_map(Point finish){
             mq.push(west);
         }
     }
-    // cout<<"Done calculating distances!"<<endl;
-    
+    // // cout<<"Done calculating distances!"<<endl;
 }
 
 bool Navigator::notVisited(Point point){
@@ -70,7 +69,7 @@ void Navigator::scanMap()
         for(int y = 0; y<20; y++){
             if((int)grid_map.at<Vec3b>(Point(10+y*map.cols/20,10+x*map.rows/30))[0] == 255)
             {
-                //// cout<<"Point found"<<x<<" "<<y<<endl;
+                //// // cout<<"Point found"<<x<<" "<<y<<endl;
                 map_grid.grid[x][y].existent = true;
                 map_grid.grid[x][y].passed = false;
                 // map_grid.grid[x][y].coord.x = y;
@@ -90,7 +89,7 @@ void Navigator::findEntrances(){
     Vec3b color_entrance(255, 0, 0);
     bool found = false;
     for(int x = 4; x>=0 && found==false; x--){
-        for(int y = 20-4; y<20; y++){
+        for(int y = 20-3; y<20; y++){
             if(map_grid.grid[x][y].existent)
             {
                 entrances.push_back(Point(x,y));
@@ -139,9 +138,9 @@ void Navigator::findEntrances(){
     }
     if(entrances.size() < 4)
     {
-        // cout<<"Entrances not found";
+        // // cout<<"Entrances not found";
     }else{
-        // cout<<"Entrances found!"<<endl;
+        // // cout<<"Entrances found!"<<endl;
         //imshow("Grid", grid_map);
         this->map = grid_map.clone();
     }
@@ -150,16 +149,20 @@ void Navigator::findEntrances(){
 void Navigator::findPath(int entrance, Point finish, bool right)
 {
     //Clean previous path
+    // Mat path_map = this->map.clone();
     this->path.clear();
     for(int i=0;i<30;i++){
         for(int x=0;x<20;x++){
             if(map_grid.grid[i][x].existent)
-            map_grid.grid[i][x].passed = false;
+            {
+                map_grid.grid[i][x].passed = false;
+                // circle(path_map, Point(10+x*map.cols/20, 10+i*map.rows/30), 1, Scalar(0, 255, 0), 2);
+            }
         }
     }
     Point explorer;
     Point finish_debug, closest_valid;
-    //Mat path_map = this->map.clone();
+    
     //circle(path_map, finish, 1, Scalar(0, 255, 0), 2);
     finish_debug.y = (int)((finish.x-10.0)*20/map.cols);
     finish_debug.x = (int)((finish.y-10.0)*30/map.rows);
@@ -183,7 +186,7 @@ void Navigator::findPath(int entrance, Point finish, bool right)
         return; 
     }
     finish_debug = closest_valid;
-    //circle(path_map, Point(10+finish_debug.y*map.cols/20, 10+finish_debug.x*map.rows/30), 1, Scalar(255, 0, 0), 2);
+    // circle(path_map, Point(10+finish_debug.y*map.cols/20, 10+finish_debug.x*map.rows/30), 1, Scalar(255, 0, 0), 2);
     //Se usan las coordenadas [indices] de los nodos
     if(entrances.size()==0){
         // cout<<"Cant find path without a valid entrance"<<endl;
@@ -199,15 +202,15 @@ void Navigator::findPath(int entrance, Point finish, bool right)
 
     priority_order[4]=5;
     if(right){
-        priority_order[0]=(go_down)?2:1;
-        priority_order[1]=(!go_down)?2:1;
-        priority_order[2]=(go_left)?3:4;
+        priority_order[0]=(go_down)?1:2;
+        priority_order[2]=(!go_down)?1:2;
+        priority_order[1]=(go_left)?3:4;
         priority_order[3]=(!go_left)?3:4;
     }else{
         priority_order[0]=(go_left)?3:4;
-        priority_order[1]=(!go_left)?3:4;
-        priority_order[2]=(go_down)?2:1;
-        priority_order[3]=(!go_down)?2:1;
+        priority_order[2]=(!go_left)?3:4;
+        priority_order[1]=(go_down)?1:2;
+        priority_order[3]=(!go_down)?1:2;
     }
 
     // for(int i=0; i<5; i++){
@@ -266,6 +269,7 @@ void Navigator::findPath(int entrance, Point finish, bool right)
             case 5:
                 if(!changed){
                     for(int x=0; x<priority_order.size()-1 && !changed; x++){
+                        // cout<<priority_order[x]<<endl;
                         switch (priority_order[x])
                         {
                         case 1:
@@ -313,12 +317,24 @@ void Navigator::findPath(int entrance, Point finish, bool right)
                 break;
             }
         }
+        if(!changed)
+        {
+            path.clear();
+            break;
+        }
         if(explorer.x == finish_debug.x && explorer.y == finish_debug.y){
-            //// cout<<"Reached"<<endl;
+            // cout<<"Reached"<<endl;
             reached = true;
         }
+        // Point previous = path[0];
+        // for(int i=1; i<path.size(); i++){
+        //     line(path_map, previous, path[i], Scalar(255, 0, 255), 2);
+        //     previous = path[i];
+        // }
+        // imshow("Path",path_map);
+        // waitKey(0);
     }
-    // cout<<"Number of steps: "<<this->path.size()<<endl;
+    // // cout<<"Number of steps: "<<this->path.size()<<endl;
     // Point previous = path[0];
     // for(int i=1; i<path.size(); i++){
     //     line(path_map, previous, path[i], Scalar(255, 0, 255), 2);
