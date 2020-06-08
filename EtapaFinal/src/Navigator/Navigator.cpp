@@ -75,13 +75,13 @@ void Navigator::scanMap()
                 // map_grid.grid[x][y].coord.x = y;
                 // map_grid.grid[x][y].coord.y = x;
                 grid_map.at<Vec3b>(10+x*map.rows/30, 10+y*map.cols/20)=color_grid;
+                circle(grid_map, Point(10+y*map.cols/20, 10+x*map.rows/30), 1, Scalar(0, 0, 255), 2);
             }else{
                 map_grid.grid[x][y].existent = false;
                 map_grid.grid[x][y].passed = true;
             }
         }
     }
-
     findEntrances();
 }
 
@@ -93,7 +93,7 @@ void Navigator::findEntrances(){
             if(map_grid.grid[x][y].existent)
             {
                 entrances.push_back(Point(x,y));
-                circle(grid_map, Point(10+y*map.cols/20, 10+x*map.rows/30), 1, Scalar(255, 255, 0), 2);
+                circle(grid_map, Point(10+y*map.cols/20, 10+x*map.rows/30), 1, Scalar(255, 0, 0), 10);
                 found = true;
                 break;
             }
@@ -105,7 +105,7 @@ void Navigator::findEntrances(){
             if(map_grid.grid[x][y].existent)
             {
                 entrances.push_back(Point(x,y));
-                circle(grid_map, Point(10+y*map.cols/20, 10+x*map.rows/30), 1, Scalar(255, 255, 0), 2);
+                circle(grid_map, Point(10+y*map.cols/20, 10+x*map.rows/30), 1, Scalar(255, 0, 0), 10);
                 found = true;
                 break;
             }
@@ -117,7 +117,7 @@ void Navigator::findEntrances(){
             if(map_grid.grid[x][y].existent)
             {
                 entrances.push_back(Point(x,y));
-                circle(grid_map, Point(10+y*map.cols/20, 10+x*map.rows/30), 1, Scalar(255, 255, 0), 2);
+                circle(grid_map, Point(10+y*map.cols/20, 10+x*map.rows/30), 1, Scalar(255, 0, 0), 10);
                 found = true;
                 break;
             }
@@ -130,7 +130,7 @@ void Navigator::findEntrances(){
             if(map_grid.grid[x][y].existent)
             {
                 entrances.push_back(Point(x,y));
-                circle(grid_map, Point(10+y*map.cols/20, 10+x*map.rows/30), 1, Scalar(255, 255, 0), 2);
+                circle(grid_map, Point(10+y*map.cols/20, 10+x*map.rows/30), 1, Scalar(255, 0, 0), 10);
                 found = true;
                 break;
             }

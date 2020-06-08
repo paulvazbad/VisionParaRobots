@@ -127,16 +127,19 @@ void ObjectAnalysis::printImageInfo(int x, int y)
 
 void ObjectAnalysis::getObjectAnalysisResults(Mat image, bool &path, int &entrance)
 {
+    Mat outImageHelper;
+    resize(image, outImageHelper, cv::Size(), 0.5, 0.5);
+    imshow(screenName, outImageHelper);
+    moveWindow(screenName, SCREEN_WIDTH / 4 * 3 * 0.90, SCREEN_HEIGHT / 2);
     load_calibration_values();
     read_model();
     justFilter(image);
     prepareResults();
     path = direction;
     entrance = combination;
-    Mat outImageHelper;
     resize(mira, outImageHelper, cv::Size(), 0.7, 0.7);
     imshow("Mira", outImageHelper);
-    moveWindow("Mira", SCREEN_WIDTH / 4 * 3 * 0.90, SCREEN_HEIGHT / 5);
+    moveWindow("Mira", SCREEN_WIDTH / 4 * 3 * 0.90, 0);
 }
 
 void ObjectAnalysis::displayResult(double angle, int combination)
@@ -162,12 +165,12 @@ void ObjectAnalysis::displayResult(double angle, int combination)
             case 2:
                 x = mira.cols * 0.25;
                 y = mira.rows * 0.75;
-                direction = (angle > 0);
+                direction = (angle < 0);
                 break;
             case 3:
                 x = mira.cols * 0.75;
                 y = mira.rows * 0.75;
-                direction = (angle < 0);
+                direction = (angle > 0);
                 break;
         }
         //Draw mira

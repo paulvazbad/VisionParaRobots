@@ -28,7 +28,7 @@ FindParkingSpace::FindParkingSpace(Mat parking_lot_image, string screenName)
 void FindParkingSpace::findPath(int entrance, bool direction)
 {
     map_helper = this->original.clone();
-    if(finalPoint!=NULL){
+    if(finalPoint!=NULL && entrance > -1){
         cout<<entrance<<" "<<direction<<endl;
         this->nav.findPath(entrance, *finalPoint, direction);
         vector<Point> path = this->nav.getPath();

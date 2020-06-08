@@ -42,7 +42,7 @@ bool inputValidation(int argc, char **argv, Mat &image, VideoCapture &cap)
     }
   }
 
-  if (cap.open("rtsp://192.168.0.8:8080/h264_pcm.sdp"))
+  if (cap.open("rtsp://192.168.0.12:8080/h264_pcm.sdp"))
   {
     if (cap.read(image))
     {
